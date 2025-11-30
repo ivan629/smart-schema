@@ -1,6 +1,6 @@
 export const LIMITS = {
     maxTablesForEnrichment: 20,
-    maxFieldsForEnrichment: 500,
+    maxFieldsForEnrichment: 600,
     maxFieldsWarningThreshold: 200,
     maxRowsToSample: 10_000,
     maxTraversalDepth: 50,

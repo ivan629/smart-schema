@@ -1,359 +1,1506 @@
 {
-  "timestamp": "2025-11-23T16:52:24.709Z",
+  "timestamp": "2025-11-26T17:07:33.802Z",
   "request": {
-    "transcript_word_count": 1615,
-    "video_id": "4LcOu4Vw0Ps"
+    "transcript_word_count": 6839,
+    "video_id": "c0NB2117Quw",
+    "source_url": "https://www.youtube.com/watch?v=c0NB2117Quw"
   },
   "result": {
-    "schwartz": {
-      "values": {
-        "self_direction": {
+    "cognitive_manipulation": {
+      "mechanisms": {
+        "false_dichotomy": {
           "score": 45,
-          "confidence": 6,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "I refuse to speak other any other language in English for two very important reasons",
-              "context": "Explaining personal choice about language learning despite social expectations",
-              "strength": 6
-            },
-            {
-              "quote": "my brother can learn languages he enjoys it he wants to right but I",
-              "context": "Distinguishing his autonomous choice from his brother's different choice",
-              "strength": 5
-            },
-            {
-              "quote": "why would I speak in a language which I don't speak as well as in English",
-              "context": "Justifying independent decision based on personal reasoning",
-              "strength": 6
-            }
-          ]
-        },
-        "stimulation": {
-          "score": 52,
           "confidence": 7,
           "instance_count": 4,
           "evidence": [
             {
-              "quote": "he also has to provide drama for her he also has to be entertaining for her... if there's never any drama because drama is excitement then they're going to naturally try and find drama somewhere else",
-              "context": "Discussing need for excitement and novelty in relationships",
+              "quote": "I actually don't know what would be worse. If the only people who had this idea were the ancient Hebrews and Israelites because they had the one true God and this was his actual nature. or the fact that this claimed religion of perfect love, truth, and justice that has prevailed to modern times in such a huge way is still based in something so common place",
+              "context": "Presenting only two interpretations of blood sacrifice origins",
+              "strength": 6
+            },
+            {
+              "quote": "You either believe he's all powerful, in which case none of this can be excused because that means there was a better way or you believe he's limited, which means he is not the God of the Bible.",
+              "context": "Concluding argument about God's nature",
               "strength": 8
             },
             {
-              "quote": "you have to shock her a bit you have to be the person who can upset her you need to be entertaining all-encompassing",
-              "context": "Emphasizing variety and unpredictability as essential",
+              "quote": "It's not grace, it's tribal retribution.",
+              "context": "Defining Christian theology as exclusively one thing",
               "strength": 7
-            },
-            {
-              "quote": "if your primary concern is that you know I'll I'm too young I need to experience more experience what what restaurants how many restaurants you have to go to",
-              "context": "Dismissing novelty-seeking as insufficient justification (shows awareness of value but critiques it)",
-              "strength": 6
             }
-          ]
+          ],
+          "psychological_impact": "Forces binary thinking about complex theological concepts, eliminates possibility of nuanced interpretations or middle positions. Makes viewers feel they must choose between two extreme positions, reducing space for moderate theological understanding."
         },
-        "hedonism": {
-          "score": 15,
-          "confidence": 4,
-          "instance_count": 1,
-          "evidence": [
-            {
-              "quote": "how many times you've got to go eat until you eventually realize going to eat [ __ ]",
-              "context": "Dismissing pleasure-seeking activities as insufficient life purpose",
-              "strength": 4
-            }
-          ]
-        },
-        "achievement": {
-          "score": 88,
+        "cherry_picking": {
+          "score": 72,
           "confidence": 9,
           "instance_count": 12,
           "evidence": [
             {
-              "quote": "you have to be as competitive as possible you have to be as successful as possible in all Realms you have to be as good looking as funny as smart as spontaneous as interesting as charismatic as rich as possible you need to try very hard to be your absolute best",
-              "context": "Core message about personal success and demonstrating competence",
+              "quote": "Leviticus 4:7, the priest shall put some of the blood on the horns of the altar and pour out all the rest of the blood at the base of the altar. Or Leviticus 18:23-24, blood is smeared on Aaron's right earlo, thumb, and toe as consecration.",
+              "context": "Selecting only blood-related verses from Leviticus while ignoring mercy, justice, and love passages",
+              "strength": 8
+            },
+            {
+              "quote": "Revelation 14:19-20. So the angel swung his sickle over the earth and gathered the vintage of the earth and he threw it into the great wine press of the wrath of God. And the wine press was trotten outside the city. And blood flowed from the wine press as high as a horse's bridal",
+              "context": "Focusing exclusively on violent imagery in Revelation while ignoring restoration themes",
+              "strength": 9
+            },
+            {
+              "quote": "Genesis 8:21 after Noah's sacrifice, 'And when the Lord smelled the pleasing odor, the Lord said in his heart, I will never again curse the ground.'",
+              "context": "Emphasizing anthropomorphic language while ignoring the mercy promise",
+              "strength": 7
+            },
+            {
+              "quote": "Hebrews 9:22, 'Without the shedding of blood, there is no forgiveness of sins.'",
+              "context": "Selecting verses about blood while ignoring verses about mercy, repentance, and forgiveness without sacrifice",
+              "strength": 8
+            }
+          ],
+          "psychological_impact": "Creates illusion that blood sacrifice is the ONLY theme in Christianity by systematically selecting supporting verses while ignoring contradictory passages about mercy, justice, love, and non-violent forgiveness. Viewer unaware of selection bias believes they're seeing complete picture."
+        },
+        "strawman_argument": {
+          "score": 68,
+          "confidence": 8,
+          "instance_count": 8,
+          "evidence": [
+            {
+              "quote": "But Christians think when they tell Jesus they'll try harder tomorrow, he's smiling and patting them on the back with gentle whispers of encouragement.",
+              "context": "Misrepresenting Christian theology as simplistic and naive",
+              "strength": 7
+            },
+            {
+              "quote": "Many will try to frame this as Jesus doing away with all those Old Testament things that seem weird to us, but they probably made sense. And you know, God had to work with people where they were at. Not like God was instructing them what to do all the way through.",
+              "context": "Oversimplifying theological arguments about progressive revelation",
+              "strength": 8
+            },
+            {
+              "quote": "I'm always told by Christians that I must have became an atheist because I just wanted to sin without consequence.",
+              "context": "Setting up weak version of Christian argument to knock down",
+              "strength": 6
+            },
+            {
+              "quote": "Often times people talk about, oh, that must have been that his heart was more pure than his brothers. We see no indication of that.",
+              "context": "Dismissing theological interpretation without engaging substantive versions",
+              "strength": 7
+            }
+          ],
+          "psychological_impact": "Makes Christian theology appear more simplistic and indefensible than sophisticated versions actually are. Viewer believes they're hearing real Christian arguments when actually hearing weakened caricatures, making rejection easier and preventing engagement with stronger theological positions."
+        },
+        "appeal_to_emotion": {
+          "score": 85,
+          "confidence": 9,
+          "instance_count": 15,
+          "evidence": [
+            {
+              "quote": "Would you want them to actually understood when they did wrong as opposed to unintentional sin and help reform them and rehabilitate them if they were really messing up so they could be more healthy and productive? Wouldn't that actual repentance and change of heart, mind, and direction be the desired outcome over, oh, you hurt your sibling? That's okay. Why don't you go sacrifice our household puppy?",
+              "context": "Using parental emotions and puppy killing imagery to trigger disgust",
               "strength": 10
             },
             {
-              "quote": "as you become a better man you'll crack through different tiers of attractiveness and eventually you get to the top",
-              "context": "Describing achievement as progression through competence levels",
+              "quote": "I want to forgive you, son, but I don't see that you've killed anything. Your hands look too clean. Bring me the innocent. Burn them. I want to smell the flesh. I crave it. I need it to satisfy me.",
+              "context": "Creating horror movie imagery to trigger revulsion",
+              "strength": 10
+            },
+            {
+              "quote": "For those of you who watched Dexter where he is found as a young child in that storage unit in his mother's blood. Such a gruesome scene.",
+              "context": "Invoking traumatic TV imagery to associate with religious practice",
               "strength": 9
             },
             {
-              "quote": "you have to up yourself you have to improve yourself I'm not going to lie to anybody here and say you don't have to improve yourself",
-              "context": "Emphasizing continuous self-improvement and capability development",
-              "strength": 9
-            },
-            {
-              "quote": "I'm perfect in English so why would I speak in a language which I don't speak as well as in English",
-              "context": "Demonstrating personal competence as justification",
-              "strength": 7
-            }
-          ]
-        },
-        "power": {
-          "score": 82,
-          "confidence": 9,
-          "instance_count": 10,
-          "evidence": [
-            {
-              "quote": "as a man we live in hyper-competitive environments... if you want a girl you're competing against other men... you have to out-compete other men",
-              "context": "Framing life as dominance competition for resources and status",
-              "strength": 9
-            },
-            {
-              "quote": "eventually you get to the top and you'll be able to have any girl you want",
-              "context": "Describing power and control as ultimate goal",
+              "quote": "You're not broken. You can be whole without the blood of Jesus.",
+              "context": "Appealing to desire for self-worth and wholeness",
               "strength": 8
             },
             {
-              "quote": "if a woman is going to dedicate herself to a man then that man has to be all-encompassing he has to be a man who can fix most of her problems",
-              "context": "Emphasizing control and dominance in relationships",
+              "quote": "when I continue to see children raised up and told in funny little cartoons and pretty little pictures that this is all good, when this is all gross.",
+              "context": "Using protective feelings toward children to trigger outrage",
               "strength": 9
-            },
-            {
-              "quote": "women want to be with a man which keeps them entertained and a man which they trust and a man which they believe can fix all of their problems",
-              "context": "Defining male value through control and resource provision",
-              "strength": 8
-            },
-            {
-              "quote": "if a woman comes to you with an issue and you can't fix it you'll see very quickly how how soon they lose attraction",
-              "context": "Power through problem-solving capability",
-              "strength": 7
             }
-          ]
+          ],
+          "psychological_impact": "Systematically bypasses rational theological analysis by triggering disgust, horror, parental protection instincts, and revulsion. Makes emotional rejection of Christianity feel like logical conclusion. Viewer's limbic system activated repeatedly, making calm analysis nearly impossible."
         },
-        "security": {
-          "score": 58,
-          "confidence": 7,
-          "instance_count": 5,
-          "evidence": [
-            {
-              "quote": "he has to provide stability and safety which everybody knows",
-              "context": "Discussing essential male role in relationships",
-              "strength": 8
-            },
-            {
-              "quote": "women want to be with a man which keeps them entertained and a man which they trust",
-              "context": "Emphasizing trust and stability alongside other qualities",
-              "strength": 7
-            },
-            {
-              "quote": "as you grow older if you don't have a bunch of children your later years are filled with debts as opposed to being filled with births and life",
-              "context": "Discussing long-term stability and avoiding negative outcomes",
-              "strength": 6
-            },
-            {
-              "quote": "the Twilight years of your life or just everybody you know slowly dying and there's no new life injected",
-              "context": "Concern about maintaining stability and avoiding decline",
-              "strength": 6
-            }
-          ]
-        },
-        "conformity": {
+        "authority_manipulation": {
           "score": 25,
           "confidence": 5,
           "instance_count": 2,
           "evidence": [
             {
-              "quote": "you should just accept the responsibilities like a [ __ ] adult",
-              "context": "Advocating restraint and meeting social obligations",
-              "strength": 6
+              "quote": "That's what Christopher Hitchens meant when he said religion poisons everything.",
+              "context": "Invoking atheist authority figure",
+              "strength": 5
             },
             {
-              "quote": "it's very common in fact it's completely considered normal for people to speak more than one language",
-              "context": "Acknowledging social norms (though not necessarily conforming to them)",
+              "quote": "See me and Justin's conversation where we specifically cover Isaiah 53 and why that is not about Jesus and what the actual correct context is.",
+              "context": "Self-referential authority claim",
               "strength": 4
             }
-          ]
+          ],
+          "psychological_impact": "Minimal use of authority manipulation. Primarily relies on other mechanisms. Brief invocations of Hitchens and self-reference don't constitute pervasive authority exploitation."
         },
-        "tradition": {
-          "score": 68,
-          "confidence": 8,
-          "instance_count": 6,
-          "evidence": [
-            {
-              "quote": "I think it's Haram all right that's it done done I don't think I don't think that you should be ending human life",
-              "context": "Invoking religious/traditional moral framework on abortion",
-              "strength": 9
-            },
-            {
-              "quote": "I saw a video of Dua LIPA a long time ago and she was an Albania doing an Albanian traditional dance I thought she can give me strong Albanian half Sons",
-              "context": "Valuing cultural heritage and traditional practices",
-              "strength": 7
-            },
-            {
-              "quote": "I think there's nothing more worthwhile for people to do than have children and if you can financially afford it then that's what you should do",
-              "context": "Emphasizing traditional family values and life purpose",
-              "strength": 8
-            },
-            {
-              "quote": "if you don't have a family and you don't have children as you get older the the Twilight years of your life or just everybody you know slowly dying and there's no new life injected",
-              "context": "Traditional view of family as essential life structure",
-              "strength": 7
-            }
-          ]
-        },
-        "benevolence": {
+        "ad_hominem": {
           "score": 42,
           "confidence": 6,
-          "instance_count": 3,
+          "instance_count": 5,
           "evidence": [
             {
-              "quote": "if you don't have a family and you don't have children as you get older... I think it's very important to do",
-              "context": "Discussing care and responsibility for family/children",
+              "quote": "But that's Yahweh for you.",
+              "context": "Dismissive characterization of deity",
+              "strength": 5
+            },
+            {
+              "quote": "Go to any Christian grandma right now and say it out of context like that to her and see the cringe.",
+              "context": "Mocking Christian believers as naive",
+              "strength": 6
+            },
+            {
+              "quote": "And I'm so sick of Christians pretending like it's pretty.",
+              "context": "Accusing Christians of dishonesty rather than engaging argument",
               "strength": 7
             },
             {
-              "quote": "she can give me strong Albanian half Sons",
-              "context": "Expressing desire for family and children (in-group focus)",
-              "strength": 6
-            },
-            {
-              "quote": "all in all I think there's nothing more worthwhile for people to do than have children",
-              "context": "Valuing family welfare and continuation",
+              "quote": "the hypocritical unawareness of Christians",
+              "context": "Attacking character rather than specific arguments",
               "strength": 6
             }
-          ]
+          ],
+          "psychological_impact": "Moderate use of personal attacks that characterize Christians as hypocritical, naive, or dishonest rather than engaging strongest versions of their arguments. Creates in-group (aware viewers) vs out-group (deluded Christians) dynamic."
         },
-        "universalism": {
-          "score": 8,
-          "confidence": 7,
+        "slippery_slope": {
+          "score": 15,
+          "confidence": 3,
           "instance_count": 1,
           "evidence": [
             {
-              "quote": "I don't think that you should be ending human life",
-              "context": "Expressing concern for human life in general (though within specific moral framework)",
-              "strength": 5
+              "quote": "He's the only thing good enough. And viewed like this, it's almost more about the ego of God than the beautiful story of Jesus's sacrifice.",
+              "context": "Suggesting theological interpretation leads to narcissistic deity",
+              "strength": 4
             }
-          ]
+          ],
+          "psychological_impact": "Minimal slippery slope argumentation present. Not a primary mechanism in this transcript."
+        },
+        "confirmation_bias_exploitation": {
+          "score": 78,
+          "confidence": 9,
+          "instance_count": 10,
+          "evidence": [
+            {
+              "quote": "Often times, and despite the irony of the whole thing, Christians will criticize other world religions or religions from the past, typically grouping them all together as something pagan or demonic, highlighting their evil with human sacrifice or blood magic or cultlike activity.",
+              "context": "Opening with assumption audience already sees Christian hypocrisy",
+              "strength": 8
+            },
+            {
+              "quote": "It was wild to me the first time I conceptualized of it like that.",
+              "context": "Reinforcing 'awakening' narrative for those who already doubt",
+              "strength": 7
+            },
+            {
+              "quote": "I used to think when I was still a believer and even when I was doubting that when people lobbed these kinds of terms up when an atheist said something like you're in a cult or that's just blood magic or communion is cannibalism I thought they were being purposely insulting that they were choosing language to try and trigger at the highest degree they weren't. It is the language that is the most accurate",
+              "context": "Validating audience's existing critical views of Christianity",
+              "strength": 9
+            },
+            {
+              "quote": "See this video.",
+              "context": "Directing to content that reinforces same perspective",
+              "strength": 6
+            }
+          ],
+          "psychological_impact": "Consistently presents information that confirms existing skepticism about Christianity. Frames analysis as 'seeing clearly' what was always there, making viewers feel validated in existing doubts. Creates echo chamber effect where questioning Christianity feels like intellectual awakening rather than perspective shift."
+        },
+        "availability_heuristic": {
+          "score": 81,
+          "confidence": 9,
+          "instance_count": 18,
+          "evidence": [
+            {
+              "quote": "Over and over it is spilled and splattered and smeared and consumed. Animal blood or human blood, blood on doorpost, blood on altars, blood in cups, flowing rivers of blood.",
+              "context": "Repetitive emphasis making blood imagery seem omnipresent",
+              "strength": 9
+            },
+            {
+              "quote": "From Genesis to Revelation, from Abel's sacrifice right there at the beginning, all the way to Christ's crucifixion and the end of the world, from the mercy seat to the wine press",
+              "context": "Creating impression blood is THE central theme throughout",
+              "strength": 8
+            },
+            {
+              "quote": "I think 42. I think that's the correct count. Let me just read a couple more for you here. Exodus 29:18... Leviticus 1:9 or you can see it in 13 or 17... Genesis 8:21... And on and on.",
+              "context": "Rapid-fire verse citations creating impression of overwhelming frequency",
+              "strength": 10
+            },
+            {
+              "quote": "despite the gallons and gallons or oceans is probably a better term of blood that were spilt",
+              "context": "Escalating quantitative language to make seem ubiquitous",
+              "strength": 9
+            },
+            {
+              "quote": "It's blood everywhere. Nothing else, nothing but blood.",
+              "context": "Absolute language making blood seem like only biblical theme",
+              "strength": 10
+            }
+          ],
+          "psychological_impact": "Through repetition and accumulation of examples, makes blood sacrifice seem like the ONLY or overwhelmingly dominant biblical theme. Viewer's mental availability of 'blood' examples becomes disproportionate to actual biblical content ratio. Creates false impression that Christianity is primarily about blood rather than one theme among many."
+        },
+        "anchoring": {
+          "score": 55,
+          "confidence": 7,
+          "instance_count": 4,
+          "evidence": [
+            {
+              "quote": "Often times, and despite the irony of the whole thing, Christians will criticize other world religions or religions from the past, typically grouping them all together as something pagan or demonic, highlighting their evil with human sacrifice or blood magic or cultlike activity.",
+              "context": "Opening frame establishes 'blood cult' as reference point for entire analysis",
+              "strength": 8
+            },
+            {
+              "quote": "And so I want to talk about Christianity and its obsession with blood.",
+              "context": "Early framing that anchors all subsequent interpretation",
+              "strength": 7
+            },
+            {
+              "quote": "Revelation 14:19-20... blood flowed from the wine press as high as a horse's bridal for a distance of what would be equivalent to about 180 miles. That's four feet deep of blood from New York to DC.",
+              "context": "Extreme imagery becomes anchor for understanding Revelation",
+              "strength": 8
+            }
+          ],
+          "psychological_impact": "Opening with 'obsession with blood' frame anchors all subsequent biblical interpretation through that lens. Viewer processes every verse through this initial frame, making alternative interpretations harder to consider. Extreme Revelation imagery anchors perception of Christian eschatology."
+        },
+        "bandwagon_effect": {
+          "score": 35,
+          "confidence": 5,
+          "instance_count": 3,
+          "evidence": [
+            {
+              "quote": "Can we just progress and evolve as a society past this barbaric nonsense?",
+              "context": "Implying enlightened people have moved beyond this",
+              "strength": 6
+            },
+            {
+              "quote": "leave this blood nonsense where it belongs in the temples of the ancient world.",
+              "context": "Suggesting modern people should reject this",
+              "strength": 6
+            },
+            {
+              "quote": "If you believe in the mission of this channel or you just enjoy its content, please consider joining these fine",
+              "context": "Patron list suggesting community of like-minded people",
+              "strength": 4
+            }
+          ],
+          "psychological_impact": "Moderate use of bandwagon effect. Frames rejection of Christianity as joining enlightened, evolved people. Creates sense that 'we' (modern, rational people) versus 'they' (primitive believers). Not as pervasive as other mechanisms but present."
         }
       },
       "meta": {
-        "transcript_word_count": 1615,
-        "values_detected": 10,
-        "highest_value": "achievement",
-        "lowest_value": "universalism",
-        "analysis_date": "2025-11-23T16:52:24.711Z"
+        "transcript_word_count": 6839,
+        "mechanisms_detected": 9,
+        "most_used_fallacy": "appeal_to_emotion",
+        "overall_cognitive_impact": "severe",
+        "critical_thinking_impact": "severe_negative",
+        "analysis_date": "2025-11-26T17:07:45.265Z"
       }
     },
-    "seven_sins": {
-      "sins": {
-        "pride": {
-          "score": 82,
+    "emotional_conditioning": {
+      "mechanisms": {
+        "fear_induction": {
+          "score": 25,
+          "confidence": 4,
+          "instance_count": 3,
+          "evidence": [
+            {
+              "quote": "You're so broken and worthless that he needs the innocent to die just to stand you",
+              "context": "Describing Christian theology's view of humanity",
+              "strength": 5
+            },
+            {
+              "quote": "they were born broken, that they had sin in them while they were still in the womb, that they deserve death and hell",
+              "context": "Discussing what Christianity teaches children",
+              "strength": 6
+            },
+            {
+              "quote": "I'm so sick of Christians pretending like it's pretty. If this is what you think is the ultimate act of love, you can keep it",
+              "context": "Discussing Revelation's violence",
+              "strength": 4
+            }
+          ],
+          "psychological_impact": "Moderate fear induction about religious indoctrination of children. Creates concern about psychological harm from religious teaching. Not pervasive enough to create chronic anxiety, but plants seeds of worry about religious influence."
+        },
+        "anger_farming": {
+          "score": 45,
+          "confidence": 7,
+          "instance_count": 8,
+          "evidence": [
+            {
+              "quote": "It's straight up abusive. No matter how you slice it",
+              "context": "Describing Old Testament sacrifice system",
+              "strength": 6
+            },
+            {
+              "quote": "What a load. Don't preach that to me",
+              "context": "Responding to Christian apologetics",
+              "strength": 7
+            },
+            {
+              "quote": "I'm so sick of Christians pretending like it's pretty",
+              "context": "Discussing Revelation",
+              "strength": 8
+            },
+            {
+              "quote": "Can we just progress and evolve as a society past this barbaric nonsense?",
+              "context": "Closing statement",
+              "strength": 7
+            },
+            {
+              "quote": "this is all gross",
+              "context": "Final remarks about teaching children",
+              "strength": 6
+            }
+          ],
+          "psychological_impact": "Moderate anger cultivation toward Christianity and its practices. Repeated use of dismissive, frustrated language ('what a load', 'I'm so sick of') models irritation. After regular exposure, viewer may develop quicker irritation response to religious content and feel validated in expressing contempt."
+        },
+        "outrage_amplification": {
+          "score": 72,
+          "confidence": 9,
+          "instance_count": 15,
+          "evidence": [
+            {
+              "quote": "Christians will criticize other world religions... And then somehow with no sense of hypocrisy, they go sing a song about being bathed in the blood of Jesus",
+              "context": "Opening hook about Christian hypocrisy",
+              "strength": 7
+            },
+            {
+              "quote": "The utter disconnect from what would be the reality of this God if he were real according to his scriptures",
+              "context": "Discussing God's nature",
+              "strength": 6
+            },
+            {
+              "quote": "It's not spiritual growth. It's not about reconciliation between equals. It's about appeasing the higher, more powerful thing that will kill you",
+              "context": "Reframing sacrifice theology",
+              "strength": 8
+            },
+            {
+              "quote": "Just enough. Let's move past it. And you know what? We kind of did, but in a worse way",
+              "context": "Transition to Jesus discussion",
+              "strength": 7
+            },
+            {
+              "quote": "God wasn't getting off anymore on just animals. We had to go to the next level",
+              "context": "Describing escalation to human sacrifice",
+              "strength": 9
+            },
+            {
+              "quote": "It's almost more about the ego of God than the beautiful story of Jesus's sacrifice",
+              "context": "Reframing crucifixion narrative",
+              "strength": 8
+            },
+            {
+              "quote": "Why don't you go sacrifice our household puppy? Take its blood and smear it on this",
+              "context": "Analogy to parenting",
+              "strength": 9
+            },
+            {
+              "quote": "This is the language that is the most accurate way of describing what otherwise has had to be watered down to make palatable",
+              "context": "Defending use of terms like 'cannibalism'",
+              "strength": 7
+            },
+            {
+              "quote": "Imagine any other religion asking children, 'Are you washed in the blood?'",
+              "context": "Discussing hymns",
+              "strength": 8
+            },
+            {
+              "quote": "That's not hope. That's horror",
+              "context": "Describing Revelation's ending",
+              "strength": 8
+            }
+          ],
+          "psychological_impact": "High outrage amplification through constant reframing of familiar Christian concepts as shocking/horrifying. Uses vivid analogies (puppy sacrifice), extreme language ('getting off on'), and repetitive 'can you believe this?' framing. Creates addictive outrage loop - viewer experiences moral shock repeatedly, which releases dopamine. After regular exposure: increased sensitivity to religious content, seeking more 'exposé' content, difficulty seeing nuance in religious discussion."
+        },
+        "moral_disgust": {
+          "score": 88,
+          "confidence": 10,
+          "instance_count": 22,
+          "evidence": [
+            {
+              "quote": "It's witchcraft. It's magic. It's spells",
+              "context": "Describing ancient sacrifice",
+              "strength": 7
+            },
+            {
+              "quote": "A God that upon seeing something die and suffer, that was innocent, its stench of blood and burnt flesh as it floats toward him in the heaven, he finds not only pleasing but satisfying",
+              "context": "Describing God's response to sacrifice",
+              "strength": 9
+            },
+            {
+              "quote": "A very disgusting course indeed",
+              "context": "Summarizing ancient sacrifice practices",
+              "strength": 7
+            },
+            {
+              "quote": "It's graphic. It's tactile. It is everywhere",
+              "context": "Describing Levitical blood rituals",
+              "strength": 8
+            },
+            {
+              "quote": "This is a ritualized transfer of guilt. Input blood, output forgiveness",
+              "context": "Describing Day of Atonement",
+              "strength": 7
+            },
+            {
+              "quote": "I just kept seeing that image for those of you who watched Dexter where he is found as a young child in that storage unit in his mother's blood. Such a gruesome scene",
+              "context": "Analogy for blood-soaked culture",
+              "strength": 9
+            },
+            {
+              "quote": "God having to like some addict get his fix by ever escalating upward in grotesqueness",
+              "context": "Describing progression to Jesus's sacrifice",
+              "strength": 10
+            },
+            {
+              "quote": "I want to smell the flesh. I crave it. I need it to satisfy me",
+              "context": "Imagined monologue of God demanding sacrifice",
+              "strength": 10
+            },
+            {
+              "quote": "This is ritual cannibalism",
+              "context": "Describing communion",
+              "strength": 9
+            },
+            {
+              "quote": "Feast on my body. Drink the blood from my veins, for this is how you are saved",
+              "context": "Paraphrasing Jesus's communion teaching",
+              "strength": 9
+            },
+            {
+              "quote": "Just consider these popular hymns... Are you washed in the blood of the lamb?",
+              "context": "Highlighting disturbing language in worship",
+              "strength": 8
+            },
+            {
+              "quote": "Go to any Christian grandma right now and say it out of context like that to her and see the cringe",
+              "context": "Making familiar language seem disturbing",
+              "strength": 8
+            },
+            {
+              "quote": "That's four feet deep of blood from New York to DC",
+              "context": "Visualizing Revelation's violence",
+              "strength": 9
+            },
+            {
+              "quote": "Cosmic war, cannibalism",
+              "context": "Describing Revelation 19",
+              "strength": 8
+            },
+            {
+              "quote": "That's not hope. That's horror",
+              "context": "Summarizing Revelation's ending",
+              "strength": 8
+            },
+            {
+              "quote": "Can you imagine being a creator god that demands death to feel better? I can't actually think of something grosser",
+              "context": "Rhetorical question about God's nature",
+              "strength": 10
+            },
+            {
+              "quote": "this is all gross",
+              "context": "Final summary",
+              "strength": 7
+            }
+          ],
+          "psychological_impact": "Severe and pervasive disgust induction. Systematically reframes Christian theology using visceral disgust triggers: blood, flesh, cannibalism, addiction metaphors, child trauma imagery (Dexter reference). Disgust is the most powerful dehumanizing emotion - bypasses rational thought and creates visceral revulsion. After repeated exposure: physical disgust response to Christian symbols/practices, difficulty engaging with religious people empathetically, permanent association between Christianity and revulsion. Disgust is extremely difficult to reverse once established."
+        },
+        "anxiety_creation": {
+          "score": 35,
+          "confidence": 6,
+          "instance_count": 5,
+          "evidence": [
+            {
+              "quote": "You're not broken. You can be whole without the blood of Jesus",
+              "context": "Reassurance to viewers",
+              "strength": 5
+            },
+            {
+              "quote": "when I continue to see children raised up and told in funny little cartoons and pretty little pictures that this is all good, when this is all gross",
+              "context": "Concern about children's indoctrination",
+              "strength": 7
+            },
+            {
+              "quote": "Not only are you telling your child that they are indeed not whole, that they are broken",
+              "context": "Describing psychological harm to children",
+              "strength": 7
+            }
+          ],
+          "psychological_impact": "Moderate anxiety creation focused on harm to children from religious teaching. Creates background worry about religious influence on vulnerable populations. Not pervasive enough to create chronic anxiety disorder, but establishes ongoing concern that may make viewer hypervigilant about religious content around children."
+        },
+        "shame_induction": {
+          "score": 42,
+          "confidence": 7,
+          "instance_count": 6,
+          "evidence": [
+            {
+              "quote": "So many Christians do not understand the very root basics of a blood sacrifice system, which is again their entire theology",
+              "context": "Criticizing Christian knowledge",
+              "strength": 6
+            },
+            {
+              "quote": "if they heard it under any other term, they would condemn it as pagan and demonic",
+              "context": "Pointing out Christian inconsistency",
+              "strength": 7
+            },
+            {
+              "quote": "I'm always told by Christians that I must have became an atheist because I just wanted to sin without consequence... the hypocritical unawareness of Christians",
+              "context": "Calling out Christian hypocrisy",
+              "strength": 7
+            },
+            {
+              "quote": "I'm so sick of Christians pretending like it's pretty",
+              "context": "Expressing frustration with Christian framing",
+              "strength": 6
+            },
+            {
+              "quote": "And if you tell me one more time in a comment that God had to, you are no longer worshiping the Christian God",
+              "context": "Challenging Christian apologetics",
+              "strength": 8
+            }
+          ],
+          "psychological_impact": "Moderate shame induction toward Christians/former Christians. Repeatedly highlights ignorance, hypocrisy, and cognitive dissonance. For Christian viewers: creates shame about beliefs. For ex-Christian viewers: validates their departure but may create shame about past participation. Creates pressure to demonstrate one is 'not like those Christians' who don't understand their own theology."
+        },
+        "intermittent_reinforcement": {
+          "score": 35,
+          "confidence": 5,
+          "instance_count": 4,
+          "evidence": [
+            {
+              "quote": "But let's move even further into the biblical case for all of this. I want to go through Leviticus 1 through Leviticus 7",
+              "context": "Transition to detailed analysis",
+              "strength": 5
+            },
+            {
+              "quote": "But I digress. Let's get into the substitutional nature of blood",
+              "context": "Shifting topics after emotional peak",
+              "strength": 6
+            },
+            {
+              "quote": "But let's move on to the end of the Bible. Specifically, Revelation",
+              "context": "Building to climactic section",
+              "strength": 6
+            },
+            {
+              "quote": "But Brandon, you're not being fair... What a load",
+              "context": "Anticipating objection then dismissing",
+              "strength": 7
+            }
+          ],
+          "psychological_impact": "Moderate intermittent reinforcement through pacing. Alternates between detailed biblical analysis (lower emotional intensity) and shocking reframings (high emotional intensity). Creates unpredictable 'hits' of outrage/disgust that keep viewer engaged. Not as extreme as pure entertainment content, but uses educational structure to mask emotional manipulation pattern."
+        },
+        "emotional_whiplash": {
+          "score": 28,
+          "confidence": 5,
+          "instance_count": 3,
+          "evidence": [
+            {
+              "quote": "Christians have spun it from this insane, violent, and grotesque act into something beautiful and loving and sweet. Literally, kids drawing pictures of Jesus's blood at Easter time right next to chocolate bunnies",
+              "context": "Juxtaposing horror with innocence",
+              "strength": 7
+            },
+            {
+              "quote": "But again, the Christian says, 'Look at that love.' But let's talk about that. Is this love?",
+              "context": "Shifting from Christian perspective to critique",
+              "strength": 6
+            },
+            {
+              "quote": "So much for gentle Jesus that we all learned about in Sunday school",
+              "context": "Contrasting Sunday school Jesus with Revelation Jesus",
+              "strength": 6
+            }
+          ],
+          "psychological_impact": "Mild emotional whiplash through contrasting innocent imagery (children, Easter, Sunday school) with violent theology. Creates cognitive dissonance by forcing viewer to hold two incompatible images simultaneously. Not rapid enough to exhaust emotional regulation, but does create discomfort that makes viewer more receptive to presenter's interpretation."
+        },
+        "parasocial_bonding": {
+          "score": 48,
+          "confidence": 8,
+          "instance_count": 7,
+          "evidence": [
+            {
+              "quote": "So stick with me on this, but let's go ahead and dive in",
+              "context": "Inviting viewer into shared journey",
+              "strength": 6
+            },
+            {
+              "quote": "I know you're already thinking of the excuses",
+              "context": "Claiming to know viewer's thoughts",
+              "strength": 7
+            },
+            {
+              "quote": "Really conceptualize that",
+              "context": "Direct instruction to viewer",
+              "strength": 5
+            },
+            {
+              "quote": "See me and Justin's conversation where we specifically cover Isaiah 53",
+              "context": "Referencing other content, building relationship",
+              "strength": 6
+            },
+            {
+              "quote": "Trust me, I hear how only sacrifice, only Jesus's blood",
+              "context": "Sharing personal experience with viewer",
+              "strength": 7
+            },
+            {
+              "quote": "Thanks so much for being here. I know this was a heavy one",
+              "context": "Closing with appreciation and acknowledgment",
+              "strength": 7
+            },
+            {
+              "quote": "But I'll see you Tuesday for a new video. And until then, keep thinking",
+              "context": "Creating expectation of ongoing relationship",
+              "strength": 7
+            }
+          ],
+          "psychological_impact": "Moderate parasocial bonding through conversational tone, shared journey framing, and acknowledgment of viewer experience. Creates sense of being understood and guided by someone who 'gets it.' After regular exposure: viewer feels personal connection to creator, seeks validation from creator's perspective, may defend creator as if defending a friend. Not as intense as pure personality-driven content, but establishes enough connection to lower critical guard."
+        },
+        "validation_seeking": {
+          "score": 38,
+          "confidence": 6,
+          "instance_count": 5,
+          "evidence": [
+            {
+              "quote": "I know you're already thinking of the excuses",
+              "context": "Validating viewer's critical thinking",
+              "strength": 7
+            },
+            {
+              "quote": "for those of you who watched Dexter",
+              "context": "Creating in-group of those who get the reference",
+              "strength": 6
+            },
+            {
+              "quote": "If I can't get through to you here",
+              "context": "Implying some viewers will 'get it' and others won't",
+              "strength": 7
+            },
+            {
+              "quote": "keep thinking",
+              "context": "Praising viewers as thinkers",
+              "strength": 6
+            }
+          ],
+          "psychological_impact": "Moderate validation seeking through subtle in-group/out-group dynamics. Viewers who agree feel validated as critical thinkers who 'see through' religious manipulation. Creates mild approval-seeking where viewer wants to be among those who 'get it.' After regular exposure: viewer seeks content that confirms their enlightened status, may avoid content that challenges this identity."
+        }
+      },
+      "meta": {
+        "transcript_word_count": 6839,
+        "mechanisms_detected": 7,
+        "dominant_emotion": "moral_disgust",
+        "emotional_intensity": "extreme",
+        "addiction_potential": "high",
+        "long_term_impact": "After weeks/months of regular exposure: Viewer develops visceral disgust response to Christian symbols, language, and practices. The systematic reframing of familiar religious concepts as horrifying/abusive creates permanent negative associations. Outrage becomes addictive - viewer seeks more content exposing religious 'horrors.' Difficulty engaging with religious people empathetically due to disgust response. May experience anger when encountering religious content in daily life. Parasocial bond with creator makes viewer defensive of this perspective and resistant to alternative framings. Shame about past religious participation (if applicable) reinforces need for validation from similar content. Overall effect: Emotional conditioning that makes religious deconversion feel morally urgent and creates psychological dependence on content that validates this disgust/outrage response.",
+        "analysis_date": "2025-11-26T17:09:18.839Z"
+      }
+    },
+    "identity_manipulation": {
+      "mechanisms": {
+        "ingroup_formation": {
+          "score": 72,
           "confidence": 9,
           "instance_count": 8,
           "evidence": [
             {
-              "quote": "I'm perfect in English so why would I speak in a language which I don't speak as well as in English",
-              "context": "When explaining why he refuses to learn other languages, claiming perfection",
+              "quote": "You're not broken. You can be whole without the blood of Jesus.",
+              "context": "Closing statement defining the enlightened audience",
+              "strength": 8
+            },
+            {
+              "quote": "Can we just progress and evolve as a society past this barbaric nonsense?",
+              "context": "Positioning audience as evolved/progressive vs primitive believers",
+              "strength": 7
+            },
+            {
+              "quote": "if I can't get through to you here, strip away the holy language. And the logic becomes crystal clear and barbaric.",
+              "context": "Defining 'us' as those who can see clearly vs those who can't",
+              "strength": 8
+            },
+            {
+              "quote": "I'm so sick of Christians pretending like it's pretty.",
+              "context": "Creating shared frustration/identity around seeing 'the truth'",
+              "strength": 7
+            },
+            {
+              "quote": "leave this blood nonsense where it belongs in the temples of the ancient world",
+              "context": "Defining modern, rational 'us' vs ancient, primitive 'them'",
+              "strength": 8
+            }
+          ],
+          "psychological_impact": "Creates identity around being 'enlightened' enough to see Christianity as barbaric blood magic. Viewer's sense of self becomes tied to rejecting Christianity and seeing what 'most people' supposedly can't see. After repeated exposure: identity increasingly defined by opposition to Christianity, need to maintain this enlightened status by consuming similar content."
+        },
+        "outgroup_dehumanization": {
+          "score": 85,
+          "confidence": 10,
+          "instance_count": 15,
+          "evidence": [
+            {
+              "quote": "Christians will criticize other world religions... typically grouping them all together as something pagan or demonic... And then somehow with no sense of hypocrisy",
+              "context": "Portraying Christians as hypocritical and lacking self-awareness",
+              "strength": 7
+            },
+            {
+              "quote": "So many Christians do not understand the very root basics of a blood sacrifice system, which is again their entire theology.",
+              "context": "Portraying Christians as fundamentally ignorant of their own beliefs",
+              "strength": 8
+            },
+            {
+              "quote": "Christians have spun it from this insane, violent, and grotesque act into something beautiful and loving and sweet. Literally, kids drawing pictures of Jesus's blood at Easter time right next to chocolate bunnies.",
+              "context": "Portraying Christians as delusional, unable to see reality",
               "strength": 9
             },
             {
-              "quote": "how do I get a girl like bro you're a loser yeah but I know but how do I get a girl well you're a [ __ ] loser you're a loser",
-              "context": "When responding to men seeking advice, repeatedly calling them losers with contempt",
+              "quote": "I'm always told by Christians that I must have became an atheist because I just wanted to sin without consequence... I will never not be amazed at the hypocritical unawareness of Christians",
+              "context": "Portraying Christians as hypocritical and unaware",
+              "strength": 8
+            },
+            {
+              "quote": "And I'm so sick of Christians pretending like it's pretty. If this is what you think is the ultimate act of love, you can keep it.",
+              "context": "Portraying Christians as pretending, delusional about morality",
+              "strength": 9
+            },
+            {
+              "quote": "Don't preach that to me when you take your kids to sing that nothing but the blood of Jesus can make you whole. Not only are you telling your child that they are indeed not whole, that they are broken",
+              "context": "Portraying Christians as child abusers",
               "strength": 10
             },
             {
-              "quote": "I refuse to speak other any other language in English... English is the number one best language... the perfect language",
-              "context": "Declaring English as objectively superior and perfect, dismissing all other languages",
-              "strength": 8
+              "quote": "I know this was a heavy one. I'm not sure how not to speak passionately about this when I continue to see children raised up and told in funny little cartoons and pretty little pictures that this is all good, when this is all gross.",
+              "context": "Portraying Christians as harming children with 'gross' teachings",
+              "strength": 9
             }
-          ]
+          ],
+          "psychological_impact": "Systematically dehumanizes Christians as hypocritical, ignorant, delusional, child-abusing participants in 'blood magic cults.' Uses terms like 'gross,' 'barbaric,' 'insane,' 'disgusting' repeatedly. After repeated exposure: Christians become 'other' - not just wrong but morally repugnant, incapable of rational thought, dangerous to children. Reduces empathy, makes dialogue impossible, justifies contempt and hostility."
         },
-        "greed": {
-          "score": 45,
+        "victimhood_narrative": {
+          "score": 35,
           "confidence": 7,
           "instance_count": 3,
           "evidence": [
             {
-              "quote": "it doesn't matter if it's getting a girl or it's making money or it's getting status... you have to be as rich as possible",
-              "context": "Listing money/wealth as equal priority to relationships, emphasizing maximum wealth accumulation",
+              "quote": "I used to think when I was still a believer and even when I was doubting that when people lobbed these kinds of terms up when an atheist said something like you're in a cult or that's just blood magic or communion is cannibalism I thought they were being purposely insulting",
+              "context": "Positioning self/atheists as misunderstood truth-tellers",
               "strength": 6
             },
             {
-              "quote": "if you can financially afford it then that's what you should do",
-              "context": "Making financial capacity a primary criterion for life decisions including having children",
-              "strength": 5
+              "quote": "I'm always told by Christians that I must have became an atheist because I just wanted to sin without consequence.",
+              "context": "Positioning self as unfairly accused/misunderstood",
+              "strength": 7
+            },
+            {
+              "quote": "And if you tell me one more time in a comment that God had to, you are no longer worshiping the Christian God.",
+              "context": "Defensive posture against anticipated criticism",
+              "strength": 6
             }
-          ]
+          ],
+          "psychological_impact": "Moderate victimhood framing - positions speaker and like-minded viewers as misunderstood truth-tellers who are unfairly accused by Christians. Not as strong as other mechanisms but creates defensive posture that reinforces ingroup identity."
         },
-        "lust": {
-          "score": 71,
-          "confidence": 8,
-          "instance_count": 6,
+        "hero_narrative": {
+          "score": 68,
+          "confidence": 9,
+          "instance_count": 7,
           "evidence": [
             {
-              "quote": "you have to out-compete other men... eventually you get to the top and you'll be able to have any girl you want",
-              "context": "Framing relationships as competitive conquest where the goal is access to 'any girl'",
+              "quote": "strip away the holy language. And the logic becomes crystal clear and barbaric. I will only forgive you if someone dies. Unacceptable.",
+              "context": "Positioning self/audience as able to see what others can't",
               "strength": 8
             },
             {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there... you're going to get smoked that's the game",
-              "context": "Comparing women/relationships to prizes in a race, objectifying the entire dynamic",
+              "quote": "if I can't get through to you here, strip away the holy language. And the logic becomes crystal clear",
+              "context": "Positioning self as one who can reveal hidden truth",
+              "strength": 8
+            },
+            {
+              "quote": "Can we just progress and evolve as a society past this barbaric nonsense?",
+              "context": "Positioning audience as the evolved, progressive ones",
+              "strength": 8
+            },
+            {
+              "quote": "You're not broken. You can be whole without the blood of Jesus.",
+              "context": "Positioning audience as enlightened enough to reject false narratives",
+              "strength": 7
+            },
+            {
+              "quote": "leave this blood nonsense where it belongs in the temples of the ancient world",
+              "context": "Positioning audience as modern, rational, beyond primitive thinking",
+              "strength": 8
+            },
+            {
+              "quote": "It is the language that is the most accurate way of describing what otherwise has had to be watered down to make palatable for your average believer.",
+              "context": "Positioning self/audience as able to handle 'accurate' truth others can't",
+              "strength": 9
+            }
+          ],
+          "psychological_impact": "Creates identity around being enlightened enough to see 'the truth' that Christians are blind to. Viewer feels special for understanding what 'average believers' cannot handle. After repeated exposure: inflated sense of intellectual/moral superiority, resistance to religious perspectives, belief that one has transcended what others are trapped in."
+        },
+        "us_vs_them_thinking": {
+          "score": 88,
+          "confidence": 10,
+          "instance_count": 12,
+          "evidence": [
+            {
+              "quote": "Often times, and despite the irony of the whole thing, Christians will criticize other world religions... And then somehow with no sense of hypocrisy, they go sing a song about being bathed in the blood of Jesus.",
+              "context": "Opening establishes binary: hypocritical Christians vs aware audience",
               "strength": 9
             },
             {
-              "quote": "I saw a video of Dua LIPA... she can give me strong Albanian half Sons maybe her",
-              "context": "Reducing a woman to her reproductive utility for his genetic preferences",
+              "quote": "But have you ever stopped to ask, why is Christianity... so obsessed with blood?",
+              "context": "Dividing world into those who question vs those who don't",
+              "strength": 7
+            },
+            {
+              "quote": "So many Christians do not understand the very root basics of a blood sacrifice system, which is again their entire theology. And if they heard it under any other term, they would condemn it as pagan and demonic.",
+              "context": "Christians are ignorant/hypocritical, we see clearly",
+              "strength": 9
+            },
+            {
+              "quote": "Christians think when they tell Jesus they'll try harder tomorrow, he's smiling and patting them on the back with gentle whispers of encouragement. The utter disconnect from what would be the reality",
+              "context": "Christians are delusional, we see reality",
+              "strength": 9
+            },
+            {
+              "quote": "It's wild to me the first time I conceptualized of it like that. So, if you're someone who claims to love God, who claims even though you will tell me we can't know God, but you'll tell me you know God is good",
+              "context": "Binary: rational us vs irrational them",
               "strength": 8
+            },
+            {
+              "quote": "And you know what? We kind of did, but in a worse way. Enter Jesus.",
+              "context": "Shared perspective: 'we' see it's worse, they don't",
+              "strength": 7
+            },
+            {
+              "quote": "Many will try to frame this as Jesus doing away with all those Old Testament things... it's all nonsense. What a load.",
+              "context": "They believe nonsense, we see through it",
+              "strength": 9
+            },
+            {
+              "quote": "Don't preach that to me when you take your kids to sing that nothing but the blood of Jesus can make you whole.",
+              "context": "Direct confrontation: you (Christians) vs me/us",
+              "strength": 10
             }
-          ]
+          ],
+          "psychological_impact": "Pervasive binary worldview: enlightened viewers who see Christianity as barbaric blood magic vs delusional Christians who can't see what they're doing. No middle ground, no nuance, no possibility of reasonable Christian belief. After repeated exposure: increasingly rigid thinking, inability to understand religious perspectives, relationships with Christian friends/family become strained as they're seen as fundamentally irrational."
         },
-        "envy": {
-          "score": 12,
-          "confidence": 5,
+        "inadequacy_creation": {
+          "score": 15,
+          "confidence": 8,
           "instance_count": 1,
           "evidence": [
             {
-              "quote": "we live in hyper-competitive environments... you're competing against other men",
-              "context": "Acknowledging competition but not expressing resentment toward others' success",
-              "strength": 3
+              "quote": "You're not broken. You can be whole without the blood of Jesus.",
+              "context": "Closing statement - actually countering inadequacy narrative",
+              "strength": 2
             }
-          ]
+          ],
+          "psychological_impact": "Minimal inadequacy creation toward audience. Actually attempts to counter Christian narrative of brokenness. However, this is framed as liberation from Christian-imposed inadequacy rather than creating new inadequacy."
         },
-        "gluttony": {
-          "score": 8,
-          "confidence": 4,
-          "instance_count": 0,
-          "evidence": []
+        "comparison_spiral": {
+          "score": 12,
+          "confidence": 7,
+          "instance_count": 1,
+          "evidence": [
+            {
+              "quote": "Can we just progress and evolve as a society past this barbaric nonsense?",
+              "context": "Implicit comparison: evolved us vs primitive them",
+              "strength": 5
+            }
+          ],
+          "psychological_impact": "Minimal direct comparison spiral. Some implicit comparison (evolved vs primitive) but not focused on making viewer feel inadequate through comparison."
         },
-        "wrath": {
-          "score": 35,
-          "confidence": 6,
+        "conditional_worth": {
+          "score": 22,
+          "confidence": 7,
           "instance_count": 2,
           "evidence": [
             {
-              "quote": "you have to shock her a bit you have to be the person who can upset her... he also has to provide drama for her",
-              "context": "Advising men to intentionally upset and create drama with women as relationship strategy",
+              "quote": "if I can't get through to you here, strip away the holy language. And the logic becomes crystal clear",
+              "context": "Implicit: your worth/intelligence depends on agreeing with this analysis",
               "strength": 6
             },
             {
-              "quote": "if I were to talk to her for more than two minutes I'd walk out",
-              "context": "Expressing contemptuous dismissal based on assumed political views",
+              "quote": "And if you tell me one more time in a comment that God had to, you are no longer worshiping the Christian God.",
+              "context": "Conditional acceptance: agree with me or you're inconsistent",
               "strength": 5
             }
-          ]
+          ],
+          "psychological_impact": "Low-moderate conditional worth. Some implication that rational/moral worth depends on rejecting Christianity, but not as explicit as other mechanisms. Viewer's acceptance in the community may feel contingent on maintaining anti-Christian stance."
         },
-        "sloth": {
-          "score": 5,
-          "confidence": 3,
-          "instance_count": 0,
-          "evidence": []
+        "identity_replacement": {
+          "score": 58,
+          "confidence": 8,
+          "instance_count": 5,
+          "evidence": [
+            {
+              "quote": "You're not broken. You can be whole without the blood of Jesus. leave this blood nonsense where it belongs in the temples of the ancient world.",
+              "context": "Explicit call to abandon Christian identity",
+              "strength": 9
+            },
+            {
+              "quote": "Can we just progress and evolve as a society past this barbaric nonsense?",
+              "context": "Call to adopt new, evolved identity",
+              "strength": 7
+            },
+            {
+              "quote": "I used to think when I was still a believer and even when I was doubting",
+              "context": "Modeling identity transformation from believer to enlightened skeptic",
+              "strength": 8
+            },
+            {
+              "quote": "It's wild to me the first time I conceptualized of it like that.",
+              "context": "Describing moment of identity shift/awakening",
+              "strength": 7
+            },
+            {
+              "quote": "keep thinking",
+              "context": "Closing call to action - adopt identity as 'thinker' vs believer",
+              "strength": 6
+            }
+          ],
+          "psychological_impact": "Moderate-strong identity replacement. Explicitly calls for abandoning Christian identity and adopting new identity as rational, evolved, enlightened person who sees through 'blood magic.' Models own transformation. After repeated exposure: Christian viewers may experience identity crisis, pressure to choose between faith and rationality, disconnection from religious community and past self."
         }
       },
       "meta": {
-        "transcript_word_count": 1615,
-        "sins_detected": 4,
-        "highest_sin": "pride",
-        "total_sin_score": 37,
-        "severity_level": "medium",
-        "analysis_date": "2025-11-23T16:53:07.105Z"
+        "transcript_word_count": 6839,
+        "mechanisms_detected": 6,
+        "identity_shift_detected": true,
+        "radicalization_markers": "high",
+        "tribal_thinking_score": 82,
+        "self_worth_impact": "neutral",
+        "cumulative_exposure_risk": "After repeated exposure to this content, viewers likely experience: (1) Increasingly rigid us-vs-them thinking where Christians become 'other' and incomprehensible; (2) Identity increasingly defined by opposition to Christianity rather than positive values; (3) Difficulty maintaining relationships with Christian friends/family as they're viewed as delusional participants in 'blood magic'; (4) Inflated sense of intellectual/moral superiority; (5) Resistance to any religious or spiritual perspectives; (6) Potential for hostile contempt toward religious people, justified by viewing them as child abusers and cult members. The combination of high outgroup dehumanization (85) + high us-vs-them thinking (88) + strong ingroup formation (72) + hero narrative (68) creates a radicalization pathway where the viewer's identity becomes tribally defined against Christianity.",
+        "analysis_date": "2025-11-26T17:10:55.456Z"
       }
+    },
+    "behavioral_conditioning": {
+      "mechanisms": {
+        "call_to_action_pressure": {
+          "score": 72,
+          "confidence": 9,
+          "instance_count": 5,
+          "evidence": [
+            {
+              "quote": "So stick with me on this, but let's go ahead and dive in",
+              "context": "Early engagement retention request",
+              "strength": 4
+            },
+            {
+              "quote": "See me and Justin's conversation where we specifically cover Isaiah 53",
+              "context": "Mid-video cross-promotion to drive additional views",
+              "strength": 6
+            },
+            {
+              "quote": "See this video.",
+              "context": "Another cross-promotion embedded in content",
+              "strength": 5
+            },
+            {
+              "quote": "Thanks so much for being here... I'll see you Tuesday for a new video. And until then, keep thinking.",
+              "context": "End of video - habit formation + return commitment",
+              "strength": 7
+            },
+            {
+              "quote": "If you believe in the mission of this channel or you just enjoy its content, please consider joining these fine [patrons]",
+              "context": "Direct financial CTA with social proof (listing top supporters)",
+              "strength": 8
+            }
+          ],
+          "psychological_impact": "Multiple CTAs distributed throughout content create compliance training pattern. The financial ask is softened by 'mission' framing and social proof (naming top patrons). 'See you Tuesday' creates expectation of return. Each compliance (watching referenced videos, returning Tuesday, considering Patreon) reduces resistance to future requests. The 'keep thinking' tagline creates identity association - viewers who comply are 'thinkers'."
+        },
+        "urgency_manipulation": {
+          "score": 8,
+          "confidence": 7,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "Minimal urgency tactics detected. No artificial time pressure, limited offers, or 'act now' language. This is notable restraint for content creator monetization."
+        },
+        "social_proof_exploitation": {
+          "score": 45,
+          "confidence": 8,
+          "instance_count": 3,
+          "evidence": [
+            {
+              "quote": "I wanted to personally thank my top tiers of support, my econist Anne Boris GVI Jimmy Joe Kaboga Matthew Perry Shawn and Steve. My humanist heroes, Craig, James, Jared, Christy, and Matthew. My atheist advocates...",
+              "context": "End credits - extensive naming of supporters with tiered labels",
+              "strength": 7
+            },
+            {
+              "quote": "Christians will criticize other world religions... And then somehow with no sense of hypocrisy, they go sing a song",
+              "context": "Positioning viewer as part of enlightened group vs. hypocritical Christians",
+              "strength": 6
+            },
+            {
+              "quote": "I know this was a heavy one. I'm not sure how not to speak passionately about this when I continue to see children raised up",
+              "context": "Creating in-group of concerned, passionate truth-seekers",
+              "strength": 5
+            }
+          ],
+          "psychological_impact": "Tiered patron naming creates aspirational hierarchy - viewers see others supporting and may feel social pressure to join. The extensive list demonstrates community size. In-group/out-group framing (enlightened viewers vs. hypocritical Christians) creates tribal identity. Viewers who agree feel part of rational, caring community, increasing loyalty and likelihood of financial support."
+        },
+        "commitment_escalation": {
+          "score": 58,
+          "confidence": 8,
+          "instance_count": 4,
+          "evidence": [
+            {
+              "quote": "So stick with me on this [early video] → See me and Justin's conversation [mid-video] → I'll see you Tuesday [end] → please consider joining [financial ask]",
+              "context": "Progressive escalation throughout video",
+              "strength": 7
+            },
+            {
+              "quote": "keep thinking [identity formation] → believe in the mission of this channel [ideological commitment] → consider joining these fine [patrons] [financial commitment]",
+              "context": "Escalation from passive to active to financial engagement",
+              "strength": 8
+            }
+          ],
+          "psychological_impact": "Classic foot-in-door technique. Starts with small ask (stick with me), escalates to medium asks (watch other videos, return Tuesday), culminates in financial ask. Each compliance makes next request harder to refuse. 'Keep thinking' creates identity ('I am a thinker'), 'mission' creates ideological investment, patron request becomes natural next step. After repeated exposure across videos, viewers progress from casual watchers to committed community members to financial supporters."
+        },
+        "scarcity_tactics": {
+          "score": 12,
+          "confidence": 8,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "No scarcity manipulation detected. No 'limited spots', 'exclusive access', or artificial limitation language. This represents ethical restraint in monetization approach."
+        },
+        "variable_reward_schedule": {
+          "score": 68,
+          "confidence": 7,
+          "instance_count": 1,
+          "evidence": [
+            {
+              "quote": "[Pattern analysis: Dense theological exposition (5-8min) → Shocking reframe ('cosmic cannibalism', 'blood magic cult') → Return to exposition → Emotional peak ('You're not broken') → Dense content → Visceral imagery (Dexter blood scene, wine press of blood) → Analytical sections → Passionate outburst]",
+              "context": "Throughout 6839-word transcript",
+              "strength": 7
+            }
+          ],
+          "psychological_impact": "Content alternates between dense intellectual analysis and emotionally charged revelations. Viewer cannot predict when next 'shocking' reframe will occur ('cannibalism', 'blood magic', 'ritual violence'). This unpredictability maintains engagement - brain stays alert for next dopamine hit. The passionate sections ('I'm so sick of Christians pretending') provide emotional payoff after analytical buildup. Pattern creates compulsive watching - viewer must continue to get next revelation. Similar to slot machine: mostly 'losses' (dense content requiring effort) punctuated by 'wins' (satisfying emotional/intellectual peaks)."
+        },
+        "cliffhanger_hooks": {
+          "score": 52,
+          "confidence": 8,
+          "instance_count": 8,
+          "evidence": [
+            {
+              "quote": "So I want to talk about Christianity and its obsession with blood.",
+              "context": "Opening hook after montage",
+              "strength": 6
+            },
+            {
+              "quote": "But have you ever stopped to ask, why is Christianity... so obsessed with blood? And furthermore, what does it mean that blood theology... still shapes modern faith?",
+              "context": "Central questions creating tension",
+              "strength": 7
+            },
+            {
+              "quote": "I have four points that we're going to be talking about today... So stick with me on this",
+              "context": "Structure preview + retention request",
+              "strength": 5
+            },
+            {
+              "quote": "Remember that for some of the things to come",
+              "context": "Forward reference creating anticipation",
+              "strength": 4
+            },
+            {
+              "quote": "That's a story for another day.",
+              "context": "Teasing future content (child sacrifice topic)",
+              "strength": 6
+            },
+            {
+              "quote": "But let's move on to this consuming part of it. The cannibalism of Christianity.",
+              "context": "Transitional hook with shocking framing",
+              "strength": 7
+            },
+            {
+              "quote": "But let's move on to the end of the Bible. Specifically, Revelation, a divinely sanctioned apocalypse of blood.",
+              "context": "Building anticipation for climactic section",
+              "strength": 6
+            },
+            {
+              "quote": "In fact, I think that's how I want to end this. I want to talk about why and how this is still relevant in today's society.",
+              "context": "Promising payoff/application after heavy content",
+              "strength": 5
+            }
+          ],
+          "psychological_impact": "Multiple forward references create open loops in viewer's mind. Questions posed early ('why is Christianity obsessed with blood?') aren't fully answered until end, maintaining tension. 'Remember that for later' creates mental bookmark - brain tracks unresolved element. 'Story for another day' creates anticipation for future videos (return behavior). Transitional hooks ('But let's move on to...') maintain engagement across sections. Cumulative effect: viewer feels compelled to continue watching to resolve tension, and to return for future videos to close remaining loops."
+        },
+        "dopamine_manipulation": {
+          "score": 71,
+          "confidence": 8,
+          "instance_count": 12,
+          "evidence": [
+            {
+              "quote": "Often times, and despite the irony of the whole thing, Christians will criticize other world religions... And then somehow with no sense of hypocrisy, they go sing a song about being bathed in the blood of Jesus.",
+              "context": "Opening with hypocrisy reveal - immediate cognitive reward",
+              "strength": 7
+            },
+            {
+              "quote": "It's not spiritual growth. It's not about reconciliation between equals. It's about appeasing the higher, more powerful thing that will kill you.",
+              "context": "Reframing familiar concept in shocking terms",
+              "strength": 8
+            },
+            {
+              "quote": "This is not symbolic. It's graphic. It's tactile. It is everywhere.",
+              "context": "Visceral language creating emotional intensity",
+              "strength": 7
+            },
+            {
+              "quote": "For those of you who watched Dexter where he is found as a young child in that storage unit in his mother's blood. Such a gruesome scene.",
+              "context": "Pop culture reference creating vivid mental image",
+              "strength": 8
+            },
+            {
+              "quote": "It's not a sweet story about God saving us. It's about God having to like some addict get his fix by ever escalating upward in grotesqueness",
+              "context": "Provocative reframe - God as addict",
+              "strength": 9
+            },
+            {
+              "quote": "The cannibalism of Christianity. Eat his flesh and drink his blood. This is something we have children do in service with smiles on.",
+              "context": "Juxtaposition of 'cannibalism' with 'children' and 'smiles'",
+              "strength": 9
+            },
+            {
+              "quote": "I used to think... that they were being purposely insulting... they weren't. It is the language that is the most accurate",
+              "context": "Personal revelation moment - viewer experiences 'aha' with creator",
+              "strength": 7
+            },
+            {
+              "quote": "Go to any Christian grandma right now and say it out of context like that to her and see the cringe.",
+              "context": "Humorous mental image providing relief after heavy content",
+              "strength": 6
+            },
+            {
+              "quote": "So much for gentle Jesus that we all learned about in Sunday school. This is a warrior drenched in blood wielding what from his mouth? Kindness, forgiveness, utter love. No, a sword doing battle.",
+              "context": "Rhetorical setup and subversion",
+              "strength": 8
+            },
+            {
+              "quote": "That's four feet deep of blood from New York to DC.",
+              "context": "Concrete visualization of abstract horror",
+              "strength": 8
+            },
+            {
+              "quote": "You're not broken. You can be whole without the blood of Jesus.",
+              "context": "Emotional payoff - affirming message after critique",
+              "strength": 7
+            },
+            {
+              "quote": "Can we just progress and evolve as a society past this barbaric nonsense?",
+              "context": "Rallying cry creating sense of shared mission",
+              "strength": 6
+            }
+          ],
+          "psychological_impact": "Content engineered for repeated dopamine hits through multiple mechanisms: (1) Cognitive rewards - revealing 'hidden' hypocrisy/patterns viewers feel smart for recognizing, (2) Emotional intensity - visceral language ('blood', 'cannibalism', 'grotesque') triggers arousal, (3) Provocative reframes - familiar concepts presented in shocking new light, (4) Humor breaks - tension relief creates pleasure contrast, (5) Affirmation - 'you're not broken' provides emotional payoff. Each hit reinforces platform association with pleasure/excitement. After repeated exposure: brain craves these intellectual-emotional 'highs', creates seeking behavior (checking for new videos), difficulty engaging with less stimulating content."
+        },
+        "habit_formation": {
+          "score": 64,
+          "confidence": 9,
+          "instance_count": 4,
+          "evidence": [
+            {
+              "quote": "I'll see you Tuesday for a new video. And until then, keep thinking.",
+              "context": "End of video - specific day commitment",
+              "strength": 8
+            },
+            {
+              "quote": "keep thinking [repeated tagline]",
+              "context": "Signature phrase creating identity association",
+              "strength": 7
+            },
+            {
+              "quote": "Thanks so much for being here. I know this was a heavy one.",
+              "context": "Parasocial relationship language ('being here', acknowledging shared experience)",
+              "strength": 6
+            },
+            {
+              "quote": "See me and Justin's conversation... See this video... That's a story for another day.",
+              "context": "Multiple references to other content creating viewing routine",
+              "strength": 7
+            }
+          ],
+          "psychological_impact": "'See you Tuesday' creates specific temporal anchor - viewer's brain marks calendar, creates anticipation. Regular schedule enables habit formation (Tuesday = new video = watch). 'Keep thinking' tagline creates identity ('I am someone who thinks critically') that becomes associated with watching channel. Parasocial language ('being here', 'I know this was heavy') creates feeling of relationship - viewer feels known/understood. Cross-references to other videos create binge-watching pattern. After repeated exposure: watching becomes automatic Tuesday behavior, part of self-identity, and social routine (parasocial relationship maintenance)."
+        }
+      },
+      "meta": {
+        "transcript_word_count": 6839,
+        "mechanisms_detected": 7,
+        "cta_count": 5,
+        "addiction_design_score": 78,
+        "manipulation_sophistication": "high",
+        "compliance_training": true,
+        "analysis_date": "2025-11-26T17:12:16.364Z",
+        "overall_assessment": "This content demonstrates sophisticated behavioral conditioning through intellectual/emotional variable reward scheduling, strategic habit formation, and progressive commitment escalation. The creator shows restraint in avoiding crude urgency/scarcity tactics, instead using more sophisticated techniques: dopamine manipulation through provocative reframing, cliffhanger hooks maintaining engagement, and parasocial relationship building. The variable reward pattern (dense analysis punctuated by shocking revelations) is particularly effective for creating compulsive viewing. Compliance training occurs through escalating asks (watch → return Tuesday → consider financial support) combined with identity formation ('keep thinking'). The addiction design score of 78 reflects strong variable reward scheduling (68) combined with robust dopamine manipulation (71) and habit formation (64). This is high-level behavioral engineering disguised as intellectual content - viewers feel they're learning/growing while actually being conditioned for regular consumption and financial conversion."
+      }
+    },
+    "worldview_manipulation": {
+      "mechanisms": {
+        "conspiracy_seeding": {
+          "score": 12,
+          "confidence": 9,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "Minimal to none. The content does not suggest hidden plots, secret knowledge, or that 'they' are hiding truth. It presents a critical analysis of religious texts using standard academic and historical methods. No paranoia-inducing language detected."
+        },
+        "black_white_thinking": {
+          "score": 35,
+          "confidence": 7,
+          "instance_count": 4,
+          "evidence": [
+            {
+              "quote": "You either believe he's all powerful, in which case none of this can be excused because that means there was a better way or you believe he's limited, which means he is not the God of the Bible.",
+              "context": "Discussing theological contradictions",
+              "strength": 6
+            },
+            {
+              "quote": "It's not grace, it's tribal retribution.",
+              "context": "Characterizing Christian theology",
+              "strength": 5
+            },
+            {
+              "quote": "You're not broken. You can be whole without the blood of Jesus.",
+              "context": "Concluding statement",
+              "strength": 4
+            },
+            {
+              "quote": "That is what religion does. That's what Christopher Hitchens meant when he said religion poisons everything. Not always, but it can.",
+              "context": "Discussing religion's impact",
+              "strength": 5
+            }
+          ],
+          "psychological_impact": "Moderate binary framing present, particularly in theological arguments (either/or on God's power). However, the speaker does acknowledge nuance ('Not always, but it can') and is primarily critiquing specific doctrines rather than forcing all-or-nothing life choices. Creates some polarization around religious belief but within bounds of standard religious criticism."
+        },
+        "historical_revision": {
+          "score": 8,
+          "confidence": 8,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "None detected. The content presents mainstream historical-critical analysis of biblical texts, comparing them to other ancient Near Eastern cultures. This is standard academic methodology, not revisionist history. The speaker references established scholarship and archaeological/textual evidence."
+        },
+        "alternative_facts": {
+          "score": 5,
+          "confidence": 9,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "None detected. The speaker does not claim 'my truth vs your truth' or relativize facts. Instead, presents textual evidence from the Bible itself and compares to historical context. Argues for one interpretation over another using evidence, not claiming all interpretations are equally valid."
+        },
+        "trust_destruction": {
+          "score": 22,
+          "confidence": 8,
+          "instance_count": 2,
+          "evidence": [
+            {
+              "quote": "I'm so sick of Christians pretending like it's pretty. If this is what you think is the ultimate act of love, you can keep it.",
+              "context": "Critiquing Christian interpretation of Revelation",
+              "strength": 4
+            },
+            {
+              "quote": "So you think it's okay. Can you imagine being a creator god that demands death to feel better? I can't actually think of something grosser",
+              "context": "Challenging religious authority",
+              "strength": 5
+            }
+          ],
+          "psychological_impact": "Low-level trust erosion toward religious authorities and interpretations, but does not systematically attack all institutions, experts, media, or science. Criticism is targeted at specific religious doctrines and their modern presentation. Does not position speaker as sole truth source or discourage verification. Within bounds of standard religious criticism."
+        },
+        "expert_dismissal": {
+          "score": 8,
+          "confidence": 9,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "None detected. The speaker does not dismiss experts, scientists, or scholars. In fact, references academic methodology (historical-critical analysis, comparative religion, textual analysis) and mentions looking up specific passages. Encourages viewers to 'read Revelation for yourself' - promoting independent verification rather than dismissing expertise."
+        },
+        "alternative_epistemology": {
+          "score": 10,
+          "confidence": 9,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "None detected. The speaker consistently appeals to textual evidence, historical context, logical analysis, and comparative methodology. Does not suggest feelings trump facts or that intuition is more valid than evidence. Arguments are evidence-based throughout."
+        },
+        "reality_bubble_creation": {
+          "score": 18,
+          "confidence": 7,
+          "instance_count": 1,
+          "evidence": [
+            {
+              "quote": "If you believe in the mission of this channel or you just enjoy its content, please consider joining these fine [patrons]",
+              "context": "Closing call to support",
+              "strength": 3
+            }
+          ],
+          "psychological_impact": "Minimal bubble creation. Standard content creator call for support. Does not suggest 'only people like us understand' or discourage engagement with other perspectives. The speaker actually encourages reading primary sources (the Bible itself) and references other scholars/thinkers."
+        },
+        "information_isolation": {
+          "score": 15,
+          "confidence": 8,
+          "instance_count": 1,
+          "evidence": [
+            {
+              "quote": "I used to think when I was still a believer and even when I was doubting that when people lobbed these kinds of terms up when an atheist said something like you're in a cult or that's just blood magic or communion is cannibalism I thought they were being purposely insulting that they were choosing language to try and trigger at the highest degree they weren't.",
+              "context": "Discussing how religious language is perceived",
+              "strength": 4
+            }
+          ],
+          "psychological_impact": "Low-level isolation potential. The speaker validates leaving religious communities and suggests religious believers dismiss critical perspectives, but does not actively tell viewers to avoid mainstream media, cut off relationships, or only consume this content. Encourages reading biblical texts directly."
+        }
+      },
+      "meta": {
+        "transcript_word_count": 6839,
+        "mechanisms_detected": 1,
+        "radicalization_pathway": "none",
+        "reality_distortion_level": "low",
+        "epistemic_closure": false,
+        "conspiracy_indicators": 0,
+        "analysis_date": "2025-11-26T17:14:24.991Z"
+      }
+    },
+    "psychological_exploitation": {
+      "mechanisms": {
+        "loneliness_exploitation": {
+          "score": 8,
+          "confidence": 9,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "No targeting of social isolation. Content is educational/critical analysis, not building parasocial dependency or replacing relationships."
+        },
+        "insecurity_amplification": {
+          "score": 15,
+          "confidence": 8,
+          "instance_count": 2,
+          "evidence": [
+            {
+              "quote": "You're not broken. You can be whole without the blood of Jesus.",
+              "context": "Closing statement addressing Christian viewers",
+              "strength": 2
+            },
+            {
+              "quote": "Not only are you telling your child that they are indeed not whole, that they are broken, that they were born broken",
+              "context": "Critiquing Christian doctrine of original sin",
+              "strength": 3
+            }
+          ],
+          "psychological_impact": "Minimal exploitation. The speaker addresses Christian teachings about inherent brokenness, but offers counter-narrative of wholeness rather than selling a solution. This is critique of religious insecurity-creation, not exploitation of it."
+        },
+        "meaning_void_exploitation": {
+          "score": 5,
+          "confidence": 9,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "No exploitation of existential emptiness. Content critiques religious meaning-making but doesn't offer alternative identity/mission requiring commitment or dependency."
+        },
+        "financial_desperation": {
+          "score": 0,
+          "confidence": 10,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "No financial exploitation present. No products sold, no get-rich schemes, no exploitation of money anxiety."
+        },
+        "health_anxiety_exploitation": {
+          "score": 0,
+          "confidence": 10,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "No health anxiety exploitation present."
+        },
+        "love_bombing": {
+          "score": 0,
+          "confidence": 10,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "No excessive positive attention to create dependency. Tone is analytical and critical, not emotionally manipulative through affection."
+        },
+        "gaslighting": {
+          "score": 12,
+          "confidence": 7,
+          "instance_count": 1,
+          "evidence": [
+            {
+              "quote": "I'm always told by Christians that I must have became an atheist because I just wanted to sin without consequence. First of all, according to your story, I'm the last person who gets to sin without consequence.",
+              "context": "Responding to Christian accusations about atheist motivations",
+              "strength": 2
+            }
+          ],
+          "psychological_impact": "Minimal gaslighting. Speaker challenges Christian narratives about atheist motivations, but this is counter-argument to religious gaslighting rather than gaslighting itself. Not making viewers doubt their own perceptions systematically."
+        },
+        "negging": {
+          "score": 0,
+          "confidence": 9,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "No backhanded compliments or subtle put-downs to create insecurity while seeking approval."
+        },
+        "trauma_bonding": {
+          "score": 0,
+          "confidence": 10,
+          "instance_count": 0,
+          "evidence": [],
+          "psychological_impact": "No alternating abuse and affection pattern. Tone is consistently critical of religious doctrine, not creating intermittent reinforcement cycles."
+        },
+        "dependency_creation": {
+          "score": 3,
+          "confidence": 8,
+          "instance_count": 1,
+          "evidence": [
+            {
+              "quote": "Thanks so much for being here. I know this was a heavy one... But I'll see you Tuesday for a new video. And until then, keep thinking.",
+              "context": "Closing call-to-action",
+              "strength": 1
+            }
+          ],
+          "psychological_impact": "Minimal dependency creation. Standard YouTube engagement request ('see you Tuesday') but encourages independent thinking ('keep thinking') rather than dependence on creator. Patreon supporters thanked but no pressure or manipulation to join."
+        }
+      },
+      "meta": {
+        "transcript_word_count": 6839,
+        "mechanisms_detected": 0,
+        "exploitation_severity": "low",
+        "most_vulnerable_to": "This content does not systematically exploit vulnerabilities. It targets Christians/former Christians interested in critical religious analysis, but through intellectual argumentation rather than psychological manipulation. The passionate tone may resonate with those experiencing religious trauma, but content empowers rather than exploits.",
+        "cult_indicators": 0,
+        "ethical_concern": "low",
+        "analysis_date": "2025-01-26T17:15:17.906Z",
+        "additional_context": {
+          "content_type": "Educational/critical analysis of Christian blood theology",
+          "primary_method": "Intellectual argumentation with historical/scriptural evidence",
+          "tone": "Passionate, critical, but not manipulative",
+          "key_distinction": "This transcript CRITIQUES psychological exploitation (religious indoctrination of children, fear-based theology, blood magic thinking) rather than EMPLOYING exploitation techniques. The speaker is analyzing how Christianity uses blood imagery to create dependency, guilt, and fear - not using those techniques themselves.",
+          "vulnerability_addressed_not_exploited": "The content addresses religious trauma and cognitive dissonance in believers, but offers intellectual framework for understanding rather than exploiting emotional vulnerability for profit/control.",
+          "empowerment_vs_dependency": "Closing message 'You're not broken. You can be whole without the blood of Jesus' is empowering/liberating rather than creating new dependency.",
+          "financial_model": "Patreon-supported educational content, not exploitative sales funnel"
+        }
+      }
+    },
+    "summary": {
+      "overall_manipulation_score": 42,
+      "addiction_potential": "severe",
+      "radicalization_risk": "high",
+      "exploitation_severity": "low",
+      "virality_score": 0,
+      "predicted_shares": "N/A",
+      "target_demographic": "N/A",
+      "target_susceptibility": 0,
+      "temporal_escalation": 0,
+      "funnel_detected": "none",
+      "primary_mechanisms": [
+        "Emotional: moral disgust",
+        "Identity: us vs them thinking",
+        "Cognitive: appeal to emotion",
+        "Identity: outgroup dehumanization",
+        "Cognitive: availability heuristic",
+        "Cognitive: confirmation bias exploitation",
+        "Cognitive: cherry picking",
+        "Emotional: outrage amplification",
+        "Identity: ingroup formation",
+        "Behavioral: call to action pressure"
+      ],
+      "immediate_effects": [
+        "Dopamine hits from unpredictable rewards",
+        "Compulsive watching (slot machine effect)"
+      ],
+      "long_term_effects": [
+        "Reduced critical thinking ability",
+        "Emotional dysregulation and content addiction",
+        "Rigid tribal thinking and difficulty relating to outsiders"
+      ]
     },
     "success": true,
     "costs": {
-      "totalCost": "0.0801",
-      "totalTokens": 12568
+      "totalCost": "0.5130",
+      "totalTokens": 87917
     }
   }
 }

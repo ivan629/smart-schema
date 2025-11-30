@@ -1,451 +1,401 @@
+/**
+ * AI Enrichment Module
+ *
+ * Enriches pre-compressed structure with semantic descriptions.
+ * AI only sees unique elements (archetypes + unique fields), not repetitive structures.
+ */
+
 import Anthropic from '@anthropic-ai/sdk';
-import type { ContentBlock, MessageParam } from '@anthropic-ai/sdk/resources/messages';
-import pTimeout, { TimeoutError as PTimeoutError } from 'p-timeout';
-import { AI_CONFIG, RELATIONSHIP_INDICATORS } from './constants.js';
-import {
-    inferAggregationType,
-    inferFieldDescription,
-    inferFieldRole,
-    inferPersonalDataType,
-} from './inference.js';
-import {
-    buildDomainPrompt,
-    buildFieldEnrichmentPrompt,
-    buildRelationshipPrompt,
-    type TableSummary,
-} from './prompts.js';
+import type { Logger } from './types.js';
+import { consoleLogger, AIEnrichmentError, AIValidationError, APIError, TimeoutError } from './types.js';
+import type { PreCompressedStructure, UniqueField, DetectedArchetype } from './structure.js';
+import { buildEnrichmentPrompt, type AIEnrichmentResponse, type AITableEnrichment } from './prompts.js';
 import type {
-    Entity,
-    Field,
-    Logger,
-    MultiTableSchema,
-    Relationship,
-    StatsField,
-    StatsMultiTableSchema,
-    TableCapabilities,
-    TableSchema,
-} from './types.js';
-import { nullLogger, TimeoutError } from './types.js';
-import { countTotalFields, extractJsonFromText, removeUndefinedValues } from './utils.js';
-import {
-    type ValidatedDomainResponse,
-    type ValidatedFieldsResponse,
-    type ValidatedRelationshipsResponse,
-    validateDomainResponse,
-    validateFieldsResponse,
-    validateRelationshipsResponse,
-} from './validation.js';
+    CompressedSchema,
+    CompressedTable,
+    CompressedField,
+    CompressedEntity,
+    Archetype,
+    ArchetypeField,
+    SchemaMap,
+    SchemaDefaults,
+    Pattern,
+} from './compress.js';
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const DEFAULT_MODEL = 'claude-sonnet-4-5-20250929';
+const DEFAULT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+const MAX_TOKENS = 8192;
+
+// ============================================================================
+// Types
+// ============================================================================
 
 export interface EnrichOptions {
     readonly model?: string;
-    readonly logger?: Logger;
     readonly timeout?: number;
+    readonly logger?: Logger;
 }
 
-interface ResolvedEnrichOptions {
-    readonly model: string;
-    readonly logger: Logger;
-    readonly timeout: number;
-}
+// ============================================================================
+// AI Call
+// ============================================================================
 
-function resolveOptions(options: EnrichOptions): ResolvedEnrichOptions {
-    return {
-        model: options.model ?? AI_CONFIG.defaultModel,
-        logger: options.logger ?? nullLogger,
-        timeout: options.timeout ?? AI_CONFIG.defaultTimeoutMs,
-    };
-}
+async function callAI(
+    prompt: string,
+    apiKey: string,
+    options: EnrichOptions
+): Promise<AIEnrichmentResponse> {
+    const { model = DEFAULT_MODEL, timeout = DEFAULT_TIMEOUT, logger = consoleLogger } = options;
 
-async function withTimeout<T>(
-    promise: Promise<T>,
-    timeoutMs: number,
-    operationName: string
-): Promise<T> {
+    const client = new Anthropic({ apiKey });
+
+    logger.debug(`Calling AI model: ${model}`);
+
     try {
-        return await pTimeout(promise, {
-            milliseconds: timeoutMs,
-            message: `${operationName} timed out after ${timeoutMs}ms`,
-        });
-    } catch (error) {
-        if (error instanceof PTimeoutError) {
-            throw new TimeoutError(error.message);
+        const response = await Promise.race([
+            client.messages.create({
+                model,
+                max_tokens: MAX_TOKENS,
+                messages: [{ role: 'user', content: prompt }],
+            }),
+            new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new TimeoutError(`AI request timed out after ${timeout}ms`)), timeout)
+            ),
+        ]);
+
+        const content = response.content[0];
+        if (content.type !== 'text') {
+            throw new APIError('Unexpected response type from AI');
         }
+
+        const text = content.text.trim();
+
+        // Try to extract JSON from response
+        let jsonText = text;
+
+        // Handle markdown code blocks
+        const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+            jsonText = jsonMatch[1].trim();
+        }
+
+        try {
+            return JSON.parse(jsonText) as AIEnrichmentResponse;
+        } catch (parseError) {
+            logger.error(`Failed to parse AI response: ${text.slice(0, 500)}`);
+            throw new AIValidationError(
+                'Failed to parse AI response as JSON',
+                [{ message: parseError instanceof Error ? parseError.message : 'Parse error' }]
+            );
+        }
+    } catch (error) {
+        if (error instanceof TimeoutError || error instanceof AIValidationError) {
+            throw error;
+        }
+
+        if (error instanceof Anthropic.APIError) {
+            throw new APIError(`Anthropic API error: ${error.message}`);
+        }
+
         throw error;
     }
 }
 
-function extractTextFromContent(content: ContentBlock): string {
-    if (content.type === 'text') {
-        return content.text;
-    }
-    throw new Error('Unexpected response type from AI');
-}
+// ============================================================================
+// Schema Building
+// ============================================================================
 
-interface CompletionConfig {
-    model: string;
-    maxTokens: number;
-    temperature: number;
-    messages: MessageParam[];
-}
+function extractDefaults(structure: PreCompressedStructure): SchemaDefaults {
+    const nullableCounts = { true: 0, false: 0 };
+    const aggregationCounts: Record<string, number> = {};
 
-async function streamCompletion(
-    client: Anthropic,
-    config: CompletionConfig,
-    stage: string,
-    logger: Logger
-): Promise<string> {
-    logger.info(`[${stage}] Starting...`);
-
-    const stream = client.messages.stream({
-        model: config.model,
-        max_tokens: config.maxTokens,
-        temperature: config.temperature,
-        messages: config.messages,
-    });
-
-    let chunks = 0;
-    stream.on('text', () => {
-        chunks++;
-        if (chunks % 20 === 0) {
-            logger.debug(`[${stage}] ${chunks} chunks...`);
+    for (const fields of structure.uniqueFields.values()) {
+        for (const field of fields) {
+            nullableCounts[String(field.nullable) as 'true' | 'false']++;
+            aggregationCounts[field.aggregation] = (aggregationCounts[field.aggregation] ?? 0) + 1;
         }
-    });
-
-    const response = await stream.finalMessage();
-    logger.info(`[${stage}] Completed - ${response.usage?.output_tokens} tokens`);
-
-    const content = response.content[0];
-
-    if (!content) {
-        throw new Error('Empty response from AI');
     }
 
-    return extractTextFromContent(content);
-}
+    const mostCommonAggregation = Object.entries(aggregationCounts)
+        .sort(([, a], [, b]) => b - a)[0]?.[0] ?? 'none';
 
-function buildDefaultCapabilities(fields: readonly Field[]): TableCapabilities {
-    const timeSeriesField = fields.find((field) => field.role === 'time');
-
-    const base = {
-        measures: fields.filter((field) => field.role === 'measure').map((field) => field.path),
-        dimensions: fields.filter((field) => field.role === 'dimension').map((field) => field.path),
-        searchable: fields.filter((field) => field.role === 'text').map((field) => field.path),
+    return {
+        nullable: nullableCounts.true > nullableCounts.false,
+        personalData: false,
+        aggregation: mostCommonAggregation as SchemaDefaults['aggregation'],
     };
+}
 
-    if (timeSeriesField) {
-        return { ...base, timeSeries: timeSeriesField.path };
+function buildArchetypes(
+    structure: PreCompressedStructure,
+    aiResponse: AIEnrichmentResponse
+): Record<string, Archetype> {
+    const archetypes: Record<string, Archetype> = {};
+
+    for (const [name, detected] of structure.archetypes) {
+        const aiArchetype = aiResponse.archetypes?.[name];
+
+        const fields: Record<string, ArchetypeField> = {};
+        for (const [fieldName, shape] of detected.fields) {
+            const aiField = aiArchetype?.fields?.[fieldName];
+
+            fields[fieldName] = {
+                type: shape.type,
+                role: shape.role,
+                description: aiField?.description ?? `${fieldName} field`,
+                ...(shape.aggregation !== 'none' && { aggregation: shape.aggregation }),
+                ...(shape.unit && { unit: shape.unit }),
+                ...(shape.format && { format: shape.format }),
+            };
+        }
+
+        archetypes[name] = {
+            description: aiArchetype?.description ?? `${name} structure`,
+            fields,
+        };
     }
 
-    return base;
+    return archetypes;
 }
 
-function buildFieldFromStats(statsField: StatsField): Field {
-    return removeUndefinedValues({
-        path: statsField.path,
-        type: statsField.type,
-        nullable: statsField.nullable,
-        role: inferFieldRole(statsField),
-        description: inferFieldDescription(statsField),
-        personalData: inferPersonalDataType(statsField),
-        aggregation: inferAggregationType(statsField),
-        format: statsField.format,
-        itemType: statsField.itemType,
-    }) as Field;
+function buildMaps(
+    structure: PreCompressedStructure,
+    aiResponse: AIEnrichmentResponse
+): SchemaMap[] {
+    const maps: SchemaMap[] = [];
+
+    for (const [path, detected] of structure.maps) {
+        const aiMap = aiResponse.maps?.[path];
+
+        if (detected.archetypeName) {
+            maps.push({
+                path,
+                description: aiMap?.description ?? `Collection at ${path}`,
+                keys: detected.keys,
+                valueArchetype: detected.archetypeName,
+            });
+        }
+    }
+
+    return maps;
 }
 
-export function applyDefaults(stats: StatsMultiTableSchema): MultiTableSchema {
-    const tables: Record<string, TableSchema> = {};
+function buildCompressedField(
+    field: UniqueField,
+    defaults: SchemaDefaults,
+    aiDescription?: string
+): CompressedField {
+    const includeAggregation = field.aggregation !== defaults.aggregation;
+    const includeNullable = field.nullable !== defaults.nullable;
 
-    for (const [tableName, statsTable] of Object.entries(stats.tables)) {
-        const fields: Field[] = statsTable.fields.map(buildFieldFromStats);
+    return {
+        path: field.path,
+        type: field.type,
+        role: field.role,
+        ...(aiDescription && { description: aiDescription }),
+        ...(field.format && { format: field.format }),
+        ...(field.unit && { unit: field.unit }),
+        ...(includeAggregation && { aggregation: field.aggregation }),
+        ...(includeNullable && { nullable: field.nullable }),
+        ...(field.refKeys && { refKeys: field.refKeys }),
+        ...(field.sameAs && { sameAs: field.sameAs }),
+    };
+}
+
+function buildEntities(
+    tableName: string,
+    fields: readonly UniqueField[],
+    archetypes: Record<string, Archetype>,
+    maps: SchemaMap[],
+    aiTable?: AITableEnrichment
+): CompressedEntity[] {
+    const entities: CompressedEntity[] = [];
+
+    // Add AI-detected entities
+    if (aiTable?.entities) {
+        for (const aiEntity of aiTable.entities) {
+            entities.push({
+                name: aiEntity.name,
+                description: aiEntity.description,
+                table: tableName,
+                ...(aiEntity.idField && { idField: aiEntity.idField }),
+                ...(aiEntity.nameField && { nameField: aiEntity.nameField }),
+                primaryFields: fields
+                    .filter(f => !f.path.includes('.') || f.path.split('.').length <= 2)
+                    .slice(0, 10)
+                    .map(f => f.path),
+            });
+        }
+    }
+
+    // Add archetype-based entities
+    for (const [archetypeName, archetype] of Object.entries(archetypes)) {
+        const matchingMaps = maps.filter(m => m.valueArchetype === archetypeName);
+
+        if (matchingMaps.length > 0) {
+            const alreadyExists = entities.some(e => e.archetype === archetypeName);
+            if (!alreadyExists) {
+                entities.push({
+                    name: archetypeName,
+                    description: archetype.description,
+                    table: tableName,
+                    archetype: archetypeName,
+                    primaryFields: Object.keys(archetype.fields),
+                    occursIn: matchingMaps.map(m => `${m.path}.*`),
+                });
+            }
+        }
+    }
+
+    return entities;
+}
+
+function buildPatterns(structure: PreCompressedStructure): Pattern[] {
+    return structure.patterns.map(p => ({ ...p }));
+}
+
+// ============================================================================
+// Main Entry Point
+// ============================================================================
+
+export async function enrichStructure(
+    structure: PreCompressedStructure,
+    apiKey: string,
+    options: EnrichOptions = {}
+): Promise<CompressedSchema> {
+    const { logger = consoleLogger } = options;
+
+    // Build prompt
+    const prompt = buildEnrichmentPrompt(structure);
+    logger.debug(`Generated prompt (${prompt.length} chars)`);
+
+    // Call AI
+    logger.info('Calling AI for enrichment...');
+    const aiResponse = await callAI(prompt, apiKey, options);
+    logger.info('AI enrichment received');
+
+    // Build schema
+    const defaults = extractDefaults(structure);
+    const archetypes = buildArchetypes(structure, aiResponse);
+    const allMaps = buildMaps(structure, aiResponse);
+    const patterns = buildPatterns(structure);
+
+    const tables: Record<string, CompressedTable> = {};
+
+    for (const [tableName, uniqueFields] of structure.uniqueFields) {
+        const aiTable = aiResponse.tables?.[tableName];
+        // All maps belong to the table (we only have one table typically)
+        // Maps are detected from structure.maps which came from the same table
+        const tableMaps = allMaps;
+
+        const fields = uniqueFields.map(f =>
+            buildCompressedField(f, defaults, aiTable?.fields?.[f.path]?.description)
+        );
+
+        const entities = buildEntities(tableName, uniqueFields, archetypes, tableMaps, aiTable);
 
         tables[tableName] = {
-            domain: 'unknown',
-            description: `Table containing ${statsTable.fields.length} fields`,
-            dataGrain: 'one row per record',
-            entities: [],
+            description: aiTable?.description ?? `${tableName} table`,
+            dataGrain: aiTable?.dataGrain ?? 'one row per record',
+            maps: tableMaps,
             fields,
-            capabilities: buildDefaultCapabilities(fields),
+            entities,
+            capabilities: 'auto',
+        };
+    }
+
+    return {
+        domain: aiResponse.domain ?? 'unknown',
+        description: aiResponse.description ?? 'Data schema',
+        defaults,
+        archetypes,
+        patterns,
+        tables,
+    };
+}
+
+// ============================================================================
+// No-AI Fallback
+// ============================================================================
+
+function pathToLabel(path: string): string {
+    const leaf = path.split('.').pop() ?? path;
+    return leaf
+        .replace(/_/g, ' ')
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+export function applyDefaults(structure: PreCompressedStructure): CompressedSchema {
+    const defaults = extractDefaults(structure);
+
+    // Build archetypes with default descriptions
+    const archetypes: Record<string, Archetype> = {};
+    for (const [name, detected] of structure.archetypes) {
+        const fields: Record<string, ArchetypeField> = {};
+        for (const [fieldName, shape] of detected.fields) {
+            fields[fieldName] = {
+                type: shape.type,
+                role: shape.role,
+                description: pathToLabel(fieldName),
+                ...(shape.aggregation !== 'none' && { aggregation: shape.aggregation }),
+                ...(shape.unit && { unit: shape.unit }),
+                ...(shape.format && { format: shape.format }),
+            };
+        }
+        archetypes[name] = {
+            description: pathToLabel(name),
+            fields,
+        };
+    }
+
+    // Build maps
+    const allMaps: SchemaMap[] = [];
+    for (const [path, detected] of structure.maps) {
+        if (detected.archetypeName) {
+            allMaps.push({
+                path,
+                description: pathToLabel(path.split('.').pop() ?? path),
+                keys: detected.keys,
+                valueArchetype: detected.archetypeName,
+            });
+        }
+    }
+
+    const patterns = buildPatterns(structure);
+
+    const tables: Record<string, CompressedTable> = {};
+
+    for (const [tableName, uniqueFields] of structure.uniqueFields) {
+        // All maps belong to the table
+        const tableMaps = allMaps;
+
+        const fields = uniqueFields.map(f =>
+            buildCompressedField(f, defaults, pathToLabel(f.path))
+        );
+
+        const entities = buildEntities(tableName, uniqueFields, archetypes, tableMaps);
+
+        tables[tableName] = {
+            description: pathToLabel(tableName),
+            dataGrain: 'one row per record',
+            maps: tableMaps,
+            fields,
+            entities,
+            capabilities: 'auto',
         };
     }
 
     return {
         domain: 'unknown',
-        description: 'Schema generated without AI enrichment',
+        description: 'Data schema',
+        defaults,
+        archetypes,
+        patterns,
         tables,
     };
-}
-
-async function enrichFields(
-    client: Anthropic,
-    stats: StatsMultiTableSchema,
-    options: ResolvedEnrichOptions
-): Promise<ValidatedFieldsResponse> {
-    const { logger, timeout, model } = options;
-
-    const execute = async (): Promise<string> => {
-        const responseText = await streamCompletion(
-            client,
-            {
-                model,
-                maxTokens: AI_CONFIG.maxTokens.fieldEnrichment,
-                temperature: AI_CONFIG.temperature,
-                messages: [{ role: 'user', content: buildFieldEnrichmentPrompt(stats) }],
-            },
-            'fields',
-            logger
-        );
-        return extractJsonFromText(responseText);
-    };
-
-    const rawResponse = await withTimeout(execute(), timeout, 'Field enrichment');
-    logger.debug('Field enrichment response received');
-
-    return validateFieldsResponse(rawResponse);
-}
-
-function buildTableSummaries(
-    stats: StatsMultiTableSchema,
-    fields: ValidatedFieldsResponse
-): TableSummary[] {
-    return Object.keys(stats.tables).map((tableName) => {
-        const tableFields = fields.tables[tableName] ?? {};
-
-        return {
-            table: tableName,
-            identifiers: Object.entries(tableFields)
-                .filter(([, field]) => field.role === 'identifier')
-                .map(([path]) => path),
-            references: Object.entries(tableFields)
-                .filter(([, field]) => field.role === 'reference')
-                .map(([path]) => path),
-            allFields: Object.keys(tableFields),
-        };
-    });
-}
-
-function hasRelationshipPotential(tableSummaries: readonly TableSummary[]): boolean {
-    const hasReferences = tableSummaries.some((table) => table.references.length > 0);
-    const hasMultipleTables = tableSummaries.length >= 2;
-
-    const hasSelfReferencePotential = tableSummaries.some((table) => {
-        if (table.identifiers.length === 0) {
-            return false;
-        }
-
-        const primaryIdentifier = table.identifiers[0];
-
-        return table.allFields.some((fieldPath) => {
-            if (fieldPath === primaryIdentifier) {
-                return false;
-            }
-
-            const hasForeignKeySuffix = RELATIONSHIP_INDICATORS.foreignKeySuffixes.some((suffix) =>
-                fieldPath.endsWith(suffix)
-            );
-
-            const hasSelfReferencePattern = RELATIONSHIP_INDICATORS.selfReferencePatterns.some(
-                (pattern) => fieldPath.includes(pattern)
-            );
-
-            return hasForeignKeySuffix || hasSelfReferencePattern;
-        });
-    });
-
-    return hasReferences || hasMultipleTables || hasSelfReferencePotential;
-}
-
-async function detectRelationships(
-    client: Anthropic,
-    stats: StatsMultiTableSchema,
-    fields: ValidatedFieldsResponse,
-    options: ResolvedEnrichOptions
-): Promise<ValidatedRelationshipsResponse> {
-    const tableSummaries = buildTableSummaries(stats, fields);
-
-    if (!hasRelationshipPotential(tableSummaries)) {
-        return { relationships: [] };
-    }
-
-    const { logger, timeout, model } = options;
-
-    const execute = async (): Promise<string> => {
-        const responseText = await streamCompletion(
-            client,
-            {
-                model,
-                maxTokens: AI_CONFIG.maxTokens.relationshipDetection,
-                temperature: AI_CONFIG.temperature,
-                messages: [{ role: 'user', content: buildRelationshipPrompt(tableSummaries) }],
-            },
-            'relationships',
-            logger
-        );
-        return extractJsonFromText(responseText);
-    };
-
-    const rawResponse = await withTimeout(execute(), timeout, 'Relationship detection');
-    logger.debug('Relationship detection response received');
-
-    return validateRelationshipsResponse(rawResponse);
-}
-
-function calculateDomainSynthesisTokens(stats: StatsMultiTableSchema): number {
-    const totalFieldCount = countTotalFields(stats.tables);
-    const { minimum, tokensPerField, maximum } = AI_CONFIG.maxTokens.domainSynthesis;
-    const estimatedTokens = Math.min(totalFieldCount * tokensPerField, maximum);
-    return Math.max(estimatedTokens, minimum);
-}
-
-async function synthesizeDomain(
-    client: Anthropic,
-    stats: StatsMultiTableSchema,
-    fields: ValidatedFieldsResponse,
-    options: ResolvedEnrichOptions
-): Promise<ValidatedDomainResponse> {
-    const { logger, timeout, model } = options;
-    const maxTokens = calculateDomainSynthesisTokens(stats);
-
-    const execute = async (): Promise<string> => {
-        const responseText = await streamCompletion(
-            client,
-            {
-                model,
-                maxTokens,
-                temperature: AI_CONFIG.temperature,
-                messages: [{ role: 'user', content: buildDomainPrompt(stats, fields) }],
-            },
-            'domain',
-            logger
-        );
-        return extractJsonFromText(responseText);
-    };
-
-    const rawResponse = await withTimeout(execute(), timeout, 'Domain synthesis');
-    logger.debug('Domain synthesis response received');
-
-    return validateDomainResponse(rawResponse);
-}
-
-type EnrichedFieldData = ValidatedFieldsResponse['tables'][string][string];
-
-function buildEnrichedField(
-    statsField: StatsField,
-    enrichedData: EnrichedFieldData | undefined
-): Field {
-    return removeUndefinedValues({
-        path: statsField.path,
-        type: statsField.type,
-        nullable: statsField.nullable,
-        role: enrichedData?.role ?? inferFieldRole(statsField),
-        description: enrichedData?.description ?? inferFieldDescription(statsField),
-        personalData: enrichedData?.pii ?? inferPersonalDataType(statsField),
-        aggregation: enrichedData?.aggregation ?? inferAggregationType(statsField),
-        format: statsField.format,
-        itemType: statsField.itemType,
-        unit: enrichedData?.unit,
-    }) as Field;
-}
-
-function buildEntity(rawEntity: ValidatedDomainResponse['entities'][number]): Entity {
-    return removeUndefinedValues({
-        name: rawEntity.name,
-        description: rawEntity.description,
-        fields: rawEntity.fields,
-        idField: rawEntity.idField,
-        nameField: rawEntity.nameField,
-    }) as Entity;
-}
-
-function buildCapabilities(
-    tableDomain: ValidatedDomainResponse['tables'][string] | undefined,
-    mergedFields: readonly Field[]
-): TableCapabilities {
-    if (!tableDomain?.capabilities) {
-        return buildDefaultCapabilities(mergedFields);
-    }
-
-    const caps = tableDomain.capabilities;
-
-    return removeUndefinedValues({
-        measures: caps.measures,
-        dimensions: caps.dimensions,
-        searchable: caps.searchable,
-        timeSeries: caps.timeSeries,
-    }) as TableCapabilities;
-}
-
-function mergeEnrichmentResults(
-    stats: StatsMultiTableSchema,
-    fields: ValidatedFieldsResponse,
-    relationships: ValidatedRelationshipsResponse,
-    domain: ValidatedDomainResponse
-): MultiTableSchema {
-    const tables: Record<string, TableSchema> = {};
-
-    for (const [tableName, statsTable] of Object.entries(stats.tables)) {
-        const enrichedFields = fields.tables[tableName] ?? {};
-        const tableDomain = domain.tables?.[tableName];
-
-        const tableEntities: Entity[] = (domain.entities ?? [])
-            .filter((entity) => entity.table === tableName)
-            .map(buildEntity);
-
-        const mergedFields: Field[] = statsTable.fields.map((statsField) => {
-            const enriched = enrichedFields[statsField.path];
-            return buildEnrichedField(statsField, enriched);
-        });
-
-        tables[tableName] = {
-            domain: domain.domain ?? 'unknown',
-            description:
-                tableDomain?.description ?? `Table with ${statsTable.fields.length} fields`,
-            dataGrain: tableDomain?.dataGrain ?? 'one row per record',
-            entities: tableEntities,
-            fields: mergedFields,
-            capabilities: buildCapabilities(tableDomain, mergedFields),
-        };
-    }
-
-    const typedRelationships: Relationship[] = (relationships.relationships ?? []).map((rel) => ({
-        from: rel.from,
-        to: rel.to,
-        type: rel.type,
-        confidence: rel.confidence,
-        description: rel.description,
-    }));
-
-    const result: MultiTableSchema = {
-        domain: domain.domain ?? 'unknown',
-        description: domain.description ?? 'Schema generated with AI enrichment',
-        tables,
-    };
-
-    if (typedRelationships.length > 0) {
-        return { ...result, relationships: typedRelationships };
-    }
-
-    return result;
-}
-
-export async function enrich(
-    stats: StatsMultiTableSchema,
-    apiKey: string,
-    options: EnrichOptions = {}
-): Promise<MultiTableSchema> {
-    const resolvedOptions = resolveOptions(options);
-    const { logger } = resolvedOptions;
-
-    const client = new Anthropic({ apiKey });
-
-    logger.info('Enriching fields...');
-    const fields = await enrichFields(client, stats, resolvedOptions);
-
-    logger.info('Detecting relationships & synthesizing domain...');
-    const [relationships, domain] = await Promise.all([
-        detectRelationships(client, stats, fields, resolvedOptions),
-        synthesizeDomain(client, stats, fields, resolvedOptions),
-    ]);
-
-    return mergeEnrichmentResults(stats, fields, relationships, domain);
 }

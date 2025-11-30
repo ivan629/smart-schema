@@ -68,8 +68,8 @@ export interface Field {
     readonly description: string;
     readonly format?: FieldFormat;
     readonly unit?: string;
-    readonly aggregation?: AggregationType;
-    readonly personalData?: PersonalDataType | false;
+    readonly aggregation: AggregationType;
+    readonly personalData: PersonalDataType | false;
     readonly itemType?: FieldType;
 }
 
@@ -77,9 +77,12 @@ export interface StatsField {
     readonly path: string;
     readonly type: FieldType;
     readonly nullable: boolean;
+    readonly role: FieldRole;
+    readonly aggregation: AggregationType;
     readonly format?: FieldFormat;
+    readonly unit?: string;
     readonly itemType?: FieldType;
-    readonly examples: readonly unknown[];
+    readonly sampleValues?: readonly unknown[];
 }
 
 export interface Entity {
@@ -160,7 +163,6 @@ export interface AnalyzeOptions {
     readonly timeout?: number;
     readonly formatThreshold?: number;
     readonly mixedTypeThreshold?: number;
-    readonly compress?: boolean;
 }
 
 export class InvalidInputError extends Error {
@@ -179,10 +181,15 @@ export class AIEnrichmentError extends Error {
 
     constructor(
         message: string,
-        public readonly partialSchema: MultiTableSchema
+        public readonly partialSchema: unknown
     ) {
         super(message);
     }
+}
+
+export interface ValidationError {
+    readonly message: string;
+    readonly path?: string;
 }
 
 export class AIValidationError extends Error {
@@ -190,8 +197,7 @@ export class AIValidationError extends Error {
 
     constructor(
         message: string,
-        public readonly rawResponse: string,
-        public readonly validationErrors: readonly string[]
+        public readonly validationErrors: readonly ValidationError[]
     ) {
         super(message);
     }

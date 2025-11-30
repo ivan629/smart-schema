@@ -6,6 +6,7 @@ export type { ComputeStatsOptions } from './stats.js';
 export { computeStats } from './stats.js';
 
 export { expand } from './compress.js';
+export { detectStructure, getStructureStats } from './structure.js';
 
 export type {
     Archetype,
@@ -19,6 +20,14 @@ export type {
     SchemaDefaults,
     SchemaMap,
 } from './compress.js';
+
+export type {
+    PreCompressedStructure,
+    DetectedArchetype,
+    DetectedMap,
+    DetectedPattern,
+    UniqueField,
+} from './structure.js';
 
 export type {
     AggregationType,

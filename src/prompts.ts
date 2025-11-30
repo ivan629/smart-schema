@@ -1,289 +1,187 @@
-import type { StatsMultiTableSchema } from './types.js';
-import type { ValidatedFieldsResponse } from './validation.js';
+/**
+ * Prompt Generation for AI Enrichment
+ *
+ * Generates efficient prompts that only ask AI to describe unique elements
+ * (archetypes + unique fields), not repetitive structures.
+ */
 
-export interface TableSummary {
-    readonly table: string;
-    readonly identifiers: readonly string[];
-    readonly references: readonly string[];
-    readonly allFields: readonly string[];
+import type { PreCompressedStructure, DetectedArchetype, DetectedMap, UniqueField } from './structure.js';
+
+// ============================================================================
+// Prompt Building
+// ============================================================================
+
+function formatArchetypeForPrompt(name: string, archetype: DetectedArchetype): string {
+    const fields = [...archetype.fields.entries()]
+        .map(([fieldName, shape]) => {
+            const parts = [`    ${fieldName}: ${shape.type} (${shape.role})`];
+            if (shape.unit) parts.push(`unit=${shape.unit}`);
+            if (shape.format) parts.push(`format=${shape.format}`);
+            return parts.join(', ');
+        })
+        .join('\n');
+
+    const usedIn = archetype.occurrences.slice(0, 5).join(', ');
+    const moreCount = archetype.occurrences.length - 5;
+    const usedInStr = moreCount > 0 ? `${usedIn}, +${moreCount} more` : usedIn;
+
+    return `ARCHETYPE "${name}":
+  Fields:
+${fields}
+  Used in: ${usedInStr}`;
 }
 
-export function buildFieldEnrichmentPrompt(stats: StatsMultiTableSchema): string {
-    return `Analyze dataset fields and provide semantic enrichment.
+function formatMapForPrompt(map: DetectedMap): string {
+    const keysPreview = map.keys.slice(0, 10).join(', ');
+    const moreCount = map.keys.length - 10;
+    const keysStr = moreCount > 0 ? `${keysPreview}, +${moreCount} more` : keysPreview;
 
-<rules>
-- Return field paths EXACTLY as provided. Never modify or unescape.
-- Paths like "sepal\\.length" must stay as "sepal\\.length".
-- Base analysis on field names, types, and example values.
-- When uncertain: role="dimension" for strings, role="measure" for numbers.
-</rules>
-
-<input>
-${JSON.stringify(stats.tables, null, 2)}
-</input>
-
-<schema>
-role (required):
-- "identifier" — Unique ID (uuid, auto-increment, *_id with unique values)
-- "reference" — Foreign key to another entity
-- "dimension" — Categorical for grouping (status, type, category)
-- "measure" — Numeric for aggregation (price, quantity, length)
-- "time" — Timestamps, dates
-- "text" — Free-form searchable text (name, description)
-- "metadata" — Arrays, nested objects
-
-description (required):
-- What this field represents in business/domain terms
-- Must be meaningful, not just restating the field name
-
-pii (required):
-- "email", "phone", "name", "address", "ssn", "credit_card", "ip_address", "other"
-- false — if not personal data
-
-unit (required, null if not applicable):
-- Currency: "USD", "EUR", "GBP", "cents"
-- Length: "cm", "mm", "m", "in", "ft"
-- Weight: "kg", "g", "lbs", "oz"
-- Time: "seconds", "minutes", "hours", "days"
-- Other: "percent", "celsius", "fahrenheit"
-- null — if no unit applies
-
-aggregation (required):
-- "sum" — Totals: money, quantities, counts
-- "avg" — Averages: measurements, scores, rates
-- "min" / "max" — Ranges
-- "count" — Counting occurrences
-- "none" — Not aggregatable: text, identifiers, categories
-</schema>
-
-<example_input>
-{
-  "root": {
-    "fields": [
-      {"path": "sepal\\.width", "type": "number", "nullable": false, "examples": [3.5, 3.0, 2.9]},
-      {"path": "variety", "type": "string", "nullable": false, "examples": ["Setosa", "Virginica"]}
-    ]
-  }
+    return `MAP "${map.path}":
+  Keys: [${keysStr}]
+  Value type: ${map.archetypeName ?? 'object'}`;
 }
-</example_input>
 
-<example_output>
+function formatFieldForPrompt(field: UniqueField): string {
+    const parts = [`  ${field.path}: ${field.type} (${field.role})`];
+
+    if (field.unit) parts.push(`unit=${field.unit}`);
+    if (field.format) parts.push(`format=${field.format}`);
+    if (field.nullable) parts.push('nullable');
+    if (field.refKeys) parts.push(`refs=${field.refKeys}`);
+    if (field.sameAs) parts.push(`sameAs=${field.sameAs}`);
+
+    // Add sample values for context
+    if (field.sampleValues?.length) {
+        const samples = field.sampleValues
+            .slice(0, 3)
+            .map(v => JSON.stringify(v))
+            .join(', ');
+        parts.push(`samples=[${samples}]`);
+    }
+
+    return parts.join(', ');
+}
+
+export function buildEnrichmentPrompt(structure: PreCompressedStructure): string {
+    const archetypesSection = [...structure.archetypes.entries()]
+        .map(([name, arch]) => formatArchetypeForPrompt(name, arch))
+        .join('\n\n');
+
+    const mapsSection = [...structure.maps.values()]
+        .map(formatMapForPrompt)
+        .join('\n\n');
+
+    const fieldsSection = [...structure.uniqueFields.entries()]
+        .map(([tableName, fields]) => {
+            const fieldLines = fields.map(formatFieldForPrompt).join('\n');
+            return `TABLE "${tableName}":\n${fieldLines}`;
+        })
+        .join('\n\n');
+
+    const patternsSection = structure.patterns
+        .map(p => `  - ${p.type}: ${JSON.stringify(p)}`)
+        .join('\n');
+
+    return `Analyze this data structure and provide semantic enrichment.
+
+## DETECTED STRUCTURE
+
+### Archetypes (reusable field patterns)
+${archetypesSection || '(none detected)'}
+
+### Maps (objects with homogeneous keyed values)
+${mapsSection || '(none detected)'}
+
+### Detected Patterns
+${patternsSection || '(none detected)'}
+
+### Unique Fields (need descriptions)
+${fieldsSection}
+
+## YOUR TASK
+
+Provide enrichment in JSON format:
+
 {
+  "domain": "string - the business/technical domain (e.g., analytics, ecommerce, finance)",
+  "description": "string - overall description of this data structure",
+  "archetypes": {
+    "<archetype_name>": {
+      "description": "string - what this archetype represents",
+      "fields": {
+        "<field_name>": {
+          "description": "string - what this field means in context"
+        }
+      }
+    }
+  },
+  "maps": {
+    "<map_path>": {
+      "description": "string - what this collection represents"
+    }
+  },
   "tables": {
-    "root": {
-      "sepal\\.width": {
-        "role": "measure",
-        "description": "Width measurement of the flower sepal, used for species classification",
-        "pii": false,
-        "unit": "cm",
-        "aggregation": "avg"
+    "<table_name>": {
+      "description": "string - what this table represents",
+      "dataGrain": "string - what one row represents",
+      "fields": {
+        "<field_path>": {
+          "description": "string - what this field means"
+        }
       },
-      "variety": {
-        "role": "dimension",
-        "description": "Species classification of the iris flower specimen",
-        "pii": false,
-        "unit": null,
-        "aggregation": "none"
-      }
-    }
-  }
-}
-</example_output>
-
-<wrong>
-- "sepal.width" instead of "sepal\\.width" ← Path must stay escaped
-- "description": "A number" ← Too vague
-- "description": "sepal.width" ← Just restating the name
-- "unit": "numeric" ← Not a real unit
-- "aggregation": "sum" for width/height/length ← Use "avg" for measurements
-</wrong>
-
-<output_format>
-{
-  "tables": {
-    "tableName": {
-      "exactFieldPath": {
-        "role": "...",
-        "description": "...",
-        "pii": false,
-        "unit": null,
-        "aggregation": "..."
-      }
+      "entities": [
+        {
+          "name": "string - entity name",
+          "description": "string - what this entity represents",
+          "idField": "string - optional, primary identifier field",
+          "nameField": "string - optional, display name field"
+        }
+      ]
     }
   }
 }
 
-Return ONLY valid JSON. Include every field.
-</output_format>`;
+IMPORTANT:
+- For archetypes, provide ONE description that applies to ALL occurrences
+- For map fields, the archetype description covers the values - just describe the map itself
+- Keep descriptions concise but meaningful
+- Focus on business meaning, not technical details
+- You don't need to repeat type/role information in descriptions
+
+Respond with ONLY the JSON object, no other text.`;
 }
 
-export function buildRelationshipPrompt(tableSummaries: readonly TableSummary[]): string {
-    return `Detect foreign key relationships between tables.
+// ============================================================================
+// Response Parsing Types
+// ============================================================================
 
-<rules>
-- Use EXACT field paths as provided. Never modify or unescape.
-- Only include relationships with confidence >= 0.6.
-- Format: "tableName.fieldPath" for both from and to.
-</rules>
-
-<input>
-${JSON.stringify(tableSummaries, null, 2)}
-</input>
-
-<schema>
-type:
-- "one-to-one" — Each A has exactly one B
-- "one-to-many" — One A has many B
-- "many-to-one" — Many A belong to one B
-- "many-to-many" — Many A to many B
-
-confidence:
-- 0.9-1.0: Exact match (customer_id → customers.id)
-- 0.7-0.8: Strong pattern (user_id → users.id)
-- 0.6: Reasonable inference
-- Below 0.6: Do not include
-</schema>
-
-<example_input>
-[
-  {"table": "orders", "identifiers": ["id"], "references": ["customer_id"], "allFields": ["id", "customer_id", "total"]},
-  {"table": "customers", "identifiers": ["id"], "references": [], "allFields": ["id", "name", "email"]}
-]
-</example_input>
-
-<example_output>
-{
-  "relationships": [
-    {
-      "from": "orders.customer_id",
-      "to": "customers.id",
-      "type": "many-to-one",
-      "confidence": 0.95,
-      "description": "Each order belongs to one customer"
-    }
-  ]
-}
-</example_output>
-
-<wrong>
-- "from": "customer_id" ← Missing table name
-- "from": "orders.customer\\_id" ← Don't add escapes that weren't there
-- Including relationships with confidence below 0.6
-- Guessing relationships with no evidence
-</wrong>
-
-<output_format>
-{
-  "relationships": [...]
+export interface AIArchetypeEnrichment {
+    description: string;
+    fields: Record<string, { description: string }>;
 }
 
-Return ONLY valid JSON.
-If no relationships found, return {"relationships": []}.
-</output_format>`;
+export interface AIMapEnrichment {
+    description: string;
 }
 
-export function buildDomainPrompt(
-    stats: StatsMultiTableSchema,
-    fields: ValidatedFieldsResponse
-): string {
-    const tableViews = Object.entries(stats.tables).map(([tableName, table]) => ({
-        name: tableName,
-        fieldCount: table.fields.length,
-        fields: table.fields.map((field) => ({
-            path: field.path,
-            type: field.type,
-            role: fields.tables[tableName]?.[field.path]?.role ?? 'unknown',
-        })),
-    }));
-
-    return `Synthesize domain, entities, and capabilities from analyzed fields.
-
-<rules>
-- Use EXACT field paths. Never modify, unescape, or add prefixes.
-- Entity fields are paths only, not "tableName.fieldPath".
-- Capabilities use exact field paths as they appear in input.
-</rules>
-
-<input>
-<tables>
-${JSON.stringify(tableViews, null, 2)}
-</tables>
-
-<field_details>
-${JSON.stringify(fields.tables, null, 2)}
-</field_details>
-</input>
-
-<schema>
-domain (required):
-ecommerce, healthcare, finance, hr, crm, logistics, education, social, analytics, iot, scientific, other
-
-entity structure:
-- name: Singular noun (customer, order, specimen)
-- description: What this real-world object represents
-- idField: Field path for unique identifier, or null
-- nameField: Field path for display name, or null
-- fields: Array of ALL field paths (exact, no table prefix)
-- table: Table name containing this entity
-
-capabilities structure:
-- timeSeries: Time field path for trends, or null
-- measures: Field paths for aggregation (role=measure)
-- dimensions: Field paths for grouping (role=dimension)
-- searchable: Field paths for text search (role=text)
-</schema>
-
-<example_input>
-[{"name": "root", "fields": [
-  {"path": "sepal\\.length", "type": "number", "role": "measure"},
-  {"path": "variety", "type": "string", "role": "dimension"}
-]}]
-</example_input>
-
-<example_output>
-{
-  "domain": "scientific",
-  "description": "Botanical measurements of iris flower specimens for species classification",
-  "entities": [
-    {
-      "name": "specimen",
-      "description": "Individual iris flower measurement record",
-      "idField": null,
-      "nameField": "variety",
-      "fields": ["sepal\\.length", "variety"],
-      "table": "root"
-    }
-  ],
-  "tables": {
-    "root": {
-      "description": "Iris flower morphological measurements",
-      "dataGrain": "one row per flower specimen",
-      "capabilities": {
-        "timeSeries": null,
-        "measures": ["sepal\\.length"],
-        "dimensions": ["variety"],
-        "searchable": []
-      }
-    }
-  }
-}
-</example_output>
-
-<wrong>
-- "fields": ["root.sepal\\.length"] ← No table prefix
-- "measures": ["sepal.length"] ← Must preserve escaping
-- "idField": "root.id" ← No table prefix
-- "domain": "data" ← Too vague, pick from options
-</wrong>
-
-<output_format>
-{
-  "domain": "...",
-  "description": "...",
-  "entities": [...],
-  "tables": {...}
+export interface AIEntityEnrichment {
+    name: string;
+    description: string;
+    idField?: string;
+    nameField?: string;
 }
 
-Return ONLY valid JSON.
-</output_format>`;
+export interface AITableEnrichment {
+    description: string;
+    dataGrain: string;
+    fields: Record<string, { description: string }>;
+    entities: AIEntityEnrichment[];
+}
+
+export interface AIEnrichmentResponse {
+    domain: string;
+    description: string;
+    archetypes: Record<string, AIArchetypeEnrichment>;
+    maps: Record<string, AIMapEnrichment>;
+    tables: Record<string, AITableEnrichment>;
 }

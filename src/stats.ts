@@ -3,7 +3,9 @@ import { DATE_FORMATS, FORMAT_MAPPING, LIMITS, THRESHOLDS, TYPE_MAPPING } from '
 import { detect } from './detect.js';
 import { sampleRows } from './sample.js';
 import type {
+    AggregationType,
     FieldFormat,
+    FieldRole,
     FieldType,
     StatsField,
     StatsMultiTableSchema,
@@ -279,6 +281,240 @@ function determineDominantFormat(
     return undefined;
 }
 
+// ============================================================================
+// Role and Aggregation Inference
+// ============================================================================
+
+const IDENTIFIER_PATTERNS = [
+    /^id$/i,
+    /_id$/i,
+    /Id$/,
+    /^uuid$/i,
+    /^guid$/i,
+    /^key$/i,
+    /_key$/i,
+    /^code$/i,
+    /_code$/i,
+    /^sku$/i,
+    /^slug$/i,
+];
+
+const REFERENCE_PATTERNS = [
+    /_id$/i,
+    /_ref$/i,
+    /_key$/i,
+    /^parent_/i,
+    /^foreign_/i,
+];
+
+const TIME_PATTERNS = [
+    /date/i,
+    /time/i,
+    /timestamp/i,
+    /_at$/i,
+    /^created/i,
+    /^updated/i,
+    /^deleted/i,
+    /^modified/i,
+];
+
+const MEASURE_PATTERNS = [
+    /^amount/i,
+    /^total/i,
+    /^sum/i,
+    /^count/i,
+    /^quantity/i,
+    /^price/i,
+    /^cost/i,
+    /^value/i,
+    /^score/i,
+    /^rating/i,
+    /^percent/i,
+    /^ratio/i,
+    /^rate/i,
+    /^balance/i,
+    /^weight/i,
+    /^height/i,
+    /^width/i,
+    /^length/i,
+    /^size/i,
+    /^duration/i,
+    /^distance/i,
+    /^confidence/i,
+    /^strength/i,
+    /_count$/i,
+    /_total$/i,
+    /_sum$/i,
+    /_amount$/i,
+    /_score$/i,
+];
+
+const TEXT_PATTERNS = [
+    /^description/i,
+    /^comment/i,
+    /^note/i,
+    /^body/i,
+    /^content/i,
+    /^text/i,
+    /^message/i,
+    /^summary/i,
+    /^bio/i,
+    /^quote/i,
+    /^context/i,
+    /^evidence/i,
+];
+
+function getLeafName(path: string): string {
+    const parts = path.split('.');
+    return parts[parts.length - 1] ?? path;
+}
+
+function matchesAnyPattern(name: string, patterns: RegExp[]): boolean {
+    return patterns.some(pattern => pattern.test(name));
+}
+
+function inferRole(path: string, type: FieldType, format?: FieldFormat): FieldRole {
+    const leafName = getLeafName(path);
+
+    // Type-based inference first
+    if (type === 'object') return 'metadata';
+    if (type === 'array') return 'metadata';
+    if (type === 'date') return 'time';
+
+    // Format-based inference
+    if (format === 'uuid' || format === 'slug') return 'identifier';
+    if (format === 'datetime' || format === 'date' || format === 'time' || format === 'iso8601') return 'time';
+
+    // Pattern-based inference
+    if (leafName === 'id' || (path.split('.').length === 1 && matchesAnyPattern(leafName, IDENTIFIER_PATTERNS))) {
+        return 'identifier';
+    }
+
+    if (matchesAnyPattern(leafName, REFERENCE_PATTERNS) && leafName !== 'id') {
+        return 'reference';
+    }
+
+    if (matchesAnyPattern(leafName, TIME_PATTERNS)) {
+        return 'time';
+    }
+
+    if ((type === 'number' || type === 'int') && matchesAnyPattern(leafName, MEASURE_PATTERNS)) {
+        return 'measure';
+    }
+
+    if (type === 'string' && matchesAnyPattern(leafName, TEXT_PATTERNS)) {
+        return 'text';
+    }
+
+    // Numeric fields are usually measures
+    if (type === 'number' || type === 'int') {
+        return 'measure';
+    }
+
+    // String fields are usually dimensions
+    if (type === 'string') {
+        return 'dimension';
+    }
+
+    // Boolean fields are dimensions
+    if (type === 'boolean') {
+        return 'dimension';
+    }
+
+    return 'metadata';
+}
+
+function inferAggregation(role: FieldRole, path: string, type: FieldType): AggregationType {
+    if (role !== 'measure') {
+        return 'none';
+    }
+
+    const leafName = getLeafName(path).toLowerCase();
+
+    // Count-like fields
+    if (leafName.includes('count') || leafName.includes('quantity') || leafName.includes('num_')) {
+        return 'sum';
+    }
+
+    // Sum-like fields
+    if (leafName.includes('total') || leafName.includes('sum') || leafName.includes('amount')) {
+        return 'sum';
+    }
+
+    // Average-like fields (scores, ratings, percentages)
+    if (leafName.includes('score') || leafName.includes('rating') ||
+        leafName.includes('percent') || leafName.includes('ratio') ||
+        leafName.includes('rate') || leafName.includes('average') ||
+        leafName.includes('confidence') || leafName.includes('strength')) {
+        return 'avg';
+    }
+
+    // Default for measures
+    return 'sum';
+}
+
+function inferUnit(path: string, type: FieldType, format?: FieldFormat): string | undefined {
+    const leafName = getLeafName(path).toLowerCase();
+
+    // Currency
+    if (leafName.includes('price') || leafName.includes('cost') ||
+        leafName.includes('amount') || leafName.includes('balance') ||
+        format === 'currency') {
+        return 'USD';
+    }
+
+    // Percentage
+    if (leafName.includes('percent') || leafName.includes('ratio') || format === 'percent') {
+        return '%';
+    }
+
+    // Time duration
+    if (leafName.includes('duration') || leafName.includes('seconds')) {
+        return 'seconds';
+    }
+    if (leafName.includes('minutes')) {
+        return 'minutes';
+    }
+    if (leafName.includes('hours')) {
+        return 'hours';
+    }
+    if (leafName.includes('days')) {
+        return 'days';
+    }
+
+    // Distance/size
+    if (leafName.includes('distance') || leafName.includes('length') ||
+        leafName.includes('width') || leafName.includes('height')) {
+        return 'meters';
+    }
+
+    // Weight
+    if (leafName.includes('weight')) {
+        return 'kg';
+    }
+
+    // Count
+    if (leafName.includes('count') || leafName.includes('instance')) {
+        return 'instances';
+    }
+
+    // Words
+    if (leafName.includes('word_count') || leafName.includes('wordcount')) {
+        return 'words';
+    }
+
+    // Tokens
+    if (leafName.includes('token')) {
+        return 'tokens';
+    }
+
+    return undefined;
+}
+
+// ============================================================================
+// Field Building
+// ============================================================================
+
 function buildStatsField(
     path: string,
     accumulator: FieldAccumulator,
@@ -298,22 +534,25 @@ function buildStatsField(
         fieldType = 'date';
     }
 
+    const role = inferRole(path, fieldType, format);
+    const aggregation = inferAggregation(role, path, fieldType);
+    const unit = inferUnit(path, fieldType, format);
+
     const baseField: StatsField = {
         path,
         type: fieldType,
         nullable: accumulator.nullCount > 0,
-        examples: Array.from(accumulator.examples.values()),
+        role,
+        aggregation,
+        sampleValues: Array.from(accumulator.examples.values()),
     };
 
-    if (format) {
-        return { ...baseField, format };
-    }
-
-    if (fieldType === 'array' && accumulator.firstArrayItemType) {
-        return { ...baseField, itemType: accumulator.firstArrayItemType };
-    }
-
-    return baseField;
+    return {
+        ...baseField,
+        ...(format && { format }),
+        ...(unit && { unit }),
+        ...(fieldType === 'array' && accumulator.firstArrayItemType && { itemType: accumulator.firstArrayItemType }),
+    };
 }
 
 export function computeStats(

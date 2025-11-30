@@ -1,8 +1,9 @@
 import { LIMITS, THRESHOLDS } from './constants.js';
-import { applyDefaults, type EnrichOptions, enrich } from './enrich.js';
-import { compress, type CompressedSchema } from './compress.js';
+import { applyDefaults, enrichStructure, type EnrichOptions } from './enrich.js';
+import { detectStructure, getStructureStats } from './structure.js';
+import type { CompressedSchema } from './compress.js';
 import { type ComputeStatsOptions, computeStats } from './stats.js';
-import type { AnalyzeOptions, Logger, MultiTableSchema, StatsMultiTableSchema } from './types.js';
+import type { AnalyzeOptions, Logger, StatsMultiTableSchema } from './types.js';
 import { AIEnrichmentError, consoleLogger } from './types.js';
 import { countTotalFields } from './utils.js';
 
@@ -74,10 +75,24 @@ export async function analyze(data: unknown, options: AnalyzeOptions): Promise<C
         ...(maxDepth !== undefined && { maxDepth }),
     };
 
+    // Step 1: Compute statistics
     const stats = computeStats(data, statsOptions);
-
     const { tableCount, fieldCount } = getSchemaMetrics(stats);
     logger.info(`Found ${tableCount} tables with ${fieldCount} total fields`);
+
+    // Step 2: Detect structure patterns (mechanical, free)
+    logger.debug('Detecting structure patterns...');
+    const structure = detectStructure(stats);
+
+    const structureStats = getStructureStats(structure);
+    logger.info(
+        `Structure detected: ${structureStats.archetypeCount} archetypes, ` +
+        `${structureStats.mapCount} maps, ${structureStats.patternCount} patterns`
+    );
+    logger.info(
+        `Field reduction: ${structureStats.originalFieldCount} → ${structureStats.uniqueFieldCount} ` +
+        `(${structureStats.reductionPercent}% reduction for AI)`
+    );
 
     const performAIEnrichment = shouldPerformAIEnrichment(skipAI, apiKey);
 
@@ -85,11 +100,12 @@ export async function analyze(data: unknown, options: AnalyzeOptions): Promise<C
         validateSchemaLimits(stats, logger);
     }
 
-    let enrichedSchema: MultiTableSchema;
+    // Step 3: Enrich (AI or defaults)
+    let schema: CompressedSchema;
 
     if (!performAIEnrichment) {
         logger.info('Skipping AI enrichment, applying defaults');
-        enrichedSchema = applyDefaults(stats);
+        schema = applyDefaults(structure);
     } else {
         logger.info('Starting AI enrichment...');
 
@@ -100,14 +116,14 @@ export async function analyze(data: unknown, options: AnalyzeOptions): Promise<C
                 ...(timeout !== undefined && { timeout }),
             };
 
-            enrichedSchema = await enrich(stats, apiKey, enrichOptions);
+            schema = await enrichStructure(structure, apiKey, enrichOptions);
             logger.info('AI enrichment complete');
         } catch (error) {
             if (error instanceof AIEnrichmentError) {
                 throw error;
             }
 
-            const partialSchema = applyDefaults(stats);
+            const partialSchema = applyDefaults(structure);
             const errorMessage = error instanceof Error ? error.message : 'AI enrichment failed';
 
             logger.error(`AI enrichment failed: ${errorMessage}`);
@@ -122,15 +138,11 @@ export async function analyze(data: unknown, options: AnalyzeOptions): Promise<C
         }
     }
 
-    logger.info('Compressing schema...');
-    const compressed = compress(enrichedSchema);
-
-    const originalFieldCount = fieldCount;
-    const compressedFieldCount = Object.values(compressed.tables)
+    const compressedFieldCount = Object.values(schema.tables)
         .reduce((sum, table) => sum + table.fields.length, 0);
 
-    logger.info(`Schema compressed: ${originalFieldCount} → ${compressedFieldCount} fields`);
+    logger.info(`Final schema: ${compressedFieldCount} fields`);
     logger.info('Schema analysis complete');
 
-    return compressed;
+    return schema;
 }
