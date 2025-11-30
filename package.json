@@ -1,6 +1,6 @@
 {
   "name": "smart-schema",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Analyze any JSON → produce AI-enriched schemas that give LLMs deep understanding of data structure, meaning, relationships, and context.",
   "type": "module",
   "main": "./dist/index.js",
