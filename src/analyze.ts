@@ -2,7 +2,7 @@ import { LIMITS, THRESHOLDS } from './constants.js';
 import { applyDefaults, type EnrichOptions, enrich } from './enrich.js';
 import { type ComputeStatsOptions, computeStats } from './stats.js';
 import type { AnalyzeOptions, Logger, MultiTableSchema, StatsMultiTableSchema } from './types.js';
-import { AIEnrichmentError, nullLogger } from './types.js';
+import { AIEnrichmentError, consoleLogger } from './types.js';
 import { countTotalFields } from './utils.js';
 
 export class LimitExceededError extends Error {
@@ -51,7 +51,7 @@ export async function analyze(data: unknown, options: AnalyzeOptions): Promise<M
         maxDepth,
         skipAI = false,
         model,
-        logger = nullLogger,
+        logger = consoleLogger,
         timeout,
         formatThreshold = THRESHOLDS.formatDetection,
         mixedTypeThreshold = THRESHOLDS.mixedType,

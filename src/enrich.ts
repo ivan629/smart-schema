@@ -88,15 +88,32 @@ interface CompletionConfig {
     messages: MessageParam[];
 }
 
-async function streamCompletion(client: Anthropic, config: CompletionConfig): Promise<string> {
-    const stream = await client.messages.stream({
+async function streamCompletion(
+    client: Anthropic,
+    config: CompletionConfig,
+    stage: string,
+    logger: Logger
+): Promise<string> {
+    logger.info(`[${stage}] Starting...`);
+
+    const stream = client.messages.stream({
         model: config.model,
         max_tokens: config.maxTokens,
         temperature: config.temperature,
         messages: config.messages,
     });
 
+    let chunks = 0;
+    stream.on('text', () => {
+        chunks++;
+        if (chunks % 20 === 0) {
+            logger.debug(`[${stage}] ${chunks} chunks...`);
+        }
+    });
+
     const response = await stream.finalMessage();
+    logger.info(`[${stage}] Completed - ${response.usage?.output_tokens} tokens`);
+
     const content = response.content[0];
 
     if (!content) {
@@ -167,12 +184,17 @@ async function enrichFields(
     const { logger, timeout, model } = options;
 
     const execute = async (): Promise<string> => {
-        const responseText = await streamCompletion(client, {
-            model,
-            maxTokens: AI_CONFIG.maxTokens.fieldEnrichment,
-            temperature: AI_CONFIG.temperature,
-            messages: [{ role: 'user', content: buildFieldEnrichmentPrompt(stats) }],
-        });
+        const responseText = await streamCompletion(
+            client,
+            {
+                model,
+                maxTokens: AI_CONFIG.maxTokens.fieldEnrichment,
+                temperature: AI_CONFIG.temperature,
+                messages: [{ role: 'user', content: buildFieldEnrichmentPrompt(stats) }],
+            },
+            'fields',
+            logger
+        );
         return extractJsonFromText(responseText);
     };
 
@@ -248,12 +270,17 @@ async function detectRelationships(
     const { logger, timeout, model } = options;
 
     const execute = async (): Promise<string> => {
-        const responseText = await streamCompletion(client, {
-            model,
-            maxTokens: AI_CONFIG.maxTokens.relationshipDetection,
-            temperature: AI_CONFIG.temperature,
-            messages: [{ role: 'user', content: buildRelationshipPrompt(tableSummaries) }],
-        });
+        const responseText = await streamCompletion(
+            client,
+            {
+                model,
+                maxTokens: AI_CONFIG.maxTokens.relationshipDetection,
+                temperature: AI_CONFIG.temperature,
+                messages: [{ role: 'user', content: buildRelationshipPrompt(tableSummaries) }],
+            },
+            'relationships',
+            logger
+        );
         return extractJsonFromText(responseText);
     };
 
@@ -280,12 +307,17 @@ async function synthesizeDomain(
     const maxTokens = calculateDomainSynthesisTokens(stats);
 
     const execute = async (): Promise<string> => {
-        const responseText = await streamCompletion(client, {
-            model,
-            maxTokens,
-            temperature: AI_CONFIG.temperature,
-            messages: [{ role: 'user', content: buildDomainPrompt(stats, fields) }],
-        });
+        const responseText = await streamCompletion(
+            client,
+            {
+                model,
+                maxTokens,
+                temperature: AI_CONFIG.temperature,
+                messages: [{ role: 'user', content: buildDomainPrompt(stats, fields) }],
+            },
+            'domain',
+            logger
+        );
         return extractJsonFromText(responseText);
     };
 
