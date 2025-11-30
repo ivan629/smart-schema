@@ -1,21 +1,47 @@
-import _ from 'lodash';
+/**
+ * Sampling Utility
+ *
+ * Samples rows from large datasets while preserving distribution.
+ */
 
-export interface SampleResult<T> {
-    readonly rows: readonly T[];
-    readonly total: number;
-    readonly sampled?: number;
+type PlainObject = Record<string, unknown>;
+
+export interface SampleResult {
+    readonly rows: readonly PlainObject[];
+    readonly totalRows: number;
+    readonly sampled: boolean;
 }
 
-export function sampleRows<T>(rows: readonly T[], maxRows: number): SampleResult<T> {
-    const totalCount = rows.length;
+export function sampleRows(
+    rows: readonly PlainObject[],
+    maxRows: number
+): SampleResult {
+    if (rows.length <= maxRows) {
+        return {
+            rows,
+            totalRows: rows.length,
+            sampled: false,
+        };
+    }
 
-    if (totalCount <= maxRows) {
-        return { rows, total: totalCount };
+    // Reservoir sampling for uniform distribution
+    const sampled: PlainObject[] = [];
+
+    for (let i = 0; i < rows.length; i++) {
+        if (i < maxRows) {
+            sampled.push(rows[i]);
+        } else {
+            // Replace with decreasing probability
+            const j = Math.floor(Math.random() * (i + 1));
+            if (j < maxRows) {
+                sampled[j] = rows[i];
+            }
+        }
     }
 
     return {
-        rows: _.sampleSize(rows, maxRows),
-        total: totalCount,
-        sampled: maxRows,
+        rows: sampled,
+        totalRows: rows.length,
+        sampled: true,
     };
 }

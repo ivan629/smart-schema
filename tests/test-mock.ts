@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { AIEnrichmentError, AIValidationError, analyze } from '../src/index.js';
+import { AIEnrichmentError, analyze } from '../src/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -23,16 +23,7 @@ async function test(): Promise<void> {
         const outputPath = join(__dirname, '..', 'mock', 'schema-output.json');
         writeFileSync(outputPath, JSON.stringify(schema, null, 2));
     } catch (err: unknown) {
-        if (err instanceof AIEnrichmentError) {
             console.error(err.message);
-            if (err.cause instanceof AIValidationError) {
-                console.error(err.cause.validationErrors);
-            }
-        } else if (err instanceof AIValidationError) {
-            console.error(err.validationErrors);
-        } else if (err instanceof Error) {
-            console.error(err.message);
-        }
         process.exit(1);
     }
 }

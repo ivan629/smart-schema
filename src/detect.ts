@@ -1,116 +1,96 @@
-import _ from 'lodash';
+/**
+ * Input Detection
+ *
+ * Detects the shape of input data and normalizes it to tables.
+ */
+
 import { InvalidInputError } from './types.js';
 
-export interface DetectedTables {
+export interface DetectedInput {
     readonly tables: Readonly<Record<string, readonly Record<string, unknown>[]>>;
-    readonly metadata?: Readonly<Record<string, unknown>>;
+    readonly shape: 'array' | 'object' | 'multi-table';
 }
 
 type PlainObject = Record<string, unknown>;
 
-function convertPrimitiveArrayToRows(array: unknown[]): PlainObject[] {
-    return array.map((value) => ({ value }));
+function isPlainObject(value: unknown): value is PlainObject {
+    return typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value) &&
+        Object.prototype.toString.call(value) === '[object Object]';
 }
 
-function convertNestedArrayToRows(array: unknown[][]): PlainObject[] {
-    return array.map((row) =>
-        row.reduce<PlainObject>((obj, value, index) => {
-            obj[`[${index}]`] = value;
-            return obj;
-        }, {})
-    );
+function isPrimitive(value: unknown): boolean {
+    return value === null ||
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        typeof value === 'boolean' ||
+        typeof value === 'undefined';
 }
 
-function processArrayProperty(array: unknown[]): PlainObject[] | null {
-    if (_.every(array, _.isPlainObject)) {
-        return array as PlainObject[];
-    }
-
-    if (_.every(array, Array.isArray)) {
-        return convertNestedArrayToRows(array as unknown[][]);
-    }
-
-    if (_.every(array, (v) => !_.isObject(v))) {
-        return convertPrimitiveArrayToRows(array);
-    }
-
-    return null;
+function isArrayOfObjects(value: unknown): value is PlainObject[] {
+    if (!Array.isArray(value) || value.length === 0) return false;
+    return value.every(isPlainObject);
 }
 
-function detectFromArray(input: unknown[]): DetectedTables {
-    if (input.length === 0) {
-        throw new InvalidInputError('empty');
-    }
+function isMultiTable(value: unknown): value is Record<string, PlainObject[]> {
+    if (!isPlainObject(value)) return false;
 
-    if (_.every(input, _.isPlainObject)) {
-        return { tables: { root: input as PlainObject[] } };
-    }
+    const entries = Object.entries(value);
+    if (entries.length === 0) return false;
 
-    if (_.every(input, Array.isArray)) {
-        return { tables: { root: convertNestedArrayToRows(input as unknown[][]) } };
-    }
-
-    if (_.every(input, (v) => !_.isObject(v))) {
-        return { tables: { root: convertPrimitiveArrayToRows(input) } };
-    }
-
-    const objectRows = input.filter(_.isPlainObject) as PlainObject[];
-    if (objectRows.length > 0) {
-        return { tables: { root: objectRows } };
-    }
-
-    throw new InvalidInputError('empty');
+    // Multi-table if ALL values are arrays of objects
+    return entries.every(([, v]) => isArrayOfObjects(v));
 }
 
-function detectFromObject(input: PlainObject): DetectedTables {
-    if (_.isEmpty(input)) {
-        throw new InvalidInputError('empty');
+export function detect(input: unknown): DetectedInput {
+    // Reject primitives
+    if (isPrimitive(input)) {
+        throw new InvalidInputError('Input cannot be a primitive value', 'primitive');
     }
 
-    const [arrayProps, scalarProps] = _.partition(
-        Object.entries(input),
-        ([, value]) => Array.isArray(value) && value.length > 0
-    );
-
-    if (arrayProps.length === 0) {
-        return { tables: { root: [input] } };
+    // Reject empty
+    if (Array.isArray(input) && input.length === 0) {
+        throw new InvalidInputError('Input array is empty', 'empty');
     }
 
-    const tables: Record<string, PlainObject[]> = {};
-
-    for (const [key, array] of arrayProps) {
-        const processedRows = processArrayProperty(array as unknown[]);
-        if (processedRows !== null) {
-            tables[key] = processedRows;
-        }
+    if (isPlainObject(input) && Object.keys(input).length === 0) {
+        throw new InvalidInputError('Input object is empty', 'empty');
     }
 
-    if (_.isEmpty(tables)) {
-        throw new InvalidInputError('empty');
+    // Array of primitives -> synthetic table
+    if (Array.isArray(input) && input.every(isPrimitive)) {
+        return {
+            tables: {
+                root: input.map((v, i) => ({ index: i, value: v })),
+            },
+            shape: 'array',
+        };
     }
 
-    const metadata = Object.fromEntries(scalarProps);
-    const result: DetectedTables = { tables };
-
-    if (!_.isEmpty(metadata)) {
-        return { ...result, metadata };
+    // Array of objects -> single table
+    if (isArrayOfObjects(input)) {
+        return {
+            tables: { root: input },
+            shape: 'array',
+        };
     }
 
-    return result;
-}
-
-export function detect(input: unknown): DetectedTables {
-    if (!_.isObject(input) || input === null) {
-        throw new InvalidInputError('primitive');
+    // Multi-table: { users: [...], orders: [...] }
+    if (isMultiTable(input)) {
+        return {
+            tables: input,
+            shape: 'multi-table',
+        };
     }
 
-    if (Array.isArray(input)) {
-        return detectFromArray(input);
+    // Single object -> single-row table
+    if (isPlainObject(input)) {
+        return {
+            tables: { root: [input] },
+            shape: 'object',
+        };
     }
 
-    if (_.isPlainObject(input)) {
-        return detectFromObject(input as PlainObject);
-    }
-
-    throw new InvalidInputError('primitive');
+    throw new InvalidInputError('Unable to detect input structure', 'invalid');
 }

@@ -1,24 +1,30 @@
+/**
+ * Statistics Collection
+ *
+ * Collects type, format, and role statistics from data samples.
+ * This is the foundation for structure detection.
+ */
+
 import { inferType } from '@jsonhero/json-infer-types';
-import { DATE_FORMATS, FORMAT_MAPPING, LIMITS, THRESHOLDS, TYPE_MAPPING } from './constants.js';
+import { LIMITS, THRESHOLDS, TYPE_MAPPING, FORMAT_MAPPING, DATE_FORMATS } from './constants.js';
 import { detect } from './detect.js';
 import { sampleRows } from './sample.js';
 import type {
-    AggregationType,
-    FieldFormat,
-    FieldRole,
     FieldType,
+    FieldRole,
+    FieldFormat,
+    AggregationType,
     StatsField,
-    StatsMultiTableSchema,
     StatsTableSchema,
+    StatsMultiTableSchema,
 } from './types.js';
-import {
-    buildArrayFieldPath,
-    buildFieldPath,
-    escapePathSegment,
-    type PlainObject,
-} from './utils.js';
 
+type PlainObject = Record<string, unknown>;
 type InferredType = ReturnType<typeof inferType>;
+
+// ============================================================================
+// Field Accumulator
+// ============================================================================
 
 interface FieldAccumulator {
     examples: Map<string, unknown>;
@@ -29,17 +35,19 @@ interface FieldAccumulator {
     firstArrayItemType?: FieldType;
 }
 
-interface FieldBuildOptions {
-    formatThreshold: number;
-    mixedTypeThreshold: number;
+function createAccumulator(): FieldAccumulator {
+    return {
+        examples: new Map(),
+        typeCounts: new Map(),
+        formatCounts: new Map(),
+        nullCount: 0,
+        totalCount: 0,
+    };
 }
 
-export interface ComputeStatsOptions {
-    maxRows?: number;
-    maxDepth?: number;
-    formatThreshold?: number;
-    mixedTypeThreshold?: number;
-}
+// ============================================================================
+// Type Inference
+// ============================================================================
 
 function mapToFieldType(inferred: InferredType): FieldType {
     return (TYPE_MAPPING[inferred.name] as FieldType) ?? 'string';
@@ -53,128 +61,159 @@ function extractFieldFormat(inferred: InferredType): FieldFormat | undefined {
     const formatInfo = inferred as { format?: { name: string } };
     const formatName = formatInfo.format?.name;
 
-    if (!formatName) {
-        return undefined;
-    }
+    if (!formatName) return undefined;
 
     return (FORMAT_MAPPING[formatName] ?? formatName) as FieldFormat;
 }
 
-function createAccumulator(): FieldAccumulator {
-    return {
-        examples: new Map(),
-        typeCounts: new Map(),
-        formatCounts: new Map(),
-        nullCount: 0,
-        totalCount: 0,
-    };
+// ============================================================================
+// Role and Aggregation Inference
+// ============================================================================
+
+const IDENTIFIER_PATTERNS = [/^id$/i, /_id$/i, /Id$/, /^uuid$/i, /^guid$/i, /^key$/i, /^code$/i, /^sku$/i, /^slug$/i];
+const REFERENCE_PATTERNS = [/_id$/i, /_ref$/i, /_key$/i, /^parent_/i, /^foreign_/i];
+const TIME_PATTERNS = [/date/i, /time/i, /timestamp/i, /_at$/i, /^created/i, /^updated/i, /^deleted/i];
+const MEASURE_PATTERNS = [/^amount/i, /^total/i, /^sum/i, /^count/i, /^quantity/i, /^price/i, /^cost/i, /^value/i, /^score/i, /^rating/i, /^percent/i, /^ratio/i, /^confidence/i, /^strength/i, /_count$/i, /_total$/i, /_amount$/i, /_score$/i];
+const TEXT_PATTERNS = [/^description/i, /^comment/i, /^note/i, /^body/i, /^content/i, /^text/i, /^message/i, /^summary/i, /^quote/i, /^context/i, /^evidence/i];
+
+function getLeafName(path: string): string {
+    const parts = path.split('.');
+    return parts[parts.length - 1] ?? path;
 }
 
-function addExample(accumulator: FieldAccumulator, value: unknown): void {
-    if (accumulator.examples.size >= LIMITS.maxExamplesPerField) {
-        return;
+function matchesAny(name: string, patterns: RegExp[]): boolean {
+    return patterns.some(p => p.test(name));
+}
+
+function inferRole(path: string, type: FieldType, format?: FieldFormat): FieldRole {
+    const leaf = getLeafName(path);
+
+    if (type === 'object' || type === 'array') return 'metadata';
+    if (type === 'date') return 'time';
+
+    if (format === 'uuid' || format === 'slug') return 'identifier';
+    if (format === 'datetime' || format === 'date' || format === 'time') return 'time';
+
+    if (leaf === 'id' || (path.split('.').length === 1 && matchesAny(leaf, IDENTIFIER_PATTERNS))) {
+        return 'identifier';
     }
 
-    const serializedKey = JSON.stringify(value);
+    if (matchesAny(leaf, REFERENCE_PATTERNS) && leaf !== 'id') return 'identifier';
+    if (matchesAny(leaf, TIME_PATTERNS)) return 'time';
+    if ((type === 'number' || type === 'int') && matchesAny(leaf, MEASURE_PATTERNS)) return 'measure';
+    if (type === 'string' && matchesAny(leaf, TEXT_PATTERNS)) return 'text';
+    if (type === 'number' || type === 'int') return 'measure';
+    if (type === 'string' || type === 'boolean') return 'dimension';
 
-    if (!accumulator.examples.has(serializedKey)) {
-        accumulator.examples.set(serializedKey, value);
+    return 'metadata';
+}
+
+function inferAggregation(role: FieldRole, path: string): AggregationType {
+    if (role !== 'measure') return 'none';
+
+    const leaf = getLeafName(path).toLowerCase();
+
+    if (leaf.includes('count') || leaf.includes('quantity') || leaf.includes('total') || leaf.includes('sum') || leaf.includes('amount')) {
+        return 'sum';
     }
-}
 
-function incrementTypeCount(accumulator: FieldAccumulator, fieldType: FieldType): void {
-    const currentCount = accumulator.typeCounts.get(fieldType) ?? 0;
-    accumulator.typeCounts.set(fieldType, currentCount + 1);
-}
-
-function incrementFormatCount(accumulator: FieldAccumulator, format: FieldFormat): void {
-    const currentCount = accumulator.formatCounts.get(format) ?? 0;
-    accumulator.formatCounts.set(format, currentCount + 1);
-}
-
-function processArrayItems(
-    arrayItems: unknown[],
-    accumulators: Map<string, FieldAccumulator>,
-    basePath: string,
-    parentAccumulator: FieldAccumulator,
-    currentDepth: number,
-    maxDepth: number
-): void {
-    for (const item of arrayItems) {
-        if (item === null || item === undefined) {
-            continue;
-        }
-
-        if (parentAccumulator.firstArrayItemType === undefined) {
-            const inferred = inferType(item);
-            parentAccumulator.firstArrayItemType = mapToFieldType(inferred);
-        }
-
-        if (typeof item === 'object' && !Array.isArray(item)) {
-            collectFieldsFromObject(
-                item as PlainObject,
-                accumulators,
-                basePath.split('.'),
-                currentDepth,
-                maxDepth
-            );
-        }
+    if (leaf.includes('score') || leaf.includes('rating') || leaf.includes('percent') || leaf.includes('ratio') || leaf.includes('confidence') || leaf.includes('average')) {
+        return 'avg';
     }
+
+    return 'sum';
 }
 
-function processFieldValue(
+function inferUnit(path: string, format?: FieldFormat): string | undefined {
+    const leaf = getLeafName(path).toLowerCase();
+
+    if (leaf.includes('price') || leaf.includes('cost') || leaf.includes('amount') || format === 'currency') return 'USD';
+    if (leaf.includes('percent') || leaf.includes('ratio') || format === 'percent') return '%';
+    if (leaf.includes('duration') || leaf.includes('seconds')) return 'seconds';
+    if (leaf.includes('minutes')) return 'minutes';
+    if (leaf.includes('hours')) return 'hours';
+    if (leaf.includes('count') || leaf.includes('instance')) return 'instances';
+    if (leaf.includes('word')) return 'words';
+    if (leaf.includes('token')) return 'tokens';
+
+    return undefined;
+}
+
+// ============================================================================
+// Field Collection
+// ============================================================================
+
+function escapePathSegment(key: string): string {
+    if (key.includes('.') || key.includes('[') || key.includes(']')) {
+        return `["${key}"]`;
+    }
+    return key;
+}
+
+function buildPath(segments: readonly string[]): string {
+    return segments.join('.');
+}
+
+function processValue(
     value: unknown,
     accumulator: FieldAccumulator,
     accumulators: Map<string, FieldAccumulator>,
     pathSegments: readonly string[],
-    currentDepth: number,
+    depth: number,
     maxDepth: number
 ): void {
     const inferred = inferType(value);
     const fieldType = mapToFieldType(inferred);
 
-    incrementTypeCount(accumulator, fieldType);
+    accumulator.typeCounts.set(fieldType, (accumulator.typeCounts.get(fieldType) ?? 0) + 1);
 
     const format = extractFieldFormat(inferred);
     if (format) {
-        incrementFormatCount(accumulator, format);
+        accumulator.formatCounts.set(format, (accumulator.formatCounts.get(format) ?? 0) + 1);
     }
 
-    addExample(accumulator, value);
-
-    if (currentDepth >= maxDepth) {
-        return;
+    // Store example
+    if (accumulator.examples.size < LIMITS.maxExamplesPerField) {
+        const key = JSON.stringify(value);
+        if (!accumulator.examples.has(key)) {
+            accumulator.examples.set(key, value);
+        }
     }
 
+    if (depth >= maxDepth) return;
+
+    // Recurse into objects
     if (fieldType === 'object' && typeof value === 'object' && value !== null) {
-        collectFieldsFromObject(
-            value as PlainObject,
-            accumulators,
-            pathSegments,
-            currentDepth + 1,
-            maxDepth
-        );
+        collectFromObject(value as PlainObject, accumulators, pathSegments, depth + 1, maxDepth);
     }
 
+    // Recurse into arrays
     if (fieldType === 'array' && Array.isArray(value)) {
-        const pathString = buildFieldPath(pathSegments);
-        const arrayPath = buildArrayFieldPath(pathString);
+        for (const item of value) {
+            if (item === null || item === undefined) continue;
 
-        processArrayItems(value, accumulators, arrayPath, accumulator, currentDepth + 1, maxDepth);
+            if (accumulator.firstArrayItemType === undefined) {
+                accumulator.firstArrayItemType = mapToFieldType(inferType(item));
+            }
+
+            if (typeof item === 'object' && !Array.isArray(item)) {
+                collectFromObject(item as PlainObject, accumulators, [...pathSegments, '[]'], depth + 1, maxDepth);
+            }
+        }
     }
 }
 
-function collectFieldsFromObject(
-    sourceObject: PlainObject,
+function collectFromObject(
+    obj: PlainObject,
     accumulators: Map<string, FieldAccumulator>,
     pathSegments: readonly string[],
-    currentDepth: number,
+    depth: number,
     maxDepth: number
 ): void {
-    for (const [key, value] of Object.entries(sourceObject)) {
-        const escapedKey = escapePathSegment(key);
-        const currentPath = [...pathSegments, escapedKey];
-        const pathString = buildFieldPath(currentPath);
+    for (const [key, value] of Object.entries(obj)) {
+        const escaped = escapePathSegment(key);
+        const currentPath = [...pathSegments, escaped];
+        const pathString = buildPath(currentPath);
 
         let accumulator = accumulators.get(pathString);
         if (!accumulator) {
@@ -189,67 +228,47 @@ function collectFieldsFromObject(
             continue;
         }
 
-        processFieldValue(value, accumulator, accumulators, currentPath, currentDepth, maxDepth);
+        processValue(value, accumulator, accumulators, currentPath, depth, maxDepth);
     }
 }
 
-function collectFieldsFromRows(
-    rows: readonly PlainObject[],
-    accumulators: Map<string, FieldAccumulator>,
-    maxDepth: number
-): void {
-    for (const row of rows) {
-        collectFieldsFromObject(row, accumulators, [], 0, maxDepth);
-    }
-}
+// ============================================================================
+// Type Determination
+// ============================================================================
 
 function determineDominantType(
     typeCounts: Map<FieldType, number>,
     nonNullCount: number,
-    mixedTypeThreshold: number
+    mixedThreshold: number
 ): FieldType {
-    if (typeCounts.size === 0) {
-        return 'null';
+    if (typeCounts.size === 0) return 'null';
+
+    // Merge int into number for comparison
+    const merged = new Map<FieldType, number>();
+    for (const [type, count] of typeCounts) {
+        const normalized = type === 'int' ? 'number' : type;
+        merged.set(normalized, (merged.get(normalized) ?? 0) + count);
     }
 
-    const mergedCounts = new Map<FieldType, number>();
+    const sorted = [...merged.entries()].sort(([, a], [, b]) => b - a);
+    const [dominant, dominantCount] = sorted[0] ?? ['null', 0];
 
-    for (const [fieldType, count] of typeCounts) {
-        const normalizedType = fieldType === 'int' ? 'number' : fieldType;
-        const currentCount = mergedCounts.get(normalizedType) ?? 0;
-        mergedCounts.set(normalizedType, currentCount + count);
-    }
-
-    const sortedTypes = [...mergedCounts.entries()].sort(
-        ([, countA], [, countB]) => countB - countA
-    );
-
-    const topEntry = sortedTypes[0];
-    if (!topEntry) {
-        return 'null';
-    }
-
-    const [dominantType, dominantCount] = topEntry;
-
-    if (sortedTypes.length > 1 && nonNullCount > 0) {
+    // Check for mixed types
+    if (sorted.length > 1 && nonNullCount > 0) {
         const secondaryCount = nonNullCount - dominantCount;
-        const secondaryRatio = secondaryCount / nonNullCount;
-
-        if (secondaryRatio > mixedTypeThreshold) {
+        if (secondaryCount / nonNullCount > mixedThreshold) {
             return 'mixed';
         }
     }
 
-    if (dominantType === 'number') {
+    // Prefer int if all numbers are integers
+    if (dominant === 'number') {
         const intCount = typeCounts.get('int') ?? 0;
         const floatCount = typeCounts.get('number') ?? 0;
-
-        if (floatCount === 0 && intCount > 0) {
-            return 'int';
-        }
+        if (floatCount === 0 && intCount > 0) return 'int';
     }
 
-    return dominantType;
+    return dominant;
 }
 
 function determineDominantFormat(
@@ -257,24 +276,12 @@ function determineDominantFormat(
     formatThreshold: number
 ): FieldFormat | undefined {
     const stringCount = accumulator.typeCounts.get('string') ?? 0;
+    if (stringCount === 0 || accumulator.formatCounts.size === 0) return undefined;
 
-    if (stringCount === 0 || accumulator.formatCounts.size === 0) {
-        return undefined;
-    }
+    const sorted = [...accumulator.formatCounts.entries()].sort(([, a], [, b]) => b - a);
+    const [topFormat, topCount] = sorted[0] ?? ['', 0];
 
-    const sortedFormats = [...accumulator.formatCounts.entries()].sort(
-        ([, countA], [, countB]) => countB - countA
-    );
-
-    const topEntry = sortedFormats[0];
-    if (!topEntry) {
-        return undefined;
-    }
-
-    const [topFormat, topCount] = topEntry;
-    const formatRatio = topCount / stringCount;
-
-    if (formatRatio >= formatThreshold) {
+    if (topCount / stringCount >= formatThreshold) {
         return topFormat as FieldFormat;
     }
 
@@ -282,277 +289,50 @@ function determineDominantFormat(
 }
 
 // ============================================================================
-// Role and Aggregation Inference
-// ============================================================================
-
-const IDENTIFIER_PATTERNS = [
-    /^id$/i,
-    /_id$/i,
-    /Id$/,
-    /^uuid$/i,
-    /^guid$/i,
-    /^key$/i,
-    /_key$/i,
-    /^code$/i,
-    /_code$/i,
-    /^sku$/i,
-    /^slug$/i,
-];
-
-const REFERENCE_PATTERNS = [
-    /_id$/i,
-    /_ref$/i,
-    /_key$/i,
-    /^parent_/i,
-    /^foreign_/i,
-];
-
-const TIME_PATTERNS = [
-    /date/i,
-    /time/i,
-    /timestamp/i,
-    /_at$/i,
-    /^created/i,
-    /^updated/i,
-    /^deleted/i,
-    /^modified/i,
-];
-
-const MEASURE_PATTERNS = [
-    /^amount/i,
-    /^total/i,
-    /^sum/i,
-    /^count/i,
-    /^quantity/i,
-    /^price/i,
-    /^cost/i,
-    /^value/i,
-    /^score/i,
-    /^rating/i,
-    /^percent/i,
-    /^ratio/i,
-    /^rate/i,
-    /^balance/i,
-    /^weight/i,
-    /^height/i,
-    /^width/i,
-    /^length/i,
-    /^size/i,
-    /^duration/i,
-    /^distance/i,
-    /^confidence/i,
-    /^strength/i,
-    /_count$/i,
-    /_total$/i,
-    /_sum$/i,
-    /_amount$/i,
-    /_score$/i,
-];
-
-const TEXT_PATTERNS = [
-    /^description/i,
-    /^comment/i,
-    /^note/i,
-    /^body/i,
-    /^content/i,
-    /^text/i,
-    /^message/i,
-    /^summary/i,
-    /^bio/i,
-    /^quote/i,
-    /^context/i,
-    /^evidence/i,
-];
-
-function getLeafName(path: string): string {
-    const parts = path.split('.');
-    return parts[parts.length - 1] ?? path;
-}
-
-function matchesAnyPattern(name: string, patterns: RegExp[]): boolean {
-    return patterns.some(pattern => pattern.test(name));
-}
-
-function inferRole(path: string, type: FieldType, format?: FieldFormat): FieldRole {
-    const leafName = getLeafName(path);
-
-    // Type-based inference first
-    if (type === 'object') return 'metadata';
-    if (type === 'array') return 'metadata';
-    if (type === 'date') return 'time';
-
-    // Format-based inference
-    if (format === 'uuid' || format === 'slug') return 'identifier';
-    if (format === 'datetime' || format === 'date' || format === 'time' || format === 'iso8601') return 'time';
-
-    // Pattern-based inference
-    if (leafName === 'id' || (path.split('.').length === 1 && matchesAnyPattern(leafName, IDENTIFIER_PATTERNS))) {
-        return 'identifier';
-    }
-
-    if (matchesAnyPattern(leafName, REFERENCE_PATTERNS) && leafName !== 'id') {
-        return 'reference';
-    }
-
-    if (matchesAnyPattern(leafName, TIME_PATTERNS)) {
-        return 'time';
-    }
-
-    if ((type === 'number' || type === 'int') && matchesAnyPattern(leafName, MEASURE_PATTERNS)) {
-        return 'measure';
-    }
-
-    if (type === 'string' && matchesAnyPattern(leafName, TEXT_PATTERNS)) {
-        return 'text';
-    }
-
-    // Numeric fields are usually measures
-    if (type === 'number' || type === 'int') {
-        return 'measure';
-    }
-
-    // String fields are usually dimensions
-    if (type === 'string') {
-        return 'dimension';
-    }
-
-    // Boolean fields are dimensions
-    if (type === 'boolean') {
-        return 'dimension';
-    }
-
-    return 'metadata';
-}
-
-function inferAggregation(role: FieldRole, path: string, type: FieldType): AggregationType {
-    if (role !== 'measure') {
-        return 'none';
-    }
-
-    const leafName = getLeafName(path).toLowerCase();
-
-    // Count-like fields
-    if (leafName.includes('count') || leafName.includes('quantity') || leafName.includes('num_')) {
-        return 'sum';
-    }
-
-    // Sum-like fields
-    if (leafName.includes('total') || leafName.includes('sum') || leafName.includes('amount')) {
-        return 'sum';
-    }
-
-    // Average-like fields (scores, ratings, percentages)
-    if (leafName.includes('score') || leafName.includes('rating') ||
-        leafName.includes('percent') || leafName.includes('ratio') ||
-        leafName.includes('rate') || leafName.includes('average') ||
-        leafName.includes('confidence') || leafName.includes('strength')) {
-        return 'avg';
-    }
-
-    // Default for measures
-    return 'sum';
-}
-
-function inferUnit(path: string, type: FieldType, format?: FieldFormat): string | undefined {
-    const leafName = getLeafName(path).toLowerCase();
-
-    // Currency
-    if (leafName.includes('price') || leafName.includes('cost') ||
-        leafName.includes('amount') || leafName.includes('balance') ||
-        format === 'currency') {
-        return 'USD';
-    }
-
-    // Percentage
-    if (leafName.includes('percent') || leafName.includes('ratio') || format === 'percent') {
-        return '%';
-    }
-
-    // Time duration
-    if (leafName.includes('duration') || leafName.includes('seconds')) {
-        return 'seconds';
-    }
-    if (leafName.includes('minutes')) {
-        return 'minutes';
-    }
-    if (leafName.includes('hours')) {
-        return 'hours';
-    }
-    if (leafName.includes('days')) {
-        return 'days';
-    }
-
-    // Distance/size
-    if (leafName.includes('distance') || leafName.includes('length') ||
-        leafName.includes('width') || leafName.includes('height')) {
-        return 'meters';
-    }
-
-    // Weight
-    if (leafName.includes('weight')) {
-        return 'kg';
-    }
-
-    // Count
-    if (leafName.includes('count') || leafName.includes('instance')) {
-        return 'instances';
-    }
-
-    // Words
-    if (leafName.includes('word_count') || leafName.includes('wordcount')) {
-        return 'words';
-    }
-
-    // Tokens
-    if (leafName.includes('token')) {
-        return 'tokens';
-    }
-
-    return undefined;
-}
-
-// ============================================================================
-// Field Building
+// Build Stats Field
 // ============================================================================
 
 function buildStatsField(
     path: string,
     accumulator: FieldAccumulator,
-    options: FieldBuildOptions
+    formatThreshold: number,
+    mixedThreshold: number
 ): StatsField {
     const nonNullCount = accumulator.totalCount - accumulator.nullCount;
+    let type = determineDominantType(accumulator.typeCounts, nonNullCount, mixedThreshold);
+    const format = determineDominantFormat(accumulator, formatThreshold);
 
-    let fieldType = determineDominantType(
-        accumulator.typeCounts,
-        nonNullCount,
-        options.mixedTypeThreshold
-    );
-
-    const format = determineDominantFormat(accumulator, options.formatThreshold);
-
-    if (fieldType === 'string' && format && DATE_FORMATS.has(format)) {
-        fieldType = 'date';
+    // Promote string to date if format indicates it
+    if (type === 'string' && format && DATE_FORMATS.has(format)) {
+        type = 'date';
     }
 
-    const role = inferRole(path, fieldType, format);
-    const aggregation = inferAggregation(role, path, fieldType);
-    const unit = inferUnit(path, fieldType, format);
+    const role = inferRole(path, type, format);
+    const aggregation = inferAggregation(role, path);
+    const unit = inferUnit(path, format);
 
-    const baseField: StatsField = {
+    return {
         path,
-        type: fieldType,
+        type,
         nullable: accumulator.nullCount > 0,
         role,
         aggregation,
-        sampleValues: Array.from(accumulator.examples.values()),
-    };
-
-    return {
-        ...baseField,
         ...(format && { format }),
         ...(unit && { unit }),
-        ...(fieldType === 'array' && accumulator.firstArrayItemType && { itemType: accumulator.firstArrayItemType }),
+        ...(type === 'array' && accumulator.firstArrayItemType && { itemType: accumulator.firstArrayItemType }),
+        ...(accumulator.examples.size > 0 && { sampleValues: Array.from(accumulator.examples.values()) }),
     };
+}
+
+// ============================================================================
+// Main Export
+// ============================================================================
+
+export interface ComputeStatsOptions {
+    maxRows?: number;
+    maxDepth?: number;
+    formatThreshold?: number;
+    mixedTypeThreshold?: number;
 }
 
 export function computeStats(
@@ -569,25 +349,20 @@ export function computeStats(
     const detected = detect(input);
     const tables: Record<string, StatsTableSchema> = {};
 
-    const buildOptions: FieldBuildOptions = {
-        formatThreshold,
-        mixedTypeThreshold,
-    };
-
     for (const [tableName, rows] of Object.entries(detected.tables)) {
-        const sampleResult = sampleRows(rows as PlainObject[], maxRows);
+        const sampled = sampleRows(rows as PlainObject[], maxRows);
         const accumulators = new Map<string, FieldAccumulator>();
 
-        collectFieldsFromRows(sampleResult.rows, accumulators, maxDepth);
-
-        const fields: StatsField[] = [];
-
-        for (const [path, accumulator] of accumulators) {
-            fields.push(buildStatsField(path, accumulator, buildOptions));
+        for (const row of sampled.rows) {
+            collectFromObject(row as PlainObject, accumulators, [], 0, maxDepth);
         }
 
-        fields.sort((fieldA, fieldB) => fieldA.path.localeCompare(fieldB.path));
+        const fields: StatsField[] = [];
+        for (const [path, accumulator] of accumulators) {
+            fields.push(buildStatsField(path, accumulator, formatThreshold, mixedTypeThreshold));
+        }
 
+        fields.sort((a, b) => a.path.localeCompare(b.path));
         tables[tableName] = { fields };
     }
 

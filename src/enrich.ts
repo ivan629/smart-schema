@@ -1,26 +1,29 @@
 /**
- * AI Enrichment Module
+ * AI Enrichment
  *
- * Enriches pre-compressed structure with semantic descriptions.
- * AI only sees unique elements (archetypes + unique fields), not repetitive structures.
+ * Enriches schema with semantic descriptions using Claude.
+ * Only sends unique elements ($defs + unique fields) to minimize tokens.
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import type { Logger } from './types.js';
-import { consoleLogger, AIEnrichmentError, AIValidationError, APIError, TimeoutError } from './types.js';
-import type { PreCompressedStructure, UniqueField, DetectedArchetype } from './structure.js';
-import { buildEnrichmentPrompt, type AIEnrichmentResponse, type AITableEnrichment } from './prompts.js';
 import type {
-    CompressedSchema,
-    CompressedTable,
-    CompressedField,
-    CompressedEntity,
-    Archetype,
-    ArchetypeField,
-    SchemaMap,
-    SchemaDefaults,
-    Pattern,
-} from './compress.js';
+    SmartSchema,
+    TypeDef,
+    NodeDef,
+    ObjectNode,
+    Capabilities,
+    Entity,
+    Logger,
+} from './types.js';
+import {
+    consoleLogger,
+    isObjectNode,
+    isArrayNode,
+    isMapNode,
+    isRefNode,
+    isFieldNode,
+} from './types.js';
+import { buildEnrichmentPrompt, type AIEnrichmentResponse } from './prompts.js';
 
 // ============================================================================
 // Constants
@@ -28,7 +31,25 @@ import type {
 
 const DEFAULT_MODEL = 'claude-sonnet-4-5-20250929';
 const DEFAULT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
-const MAX_TOKENS = 8192;
+const MAX_TOKENS = 4096;
+
+// ============================================================================
+// Errors
+// ============================================================================
+
+export class APIError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'APIError';
+    }
+}
+
+export class TimeoutError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'TimeoutError';
+    }
+}
 
 // ============================================================================
 // Types
@@ -74,7 +95,7 @@ async function callAI(
 
         const text = content.text.trim();
 
-        // Try to extract JSON from response
+        // Extract JSON from response
         let jsonText = text;
 
         // Handle markdown code blocks
@@ -106,171 +127,137 @@ async function callAI(
 }
 
 // ============================================================================
-// Schema Building
+// Apply Enrichment to Structure
 // ============================================================================
 
-function extractDefaults(structure: PreCompressedStructure): SchemaDefaults {
-    const nullableCounts = { true: 0, false: 0 };
-    const aggregationCounts: Record<string, number> = {};
+function enrichDefs(
+    defs: Record<string, TypeDef>,
+    aiDefs?: Record<string, { description: string; fields: Record<string, { description: string }> }>
+): Record<string, TypeDef> {
+    const result: Record<string, TypeDef> = {};
 
-    for (const fields of structure.uniqueFields.values()) {
-        for (const field of fields) {
-            nullableCounts[String(field.nullable) as 'true' | 'false']++;
-            aggregationCounts[field.aggregation] = (aggregationCounts[field.aggregation] ?? 0) + 1;
-        }
-    }
+    for (const [name, def] of Object.entries(defs)) {
+        const aiDef = aiDefs?.[name];
 
-    const mostCommonAggregation = Object.entries(aggregationCounts)
-        .sort(([, a], [, b]) => b - a)[0]?.[0] ?? 'none';
+        const fields: Record<string, NodeDef> = {};
+        for (const [fieldName, fieldNode] of Object.entries(def.fields)) {
+            const aiField = aiDef?.fields?.[fieldName];
 
-    return {
-        nullable: nullableCounts.true > nullableCounts.false,
-        personalData: false,
-        aggregation: mostCommonAggregation as SchemaDefaults['aggregation'],
-    };
-}
-
-function buildArchetypes(
-    structure: PreCompressedStructure,
-    aiResponse: AIEnrichmentResponse
-): Record<string, Archetype> {
-    const archetypes: Record<string, Archetype> = {};
-
-    for (const [name, detected] of structure.archetypes) {
-        const aiArchetype = aiResponse.archetypes?.[name];
-
-        const fields: Record<string, ArchetypeField> = {};
-        for (const [fieldName, shape] of detected.fields) {
-            const aiField = aiArchetype?.fields?.[fieldName];
-
-            fields[fieldName] = {
-                type: shape.type,
-                role: shape.role,
-                description: aiField?.description ?? `${fieldName} field`,
-                ...(shape.aggregation !== 'none' && { aggregation: shape.aggregation }),
-                ...(shape.unit && { unit: shape.unit }),
-                ...(shape.format && { format: shape.format }),
-            };
+            if (isFieldNode(fieldNode)) {
+                fields[fieldName] = {
+                    ...fieldNode,
+                    ...(aiField?.description && { description: aiField.description }),
+                };
+            } else {
+                fields[fieldName] = fieldNode;
+            }
         }
 
-        archetypes[name] = {
-            description: aiArchetype?.description ?? `${name} structure`,
+        result[name] = {
+            ...(aiDef?.description && { description: aiDef.description }),
             fields,
         };
     }
 
-    return archetypes;
+    return result;
 }
 
-function buildMaps(
-    structure: PreCompressedStructure,
-    aiResponse: AIEnrichmentResponse
-): SchemaMap[] {
-    const maps: SchemaMap[] = [];
+function enrichNode(
+    node: NodeDef,
+    path: string,
+    aiFields?: Record<string, { description: string }>
+): NodeDef {
+    const aiField = aiFields?.[path];
 
-    for (const [path, detected] of structure.maps) {
-        const aiMap = aiResponse.maps?.[path];
-
-        if (detected.archetypeName) {
-            maps.push({
-                path,
-                description: aiMap?.description ?? `Collection at ${path}`,
-                keys: detected.keys,
-                valueArchetype: detected.archetypeName,
-            });
-        }
+    if (isRefNode(node)) {
+        return {
+            ...node,
+            ...(aiField?.description && { description: aiField.description }),
+        };
     }
 
-    return maps;
-}
-
-function buildCompressedField(
-    field: UniqueField,
-    defaults: SchemaDefaults,
-    aiDescription?: string
-): CompressedField {
-    const includeAggregation = field.aggregation !== defaults.aggregation;
-    const includeNullable = field.nullable !== defaults.nullable;
-
-    return {
-        path: field.path,
-        type: field.type,
-        role: field.role,
-        ...(aiDescription && { description: aiDescription }),
-        ...(field.format && { format: field.format }),
-        ...(field.unit && { unit: field.unit }),
-        ...(includeAggregation && { aggregation: field.aggregation }),
-        ...(includeNullable && { nullable: field.nullable }),
-        ...(field.refKeys && { refKeys: field.refKeys }),
-        ...(field.sameAs && { sameAs: field.sameAs }),
-    };
-}
-
-function buildEntities(
-    tableName: string,
-    fields: readonly UniqueField[],
-    archetypes: Record<string, Archetype>,
-    maps: SchemaMap[],
-    aiTable?: AITableEnrichment
-): CompressedEntity[] {
-    const entities: CompressedEntity[] = [];
-
-    // Add AI-detected entities
-    if (aiTable?.entities) {
-        for (const aiEntity of aiTable.entities) {
-            entities.push({
-                name: aiEntity.name,
-                description: aiEntity.description,
-                table: tableName,
-                ...(aiEntity.idField && { idField: aiEntity.idField }),
-                ...(aiEntity.nameField && { nameField: aiEntity.nameField }),
-                primaryFields: fields
-                    .filter(f => !f.path.includes('.') || f.path.split('.').length <= 2)
-                    .slice(0, 10)
-                    .map(f => f.path),
-            });
-        }
+    if (isFieldNode(node)) {
+        return {
+            ...node,
+            ...(aiField?.description && { description: aiField.description }),
+        };
     }
 
-    // Add archetype-based entities
-    for (const [archetypeName, archetype] of Object.entries(archetypes)) {
-        const matchingMaps = maps.filter(m => m.valueArchetype === archetypeName);
-
-        if (matchingMaps.length > 0) {
-            const alreadyExists = entities.some(e => e.archetype === archetypeName);
-            if (!alreadyExists) {
-                entities.push({
-                    name: archetypeName,
-                    description: archetype.description,
-                    table: tableName,
-                    archetype: archetypeName,
-                    primaryFields: Object.keys(archetype.fields),
-                    occursIn: matchingMaps.map(m => `${m.path}.*`),
-                });
-            }
-        }
+    if (isArrayNode(node)) {
+        return {
+            ...node,
+            ...(aiField?.description && { description: aiField.description }),
+            items: typeof node.items === 'string'
+                ? node.items
+                : enrichNode(node.items, `${path}.[]`, aiFields),
+        };
     }
 
-    return entities;
+    if (isMapNode(node)) {
+        return {
+            ...node,
+            ...(aiField?.description && { description: aiField.description }),
+            values: typeof node.values === 'string'
+                ? node.values
+                : enrichNode(node.values, path, aiFields),
+        };
+    }
+
+    if (isObjectNode(node)) {
+        const fields: Record<string, NodeDef> = {};
+        for (const [key, child] of Object.entries(node.fields)) {
+            const childPath = path ? `${path}.${key}` : key;
+            fields[key] = enrichNode(child, childPath, aiFields);
+        }
+        return {
+            ...node,
+            ...(aiField?.description && { description: aiField.description }),
+            fields,
+        };
+    }
+
+    return node;
 }
 
-function buildPatterns(structure: PreCompressedStructure): Pattern[] {
-    return structure.patterns.map(p => ({ ...p }));
+function enrichEntities(
+    detected: Entity[],
+    aiEntities?: readonly { name: string; description: string }[]
+): Entity[] {
+    if (!aiEntities || aiEntities.length === 0) {
+        return detected;
+    }
+
+    // Merge AI enrichment with detected entities
+    const result: Entity[] = [];
+    const aiByName = new Map(aiEntities.map(e => [e.name.toLowerCase(), e]));
+
+    for (const entity of detected) {
+        const ai = aiByName.get(entity.name.toLowerCase());
+        result.push({
+            ...entity,
+            ...(ai && { description: ai.description }),
+        });
+    }
+
+    return result;
 }
 
 // ============================================================================
-// Main Entry Point
+// Main Export
 // ============================================================================
 
-export async function enrichStructure(
-    structure: PreCompressedStructure,
+export async function enrichWithAI(
+    defs: Record<string, TypeDef>,
+    root: NodeDef,
+    capabilities: Capabilities,
+    entities: Entity[],
     apiKey: string,
     options: EnrichOptions = {}
-): Promise<CompressedSchema> {
+): Promise<SmartSchema> {
     const { logger = consoleLogger } = options;
 
     // Build prompt
-    const prompt = buildEnrichmentPrompt(structure);
+    const prompt = buildEnrichmentPrompt(defs, root, entities);
     logger.debug(`Generated prompt (${prompt.length} chars)`);
 
     // Call AI
@@ -278,43 +265,20 @@ export async function enrichStructure(
     const aiResponse = await callAI(prompt, apiKey, options);
     logger.info('AI enrichment received');
 
-    // Build schema
-    const defaults = extractDefaults(structure);
-    const archetypes = buildArchetypes(structure, aiResponse);
-    const allMaps = buildMaps(structure, aiResponse);
-    const patterns = buildPatterns(structure);
-
-    const tables: Record<string, CompressedTable> = {};
-
-    for (const [tableName, uniqueFields] of structure.uniqueFields) {
-        const aiTable = aiResponse.tables?.[tableName];
-        // All maps belong to the table (we only have one table typically)
-        // Maps are detected from structure.maps which came from the same table
-        const tableMaps = allMaps;
-
-        const fields = uniqueFields.map(f =>
-            buildCompressedField(f, defaults, aiTable?.fields?.[f.path]?.description)
-        );
-
-        const entities = buildEntities(tableName, uniqueFields, archetypes, tableMaps, aiTable);
-
-        tables[tableName] = {
-            description: aiTable?.description ?? `${tableName} table`,
-            dataGrain: aiTable?.dataGrain ?? 'one row per record',
-            maps: tableMaps,
-            fields,
-            entities,
-            capabilities: 'auto',
-        };
-    }
+    // Apply enrichment
+    const enrichedDefs = enrichDefs(defs, aiResponse.defs);
+    const enrichedRoot = enrichNode(root, '', aiResponse.fields);
+    const enrichedEntities = enrichEntities(entities, aiResponse.entities);
 
     return {
+        $version: 2,
         domain: aiResponse.domain ?? 'unknown',
         description: aiResponse.description ?? 'Data schema',
-        defaults,
-        archetypes,
-        patterns,
-        tables,
+        grain: aiResponse.grain ?? 'One record per row',
+        ...(Object.keys(enrichedDefs).length > 0 && { $defs: enrichedDefs }),
+        root: enrichedRoot,
+        capabilities,
+        ...(enrichedEntities.length > 0 && { entities: enrichedEntities }),
     };
 }
 
@@ -330,72 +294,40 @@ function pathToLabel(path: string): string {
         .replace(/\b\w/g, c => c.toUpperCase());
 }
 
-export function applyDefaults(structure: PreCompressedStructure): CompressedSchema {
-    const defaults = extractDefaults(structure);
-
-    // Build archetypes with default descriptions
-    const archetypes: Record<string, Archetype> = {};
-    for (const [name, detected] of structure.archetypes) {
-        const fields: Record<string, ArchetypeField> = {};
-        for (const [fieldName, shape] of detected.fields) {
-            fields[fieldName] = {
-                type: shape.type,
-                role: shape.role,
-                description: pathToLabel(fieldName),
-                ...(shape.aggregation !== 'none' && { aggregation: shape.aggregation }),
-                ...(shape.unit && { unit: shape.unit }),
-                ...(shape.format && { format: shape.format }),
-            };
+export function applyDefaults(
+    defs: Record<string, TypeDef>,
+    root: NodeDef,
+    capabilities: Capabilities,
+    entities: Entity[]
+): SmartSchema {
+    // Add default descriptions to defs
+    const defaultDefs: Record<string, TypeDef> = {};
+    for (const [name, def] of Object.entries(defs)) {
+        const fields: Record<string, NodeDef> = {};
+        for (const [fieldName, fieldNode] of Object.entries(def.fields)) {
+            if (isFieldNode(fieldNode)) {
+                fields[fieldName] = {
+                    ...fieldNode,
+                    description: pathToLabel(fieldName),
+                };
+            } else {
+                fields[fieldName] = fieldNode;
+            }
         }
-        archetypes[name] = {
+        defaultDefs[name] = {
             description: pathToLabel(name),
             fields,
         };
     }
 
-    // Build maps
-    const allMaps: SchemaMap[] = [];
-    for (const [path, detected] of structure.maps) {
-        if (detected.archetypeName) {
-            allMaps.push({
-                path,
-                description: pathToLabel(path.split('.').pop() ?? path),
-                keys: detected.keys,
-                valueArchetype: detected.archetypeName,
-            });
-        }
-    }
-
-    const patterns = buildPatterns(structure);
-
-    const tables: Record<string, CompressedTable> = {};
-
-    for (const [tableName, uniqueFields] of structure.uniqueFields) {
-        // All maps belong to the table
-        const tableMaps = allMaps;
-
-        const fields = uniqueFields.map(f =>
-            buildCompressedField(f, defaults, pathToLabel(f.path))
-        );
-
-        const entities = buildEntities(tableName, uniqueFields, archetypes, tableMaps);
-
-        tables[tableName] = {
-            description: pathToLabel(tableName),
-            dataGrain: 'one row per record',
-            maps: tableMaps,
-            fields,
-            entities,
-            capabilities: 'auto',
-        };
-    }
-
     return {
+        $version: 2,
         domain: 'unknown',
         description: 'Data schema',
-        defaults,
-        archetypes,
-        patterns,
-        tables,
+        grain: 'One record per row',
+        ...(Object.keys(defaultDefs).length > 0 && { $defs: defaultDefs }),
+        root,
+        capabilities,
+        ...(entities.length > 0 && { entities }),
     };
 }
