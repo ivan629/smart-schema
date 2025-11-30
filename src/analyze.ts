@@ -33,7 +33,13 @@ function validateSchemaLimits(stats: StatsMultiTableSchema, logger: Logger): voi
     if (fieldCount > LIMITS.maxFieldsForEnrichment) {
         throw new LimitExceededError(
             `Dataset has ${fieldCount} fields (max: ${LIMITS.maxFieldsForEnrichment}). ` +
-                `Consider using skipAI: true or splitting your dataset.`
+            `Consider using skipAI: true or splitting your dataset.`
+        );
+    }
+
+    if (fieldCount > LIMITS.maxFieldsWarningThreshold) {
+        logger.warn(
+            `Large schema (${fieldCount} fields) - AI enrichment may be incomplete for some fields`
         );
     }
 
