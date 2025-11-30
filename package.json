@@ -1,6 +1,6 @@
 {
   "name": "smart-schema",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Analyze any JSON → produce AI-enriched schemas that give LLMs deep understanding of data structure, meaning, relationships, and context.",
   "type": "module",
   "main": "./dist/index.js",
@@ -60,6 +60,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "@jsonhero/json-infer-types": "^1.2.11",
+    "jsonrepair": "^3.13.1",
     "lodash": "^4.17.21",
     "p-timeout": "^7.0.1",
     "zod": "^4.1.13"

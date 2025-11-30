@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { jsonrepair } from 'jsonrepair';
 
 export type PlainObject = Record<string, unknown>;
 
@@ -10,6 +11,7 @@ export function escapePathSegment(segment: string): string {
     if (!/[.[\]\\]/.test(segment)) {
         return segment;
     }
+
     return segment
         .replace(/\\/g, '\\\\')
         .replace(/\./g, '\\.')
@@ -60,6 +62,11 @@ export function extractJsonFromText(text: string): string {
     if (!match) {
         throw new Error('No JSON object found in response');
     }
-    JSON.parse(match[0]);
-    return match[0];
+
+    try {
+        return jsonrepair(match[0]);
+    } catch (error) {
+        throw new Error(`Invalid JSON in response: ${(error as Error).message}`);
+    }
 }
+
