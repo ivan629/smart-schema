@@ -1,64 +1,359 @@
-[{"sepal.length":5.1,"sepal.width":3.5,"petal.length":1.4,"petal.width":0.2,"variety":"Setosa"},
-  {"sepal.length":4.9,"sepal.width":3,"petal.length":1.4,"petal.width":0.2,"variety":"Setosa"},
-  {"sepal.length":4.7,"sepal.width":3.2,"petal.length":1.3,"petal.width":0.2,"variety":"Setosa"},
-  {"sepal.length":5.5,"sepal.width":2.5,"petal.length":4,"petal.width":1.3,"variety":"Versicolor"},
-  {"sepal.length":5.5,"sepal.width":2.6,"petal.length":4.4,"petal.width":1.2,"variety":"Versicolor"},
-  {"sepal.length":6.1,"sepal.width":3,"petal.length":4.6,"petal.width":1.4,"variety":"Versicolor"},
-  {"sepal.length":5.8,"sepal.width":2.6,"petal.length":4,"petal.width":1.2,"variety":"Versicolor"},
-  {"sepal.length":5,"sepal.width":2.3,"petal.length":3.3,"petal.width":1,"variety":"Versicolor"},
-  {"sepal.length":5.6,"sepal.width":2.7,"petal.length":4.2,"petal.width":1.3,"variety":"Versicolor"},
-  {"sepal.length":5.7,"sepal.width":3,"petal.length":4.2,"petal.width":1.2,"variety":"Versicolor"},
-  {"sepal.length":5.7,"sepal.width":2.9,"petal.length":4.2,"petal.width":1.3,"variety":"Versicolor"},
-  {"sepal.length":6.2,"sepal.width":2.9,"petal.length":4.3,"petal.width":1.3,"variety":"Versicolor"},
-  {"sepal.length":5.1,"sepal.width":2.5,"petal.length":3,"petal.width":1.1,"variety":"Versicolor"},
-  {"sepal.length":5.7,"sepal.width":2.8,"petal.length":4.1,"petal.width":1.3,"variety":"Versicolor"},
-  {"sepal.length":6.3,"sepal.width":3.3,"petal.length":6,"petal.width":2.5,"variety":"Virginica"},
-  {"sepal.length":5.8,"sepal.width":2.7,"petal.length":5.1,"petal.width":1.9,"variety":"Virginica"},
-  {"sepal.length":7.1,"sepal.width":3,"petal.length":5.9,"petal.width":2.1,"variety":"Virginica"},
-  {"sepal.length":6.3,"sepal.width":2.9,"petal.length":5.6,"petal.width":1.8,"variety":"Virginica"},
-  {"sepal.length":6.5,"sepal.width":3,"petal.length":5.8,"petal.width":2.2,"variety":"Virginica"},
-  {"sepal.length":7.6,"sepal.width":3,"petal.length":6.6,"petal.width":2.1,"variety":"Virginica"},
-  {"sepal.length":4.9,"sepal.width":2.5,"petal.length":4.5,"petal.width":1.7,"variety":"Virginica"},
-  {"sepal.length":7.3,"sepal.width":2.9,"petal.length":6.3,"petal.width":1.8,"variety":"Virginica"},
-  {"sepal.length":6.7,"sepal.width":2.5,"petal.length":5.8,"petal.width":1.8,"variety":"Virginica"},
-  {"sepal.length":7.2,"sepal.width":3.6,"petal.length":6.1,"petal.width":2.5,"variety":"Virginica"},
-  {"sepal.length":6.5,"sepal.width":3.2,"petal.length":5.1,"petal.width":2,"variety":"Virginica"},
-  {"sepal.length":6.4,"sepal.width":2.7,"petal.length":5.3,"petal.width":1.9,"variety":"Virginica"},
-  {"sepal.length":6.8,"sepal.width":3,"petal.length":5.5,"petal.width":2.1,"variety":"Virginica"},
-  {"sepal.length":5.7,"sepal.width":2.5,"petal.length":5,"petal.width":2,"variety":"Virginica"},
-  {"sepal.length":5.8,"sepal.width":2.8,"petal.length":5.1,"petal.width":2.4,"variety":"Virginica"},
-  {"sepal.length":6.4,"sepal.width":3.2,"petal.length":5.3,"petal.width":2.3,"variety":"Virginica"},
-  {"sepal.length":6.5,"sepal.width":3,"petal.length":5.5,"petal.width":1.8,"variety":"Virginica"},
-  {"sepal.length":7.7,"sepal.width":3.8,"petal.length":6.7,"petal.width":2.2,"variety":"Virginica"},
-  {"sepal.length":7.7,"sepal.width":2.6,"petal.length":6.9,"petal.width":2.3,"variety":"Virginica"},
-  {"sepal.length":6,"sepal.width":2.2,"petal.length":5,"petal.width":1.5,"variety":"Virginica"},
-  {"sepal.length":6.9,"sepal.width":3.2,"petal.length":5.7,"petal.width":2.3,"variety":"Virginica"},
-  {"sepal.length":5.6,"sepal.width":2.8,"petal.length":4.9,"petal.width":2,"variety":"Virginica"},
-  {"sepal.length":7.7,"sepal.width":2.8,"petal.length":6.7,"petal.width":2,"variety":"Virginica"},
-  {"sepal.length":6.3,"sepal.width":2.7,"petal.length":4.9,"petal.width":1.8,"variety":"Virginica"},
-  {"sepal.length":6.7,"sepal.width":3.3,"petal.length":5.7,"petal.width":2.1,"variety":"Virginica"},
-  {"sepal.length":7.2,"sepal.width":3.2,"petal.length":6,"petal.width":1.8,"variety":"Virginica"},
-  {"sepal.length":6.2,"sepal.width":2.8,"petal.length":4.8,"petal.width":1.8,"variety":"Virginica"},
-  {"sepal.length":6.1,"sepal.width":3,"petal.length":4.9,"petal.width":1.8,"variety":"Virginica"},
-  {"sepal.length":6.4,"sepal.width":2.8,"petal.length":5.6,"petal.width":2.1,"variety":"Virginica"},
-  {"sepal.length":7.2,"sepal.width":3,"petal.length":5.8,"petal.width":1.6,"variety":"Virginica"},
-  {"sepal.length":7.4,"sepal.width":2.8,"petal.length":6.1,"petal.width":1.9,"variety":"Virginica"},
-  {"sepal.length":7.9,"sepal.width":3.8,"petal.length":6.4,"petal.width":2,"variety":"Virginica"},
-  {"sepal.length":6.4,"sepal.width":2.8,"petal.length":5.6,"petal.width":2.2,"variety":"Virginica"},
-  {"sepal.length":6.3,"sepal.width":2.8,"petal.length":5.1,"petal.width":1.5,"variety":"Virginica"},
-  {"sepal.length":6.1,"sepal.width":2.6,"petal.length":5.6,"petal.width":1.4,"variety":"Virginica"},
-  {"sepal.length":7.7,"sepal.width":3,"petal.length":6.1,"petal.width":2.3,"variety":"Virginica"},
-  {"sepal.length":6.3,"sepal.width":3.4,"petal.length":5.6,"petal.width":2.4,"variety":"Virginica"},
-  {"sepal.length":6.4,"sepal.width":3.1,"petal.length":5.5,"petal.width":1.8,"variety":"Virginica"},
-  {"sepal.length":6,"sepal.width":3,"petal.length":4.8,"petal.width":1.8,"variety":"Virginica"},
-  {"sepal.length":6.9,"sepal.width":3.1,"petal.length":5.4,"petal.width":2.1,"variety":"Virginica"},
-  {"sepal.length":6.7,"sepal.width":3.1,"petal.length":5.6,"petal.width":2.4,"variety":"Virginica"},
-  {"sepal.length":6.9,"sepal.width":3.1,"petal.length":5.1,"petal.width":2.3,"variety":"Virginica"},
-  {"sepal.length":5.8,"sepal.width":2.7,"petal.length":5.1,"petal.width":1.9,"variety":"Virginica"},
-  {"sepal.length":6.8,"sepal.width":3.2,"petal.length":5.9,"petal.width":2.3,"variety":"Virginica"},
-  {"sepal.length":6.7,"sepal.width":3.3,"petal.length":5.7,"petal.width":2.5,"variety":"Virginica"},
-  {"sepal.length":6.7,"sepal.width":3,"petal.length":5.2,"petal.width":2.3,"variety":"Virginica"},
-  {"sepal.length":6.3,"sepal.width":2.5,"petal.length":5,"petal.width":1.9,"variety":"Virginica"},
-  {"sepal.length":6.5,"sepal.width":3,"petal.length":5.2,"petal.width":2,"variety":"Virginica"},
-  {"sepal.length":6.2,"sepal.width":3.4,"petal.length":5.4,"petal.width":2.3,"variety":"Virginica"},
-  {"sepal.length":5.9,"sepal.width":3,"petal.length":5.1,"petal.width":1.8,"variety":"Virginica"}]
+{
+  "timestamp": "2025-11-23T16:52:24.709Z",
+  "request": {
+    "transcript_word_count": 1615,
+    "video_id": "4LcOu4Vw0Ps"
+  },
+  "result": {
+    "schwartz": {
+      "values": {
+        "self_direction": {
+          "score": 45,
+          "confidence": 6,
+          "instance_count": 3,
+          "evidence": [
+            {
+              "quote": "I refuse to speak other any other language in English for two very important reasons",
+              "context": "Explaining personal choice about language learning despite social expectations",
+              "strength": 6
+            },
+            {
+              "quote": "my brother can learn languages he enjoys it he wants to right but I",
+              "context": "Distinguishing his autonomous choice from his brother's different choice",
+              "strength": 5
+            },
+            {
+              "quote": "why would I speak in a language which I don't speak as well as in English",
+              "context": "Justifying independent decision based on personal reasoning",
+              "strength": 6
+            }
+          ]
+        },
+        "stimulation": {
+          "score": 52,
+          "confidence": 7,
+          "instance_count": 4,
+          "evidence": [
+            {
+              "quote": "he also has to provide drama for her he also has to be entertaining for her... if there's never any drama because drama is excitement then they're going to naturally try and find drama somewhere else",
+              "context": "Discussing need for excitement and novelty in relationships",
+              "strength": 8
+            },
+            {
+              "quote": "you have to shock her a bit you have to be the person who can upset her you need to be entertaining all-encompassing",
+              "context": "Emphasizing variety and unpredictability as essential",
+              "strength": 7
+            },
+            {
+              "quote": "if your primary concern is that you know I'll I'm too young I need to experience more experience what what restaurants how many restaurants you have to go to",
+              "context": "Dismissing novelty-seeking as insufficient justification (shows awareness of value but critiques it)",
+              "strength": 6
+            }
+          ]
+        },
+        "hedonism": {
+          "score": 15,
+          "confidence": 4,
+          "instance_count": 1,
+          "evidence": [
+            {
+              "quote": "how many times you've got to go eat until you eventually realize going to eat [ __ ]",
+              "context": "Dismissing pleasure-seeking activities as insufficient life purpose",
+              "strength": 4
+            }
+          ]
+        },
+        "achievement": {
+          "score": 88,
+          "confidence": 9,
+          "instance_count": 12,
+          "evidence": [
+            {
+              "quote": "you have to be as competitive as possible you have to be as successful as possible in all Realms you have to be as good looking as funny as smart as spontaneous as interesting as charismatic as rich as possible you need to try very hard to be your absolute best",
+              "context": "Core message about personal success and demonstrating competence",
+              "strength": 10
+            },
+            {
+              "quote": "as you become a better man you'll crack through different tiers of attractiveness and eventually you get to the top",
+              "context": "Describing achievement as progression through competence levels",
+              "strength": 9
+            },
+            {
+              "quote": "you have to up yourself you have to improve yourself I'm not going to lie to anybody here and say you don't have to improve yourself",
+              "context": "Emphasizing continuous self-improvement and capability development",
+              "strength": 9
+            },
+            {
+              "quote": "I'm perfect in English so why would I speak in a language which I don't speak as well as in English",
+              "context": "Demonstrating personal competence as justification",
+              "strength": 7
+            }
+          ]
+        },
+        "power": {
+          "score": 82,
+          "confidence": 9,
+          "instance_count": 10,
+          "evidence": [
+            {
+              "quote": "as a man we live in hyper-competitive environments... if you want a girl you're competing against other men... you have to out-compete other men",
+              "context": "Framing life as dominance competition for resources and status",
+              "strength": 9
+            },
+            {
+              "quote": "eventually you get to the top and you'll be able to have any girl you want",
+              "context": "Describing power and control as ultimate goal",
+              "strength": 8
+            },
+            {
+              "quote": "if a woman is going to dedicate herself to a man then that man has to be all-encompassing he has to be a man who can fix most of her problems",
+              "context": "Emphasizing control and dominance in relationships",
+              "strength": 9
+            },
+            {
+              "quote": "women want to be with a man which keeps them entertained and a man which they trust and a man which they believe can fix all of their problems",
+              "context": "Defining male value through control and resource provision",
+              "strength": 8
+            },
+            {
+              "quote": "if a woman comes to you with an issue and you can't fix it you'll see very quickly how how soon they lose attraction",
+              "context": "Power through problem-solving capability",
+              "strength": 7
+            }
+          ]
+        },
+        "security": {
+          "score": 58,
+          "confidence": 7,
+          "instance_count": 5,
+          "evidence": [
+            {
+              "quote": "he has to provide stability and safety which everybody knows",
+              "context": "Discussing essential male role in relationships",
+              "strength": 8
+            },
+            {
+              "quote": "women want to be with a man which keeps them entertained and a man which they trust",
+              "context": "Emphasizing trust and stability alongside other qualities",
+              "strength": 7
+            },
+            {
+              "quote": "as you grow older if you don't have a bunch of children your later years are filled with debts as opposed to being filled with births and life",
+              "context": "Discussing long-term stability and avoiding negative outcomes",
+              "strength": 6
+            },
+            {
+              "quote": "the Twilight years of your life or just everybody you know slowly dying and there's no new life injected",
+              "context": "Concern about maintaining stability and avoiding decline",
+              "strength": 6
+            }
+          ]
+        },
+        "conformity": {
+          "score": 25,
+          "confidence": 5,
+          "instance_count": 2,
+          "evidence": [
+            {
+              "quote": "you should just accept the responsibilities like a [ __ ] adult",
+              "context": "Advocating restraint and meeting social obligations",
+              "strength": 6
+            },
+            {
+              "quote": "it's very common in fact it's completely considered normal for people to speak more than one language",
+              "context": "Acknowledging social norms (though not necessarily conforming to them)",
+              "strength": 4
+            }
+          ]
+        },
+        "tradition": {
+          "score": 68,
+          "confidence": 8,
+          "instance_count": 6,
+          "evidence": [
+            {
+              "quote": "I think it's Haram all right that's it done done I don't think I don't think that you should be ending human life",
+              "context": "Invoking religious/traditional moral framework on abortion",
+              "strength": 9
+            },
+            {
+              "quote": "I saw a video of Dua LIPA a long time ago and she was an Albania doing an Albanian traditional dance I thought she can give me strong Albanian half Sons",
+              "context": "Valuing cultural heritage and traditional practices",
+              "strength": 7
+            },
+            {
+              "quote": "I think there's nothing more worthwhile for people to do than have children and if you can financially afford it then that's what you should do",
+              "context": "Emphasizing traditional family values and life purpose",
+              "strength": 8
+            },
+            {
+              "quote": "if you don't have a family and you don't have children as you get older the the Twilight years of your life or just everybody you know slowly dying and there's no new life injected",
+              "context": "Traditional view of family as essential life structure",
+              "strength": 7
+            }
+          ]
+        },
+        "benevolence": {
+          "score": 42,
+          "confidence": 6,
+          "instance_count": 3,
+          "evidence": [
+            {
+              "quote": "if you don't have a family and you don't have children as you get older... I think it's very important to do",
+              "context": "Discussing care and responsibility for family/children",
+              "strength": 7
+            },
+            {
+              "quote": "she can give me strong Albanian half Sons",
+              "context": "Expressing desire for family and children (in-group focus)",
+              "strength": 6
+            },
+            {
+              "quote": "all in all I think there's nothing more worthwhile for people to do than have children",
+              "context": "Valuing family welfare and continuation",
+              "strength": 6
+            }
+          ]
+        },
+        "universalism": {
+          "score": 8,
+          "confidence": 7,
+          "instance_count": 1,
+          "evidence": [
+            {
+              "quote": "I don't think that you should be ending human life",
+              "context": "Expressing concern for human life in general (though within specific moral framework)",
+              "strength": 5
+            }
+          ]
+        }
+      },
+      "meta": {
+        "transcript_word_count": 1615,
+        "values_detected": 10,
+        "highest_value": "achievement",
+        "lowest_value": "universalism",
+        "analysis_date": "2025-11-23T16:52:24.711Z"
+      }
+    },
+    "seven_sins": {
+      "sins": {
+        "pride": {
+          "score": 82,
+          "confidence": 9,
+          "instance_count": 8,
+          "evidence": [
+            {
+              "quote": "I'm perfect in English so why would I speak in a language which I don't speak as well as in English",
+              "context": "When explaining why he refuses to learn other languages, claiming perfection",
+              "strength": 9
+            },
+            {
+              "quote": "how do I get a girl like bro you're a loser yeah but I know but how do I get a girl well you're a [ __ ] loser you're a loser",
+              "context": "When responding to men seeking advice, repeatedly calling them losers with contempt",
+              "strength": 10
+            },
+            {
+              "quote": "I refuse to speak other any other language in English... English is the number one best language... the perfect language",
+              "context": "Declaring English as objectively superior and perfect, dismissing all other languages",
+              "strength": 8
+            }
+          ]
+        },
+        "greed": {
+          "score": 45,
+          "confidence": 7,
+          "instance_count": 3,
+          "evidence": [
+            {
+              "quote": "it doesn't matter if it's getting a girl or it's making money or it's getting status... you have to be as rich as possible",
+              "context": "Listing money/wealth as equal priority to relationships, emphasizing maximum wealth accumulation",
+              "strength": 6
+            },
+            {
+              "quote": "if you can financially afford it then that's what you should do",
+              "context": "Making financial capacity a primary criterion for life decisions including having children",
+              "strength": 5
+            }
+          ]
+        },
+        "lust": {
+          "score": 71,
+          "confidence": 8,
+          "instance_count": 6,
+          "evidence": [
+            {
+              "quote": "you have to out-compete other men... eventually you get to the top and you'll be able to have any girl you want",
+              "context": "Framing relationships as competitive conquest where the goal is access to 'any girl'",
+              "strength": 8
+            },
+            {
+              "quote": "if you're going to be on a race track and there's going to be Ferraris there... you're going to get smoked that's the game",
+              "context": "Comparing women/relationships to prizes in a race, objectifying the entire dynamic",
+              "strength": 9
+            },
+            {
+              "quote": "I saw a video of Dua LIPA... she can give me strong Albanian half Sons maybe her",
+              "context": "Reducing a woman to her reproductive utility for his genetic preferences",
+              "strength": 8
+            }
+          ]
+        },
+        "envy": {
+          "score": 12,
+          "confidence": 5,
+          "instance_count": 1,
+          "evidence": [
+            {
+              "quote": "we live in hyper-competitive environments... you're competing against other men",
+              "context": "Acknowledging competition but not expressing resentment toward others' success",
+              "strength": 3
+            }
+          ]
+        },
+        "gluttony": {
+          "score": 8,
+          "confidence": 4,
+          "instance_count": 0,
+          "evidence": []
+        },
+        "wrath": {
+          "score": 35,
+          "confidence": 6,
+          "instance_count": 2,
+          "evidence": [
+            {
+              "quote": "you have to shock her a bit you have to be the person who can upset her... he also has to provide drama for her",
+              "context": "Advising men to intentionally upset and create drama with women as relationship strategy",
+              "strength": 6
+            },
+            {
+              "quote": "if I were to talk to her for more than two minutes I'd walk out",
+              "context": "Expressing contemptuous dismissal based on assumed political views",
+              "strength": 5
+            }
+          ]
+        },
+        "sloth": {
+          "score": 5,
+          "confidence": 3,
+          "instance_count": 0,
+          "evidence": []
+        }
+      },
+      "meta": {
+        "transcript_word_count": 1615,
+        "sins_detected": 4,
+        "highest_sin": "pride",
+        "total_sin_score": 37,
+        "severity_level": "medium",
+        "analysis_date": "2025-11-23T16:53:07.105Z"
+      }
+    },
+    "success": true,
+    "costs": {
+      "totalCost": "0.0801",
+      "totalTokens": 12568
+    }
+  }
+}

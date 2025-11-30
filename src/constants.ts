@@ -12,6 +12,12 @@ export const THRESHOLDS = {
     mixedType: 0.1,
 } as const;
 
+export const COMPRESSION = {
+    minSiblingsForArchetype: 3,
+    minKeysForMap: 3,
+    maxPrimaryFields: 10,
+} as const;
+
 export const AI_CONFIG = {
     defaultModel: 'claude-sonnet-4-5-20250929',
     defaultTimeoutMs: 300_000,

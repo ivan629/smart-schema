@@ -1,5 +1,6 @@
 import { LIMITS, THRESHOLDS } from './constants.js';
 import { applyDefaults, type EnrichOptions, enrich } from './enrich.js';
+import { compress, type CompressedSchema } from './compress.js';
 import { type ComputeStatsOptions, computeStats } from './stats.js';
 import type { AnalyzeOptions, Logger, MultiTableSchema, StatsMultiTableSchema } from './types.js';
 import { AIEnrichmentError, consoleLogger } from './types.js';
@@ -50,7 +51,7 @@ function shouldPerformAIEnrichment(skipAI: boolean, apiKey: string): boolean {
     return !skipAI && Boolean(apiKey);
 }
 
-export async function analyze(data: unknown, options: AnalyzeOptions): Promise<MultiTableSchema> {
+export async function analyze(data: unknown, options: AnalyzeOptions): Promise<CompressedSchema> {
     const {
         apiKey,
         maxRows = LIMITS.maxRowsToSample,
@@ -84,40 +85,52 @@ export async function analyze(data: unknown, options: AnalyzeOptions): Promise<M
         validateSchemaLimits(stats, logger);
     }
 
+    let enrichedSchema: MultiTableSchema;
+
     if (!performAIEnrichment) {
         logger.info('Skipping AI enrichment, applying defaults');
-        return applyDefaults(stats);
+        enrichedSchema = applyDefaults(stats);
+    } else {
+        logger.info('Starting AI enrichment...');
+
+        try {
+            const enrichOptions: EnrichOptions = {
+                logger,
+                ...(model !== undefined && { model }),
+                ...(timeout !== undefined && { timeout }),
+            };
+
+            enrichedSchema = await enrich(stats, apiKey, enrichOptions);
+            logger.info('AI enrichment complete');
+        } catch (error) {
+            if (error instanceof AIEnrichmentError) {
+                throw error;
+            }
+
+            const partialSchema = applyDefaults(stats);
+            const errorMessage = error instanceof Error ? error.message : 'AI enrichment failed';
+
+            logger.error(`AI enrichment failed: ${errorMessage}`);
+
+            const enrichmentError = new AIEnrichmentError(errorMessage, partialSchema);
+
+            if (error instanceof Error) {
+                enrichmentError.cause = error;
+            }
+
+            throw enrichmentError;
+        }
     }
 
-    logger.info('Starting AI enrichment...');
+    logger.info('Compressing schema...');
+    const compressed = compress(enrichedSchema);
 
-    try {
-        const enrichOptions: EnrichOptions = {
-            logger,
-            ...(model !== undefined && { model }),
-            ...(timeout !== undefined && { timeout }),
-        };
+    const originalFieldCount = fieldCount;
+    const compressedFieldCount = Object.values(compressed.tables)
+        .reduce((sum, table) => sum + table.fields.length, 0);
 
-        const result = await enrich(stats, apiKey, enrichOptions);
+    logger.info(`Schema compressed: ${originalFieldCount} → ${compressedFieldCount} fields`);
+    logger.info('Schema analysis complete');
 
-        logger.info('Schema analysis complete');
-        return result;
-    } catch (error) {
-        if (error instanceof AIEnrichmentError) {
-            throw error;
-        }
-
-        const partialSchema = applyDefaults(stats);
-        const errorMessage = error instanceof Error ? error.message : 'AI enrichment failed';
-
-        logger.error(`AI enrichment failed: ${errorMessage}`);
-
-        const enrichmentError = new AIEnrichmentError(errorMessage, partialSchema);
-
-        if (error instanceof Error) {
-            enrichmentError.cause = error;
-        }
-
-        throw enrichmentError;
-    }
+    return compressed;
 }

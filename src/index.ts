@@ -2,9 +2,24 @@ export { analyze, LimitExceededError } from './analyze.js';
 export type { DetectedTables } from './detect.js';
 export type { EnrichOptions } from './enrich.js';
 export type { SampleResult } from './sample.js';
-
 export type { ComputeStatsOptions } from './stats.js';
 export { computeStats } from './stats.js';
+
+export { expand } from './compress.js';
+
+export type {
+    Archetype,
+    ArchetypeField,
+    CompressedEntity,
+    CompressedField,
+    CompressedSchema as Schema,
+    CompressedTable,
+    Pattern,
+    ReferenceLink,
+    SchemaDefaults,
+    SchemaMap,
+} from './compress.js';
+
 export type {
     AggregationType,
     AnalyzeOptions,
@@ -14,7 +29,6 @@ export type {
     FieldRole,
     FieldType,
     Logger,
-    MultiTableSchema,
     PersonalDataType,
     Relationship,
     RelationshipType,
@@ -22,9 +36,9 @@ export type {
     StatsMultiTableSchema,
     StatsTableSchema,
     TableCapabilities,
-    TableSchema,
     TimeGranularity,
 } from './types.js';
+
 export {
     AIEnrichmentError,
     AIValidationError,

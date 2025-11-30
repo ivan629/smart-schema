@@ -160,6 +160,7 @@ export interface AnalyzeOptions {
     readonly timeout?: number;
     readonly formatThreshold?: number;
     readonly mixedTypeThreshold?: number;
+    readonly compress?: boolean;
 }
 
 export class InvalidInputError extends Error {
