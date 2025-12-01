@@ -1,32 +1,3 @@
-import _ from 'lodash';
-import { jsonrepair } from 'jsonrepair';
-
-export type PlainObject = Record<string, unknown>;
-
-export function removeUndefinedValues<T extends object>(obj: T): T {
-    return _.pickBy(obj, (value) => value !== undefined) as T;
-}
-
-export function escapePathSegment(segment: string): string {
-    if (!/[.[\]\\]/.test(segment)) {
-        return segment;
-    }
-
-    return segment
-        .replace(/\\/g, '\\\\')
-        .replace(/\./g, '\\.')
-        .replace(/\[/g, '\\[')
-        .replace(/\]/g, '\\]');
-}
-
-export function buildFieldPath(segments: readonly string[]): string {
-    return segments.join('.');
-}
-
-export function buildArrayFieldPath(basePath: string): string {
-    return `${basePath}[]`;
-}
-
 export function getLastPathSegment(path: string): string {
     return path.split('.').pop() ?? path;
 }
@@ -56,17 +27,3 @@ export function pathMatchesIdentifier(path: string): boolean {
 export function countTotalFields(tables: Record<string, { fields: readonly unknown[] }>): number {
     return Object.values(tables).reduce((total, table) => total + table.fields.length, 0);
 }
-
-export function extractJsonFromText(text: string): string {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) {
-        throw new Error('No JSON object found in response');
-    }
-
-    try {
-        return jsonrepair(match[0]);
-    } catch (error) {
-        throw new Error(`Invalid JSON in response: ${(error as Error).message}`);
-    }
-}
-
