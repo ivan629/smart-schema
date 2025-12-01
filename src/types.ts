@@ -173,6 +173,7 @@ export interface StatsField {
     readonly format?: FieldFormat;
     readonly unit?: string;
     readonly itemType?: FieldType;
+    readonly itemFields?: readonly StatsField[];  // For arrays of objects without [] notation
     readonly sampleValues?: readonly unknown[];
 }
 
@@ -203,6 +204,16 @@ export class AIEnrichmentError extends Error {
     constructor(
         message: string,
         public readonly partialSchema: SmartSchema
+    ) {
+        super(message);
+    }
+}
+
+export class AIValidationError extends Error {
+    public readonly name = 'AIValidationError' as const;
+    constructor(
+        message: string,
+        public readonly validationErrors: unknown[]
     ) {
         super(message);
     }

@@ -1,370 +1,483 @@
 /**
- * Statistics Collection
+ * Stats Module - Semantic Schema Generation
  *
- * Collects type, format, and role statistics from data samples.
- * This is the foundation for structure detection.
+ * Uses genson-js for base JSON Schema generation, then enriches with:
+ * - Role inference (measure, dimension, identifier, time, text)
+ * - Aggregation inference (sum, avg, count, none)
+ * - Unit detection (USD, tokens, percent, etc.)
+ * - Format detection (url, email, datetime, uuid)
+ * - Numeric string promotion
  */
 
+import { createCompoundSchema } from 'genson-js';
 import { inferType } from '@jsonhero/json-infer-types';
-import { LIMITS, THRESHOLDS, TYPE_MAPPING, FORMAT_MAPPING, DATE_FORMATS } from './constants.js';
-import { detect } from './detect.js';
-import { sampleRows } from './sample.js';
 import type {
+    StatsField,
+    StatsTableSchema,
+    StatsMultiTableSchema,
     FieldType,
     FieldRole,
     FieldFormat,
     AggregationType,
-    StatsField,
-    StatsTableSchema,
-    StatsMultiTableSchema,
 } from './types.js';
-
-type PlainObject = Record<string, unknown>;
-type InferredType = ReturnType<typeof inferType>;
+import { DATE_FORMATS } from './constants.js';
 
 // ============================================================================
-// Field Accumulator
+// Types
 // ============================================================================
 
-interface FieldAccumulator {
-    examples: Map<string, unknown>;
-    typeCounts: Map<FieldType, number>;
-    formatCounts: Map<string, number>;
-    nullCount: number;
-    totalCount: number;
-    firstArrayItemType?: FieldType;
-}
-
-function createAccumulator(): FieldAccumulator {
-    return {
-        examples: new Map(),
-        typeCounts: new Map(),
-        formatCounts: new Map(),
-        nullCount: 0,
-        totalCount: 0,
-    };
+interface GensonSchema {
+    type: string | string[];
+    properties?: Record<string, GensonSchema>;
+    items?: GensonSchema;
+    required?: string[];
 }
 
 // ============================================================================
-// Type Inference
+// Constants
 // ============================================================================
 
-function mapToFieldType(inferred: InferredType): FieldType {
-    return (TYPE_MAPPING[inferred.name] as FieldType) ?? 'string';
-}
+const ROLE_PATTERNS = {
+    identifier: [
+        /\bid\b/i, /\bkey\b/i, /\buuid\b/i, /\bguid\b/i, /\bcode\b/i,
+        /\bsku\b/i, /\bref\b/i, /\bslug\b/i, /_id$/i, /Id$/,
+    ],
+    time: [
+        /\bdate\b/i, /\btime\b/i, /\btimestamp\b/i, /\bcreated\b/i,
+        /\bupdated\b/i, /\bmodified\b/i, /_at$/i, /At$/, /\bwhen\b/i,
+    ],
+    measure: [
+        /\bcount\b/i, /\btotal\b/i, /\bsum\b/i, /\bamount\b/i, /\bprice\b/i,
+        /\bcost\b/i, /\bvalue\b/i, /\brate\b/i, /\bscore\b/i, /\bweight\b/i,
+        /\bheight\b/i, /\bwidth\b/i, /\blength\b/i, /\bsize\b/i, /\bage\b/i,
+        /\bduration\b/i, /\bquantity\b/i, /\bpercent/i, /\bratio\b/i,
+        /\bavg\b/i, /\baverage\b/i, /\bmin\b/i, /\bmax\b/i, /\bnum\b/i,
+        /\bnumber\b/i, /\bconfidence\b/i, /\bstrength\b/i, /\bintensity\b/i,
+        /\bfrequency\b/i, /\bvolume\b/i, /\bdistance\b/i, /\bspeed\b/i,
+        /\bbalance\b/i, /\bbudget\b/i, /\brevenue\b/i, /\bprofit\b/i,
+        /\bloss\b/i, /\bsalary\b/i, /\bincome\b/i, /\bexpense\b/i,
+        /\btokens?\b/i, /\bwords?\b/i, /\bcharacters?\b/i, /\blines?\b/i,
+        /\binstances?\b/i, /\boccurrences?\b/i, /\bdetected\b/i,
+    ],
+    text: [
+        /\bdescription\b/i, /\btext\b/i, /\bcontent\b/i, /\bbody\b/i,
+        /\bmessage\b/i, /\bcomment\b/i, /\bnote\b/i, /\bsummary\b/i,
+        /\bdetails?\b/i, /\bexplanation\b/i, /\breason\b/i, /\bquote\b/i,
+        /\bcontext\b/i, /\bnarrative\b/i, /\bstory\b/i, /\barticle\b/i,
+        /\bparagraph\b/i, /\bsentence\b/i, /\bexcerpt\b/i, /\bsnippet\b/i,
+        /\btranscript\b/i, /\bmarkdown\b/i, /\bhtml\b/i, /\bresponse\b/i,
+        /\bprompt\b/i, /\bquery\b/i, /\bquestion\b/i, /\banswer\b/i,
+        /\bfeedback\b/i, /\breview\b/i, /\bimpact\b/i, /\bassessment\b/i,
+    ],
+} as const;
 
-function extractFieldFormat(inferred: InferredType): FieldFormat | undefined {
-    if (inferred.name !== 'string' || !('format' in inferred)) {
-        return undefined;
-    }
+const UNIT_PATTERNS: Array<{ pattern: RegExp; unit: string }> = [
+    { pattern: /(cost|price|amount|revenue|profit|income|expense|salary|budget|balance|usd|dollar)/i, unit: 'USD' },
+    { pattern: /(percent|pct|ratio)/i, unit: 'percent' },
+    { pattern: /(tokens?)/i, unit: 'tokens' },
+    { pattern: /(words?|word_count)/i, unit: 'words' },
+    { pattern: /(bytes?|size)/i, unit: 'bytes' },
+    { pattern: /(seconds?|secs?|duration_s)/i, unit: 'seconds' },
+    { pattern: /(minutes?|mins?)/i, unit: 'minutes' },
+    { pattern: /(hours?|hrs?)/i, unit: 'hours' },
+    { pattern: /(days?)/i, unit: 'days' },
+    { pattern: /(count|num|quantity|instances?|occurrences?)/i, unit: 'instances' },
+];
 
-    const formatInfo = inferred as { format?: { name: string } };
-    const formatName = formatInfo.format?.name;
-
-    if (!formatName) return undefined;
-
-    return (FORMAT_MAPPING[formatName] ?? formatName) as FieldFormat;
-}
-
-// ============================================================================
-// Role and Aggregation Inference
-// ============================================================================
-
-const IDENTIFIER_PATTERNS = [/^id$/i, /_id$/i, /Id$/, /^uuid$/i, /^guid$/i, /^key$/i, /^code$/i, /^sku$/i, /^slug$/i];
-const REFERENCE_PATTERNS = [/_id$/i, /_ref$/i, /_key$/i, /^parent_/i, /^foreign_/i];
-const TIME_PATTERNS = [/date/i, /time/i, /timestamp/i, /_at$/i, /^created/i, /^updated/i, /^deleted/i];
-const MEASURE_PATTERNS = [/^amount/i, /^total/i, /^sum/i, /^count/i, /^quantity/i, /^price/i, /^cost/i, /^value/i, /^score/i, /^rating/i, /^percent/i, /^ratio/i, /^confidence/i, /^strength/i, /_count$/i, /_total$/i, /_amount$/i, /_score$/i];
-const TEXT_PATTERNS = [/^description/i, /^comment/i, /^note/i, /^body/i, /^content/i, /^text/i, /^message/i, /^summary/i, /^quote/i, /^context/i, /^evidence/i];
-
-function getLeafName(path: string): string {
-    const parts = path.split('.');
-    return parts[parts.length - 1] ?? path;
-}
-
-function matchesAny(name: string, patterns: RegExp[]): boolean {
-    return patterns.some(p => p.test(name));
-}
-
-function inferRole(path: string, type: FieldType, format?: FieldFormat): FieldRole {
-    const leaf = getLeafName(path);
-
-    if (type === 'object' || type === 'array') return 'metadata';
-    if (type === 'date') return 'time';
-
-    if (format === 'uuid' || format === 'slug') return 'identifier';
-    if (format === 'datetime' || format === 'date' || format === 'time') return 'time';
-
-    if (leaf === 'id' || (path.split('.').length === 1 && matchesAny(leaf, IDENTIFIER_PATTERNS))) {
-        return 'identifier';
-    }
-
-    if (matchesAny(leaf, REFERENCE_PATTERNS) && leaf !== 'id') return 'identifier';
-    if (matchesAny(leaf, TIME_PATTERNS)) return 'time';
-    if ((type === 'number' || type === 'int') && matchesAny(leaf, MEASURE_PATTERNS)) return 'measure';
-    if (type === 'string' && matchesAny(leaf, TEXT_PATTERNS)) return 'text';
-    if (type === 'number' || type === 'int') return 'measure';
-    if (type === 'string' || type === 'boolean') return 'dimension';
-
-    return 'metadata';
-}
-
-function inferAggregation(role: FieldRole, path: string): AggregationType {
-    if (role !== 'measure') return 'none';
-
-    const leaf = getLeafName(path).toLowerCase();
-
-    if (leaf.includes('count') || leaf.includes('quantity') || leaf.includes('total') || leaf.includes('sum') || leaf.includes('amount')) {
-        return 'sum';
-    }
-
-    if (leaf.includes('score') || leaf.includes('rating') || leaf.includes('percent') || leaf.includes('ratio') || leaf.includes('confidence') || leaf.includes('average')) {
-        return 'avg';
-    }
-
-    return 'sum';
-}
-
-function inferUnit(path: string, format?: FieldFormat): string | undefined {
-    const leaf = getLeafName(path).toLowerCase();
-
-    if (leaf.includes('price') || leaf.includes('cost') || leaf.includes('amount') || format === 'currency') return 'USD';
-    if (leaf.includes('percent') || leaf.includes('ratio') || format === 'percent') return '%';
-    if (leaf.includes('duration') || leaf.includes('seconds')) return 'seconds';
-    if (leaf.includes('minutes')) return 'minutes';
-    if (leaf.includes('hours')) return 'hours';
-    if (leaf.includes('count') || leaf.includes('instance')) return 'instances';
-    if (leaf.includes('word')) return 'words';
-    if (leaf.includes('token')) return 'tokens';
-
-    return undefined;
-}
+const AVG_PATTERNS = [
+    /\bavg\b/i, /\baverage\b/i, /\bmean\b/i, /\brate\b/i, /\bratio\b/i,
+    /\bpercent/i, /\bscore\b/i, /\bconfidence\b/i, /\bstrength\b/i,
+    /\bintensity\b/i, /\bprobability\b/i, /\blikelihood\b/i,
+];
 
 // ============================================================================
-// Field Collection
+// Sample Collection
 // ============================================================================
 
-function escapePathSegment(key: string): string {
-    if (key.includes('.') || key.includes('[') || key.includes(']')) {
-        return `["${key}"]`;
-    }
-    return key;
-}
-
-function buildPath(segments: readonly string[]): string {
-    return segments.join('.');
-}
-
-function processValue(
-    value: unknown,
-    accumulator: FieldAccumulator,
-    accumulators: Map<string, FieldAccumulator>,
-    pathSegments: readonly string[],
-    depth: number,
-    maxDepth: number
-): void {
-    const inferred = inferType(value);
-    const fieldType = mapToFieldType(inferred);
-
-    accumulator.typeCounts.set(fieldType, (accumulator.typeCounts.get(fieldType) ?? 0) + 1);
-
-    const format = extractFieldFormat(inferred);
-    if (format) {
-        accumulator.formatCounts.set(format, (accumulator.formatCounts.get(format) ?? 0) + 1);
-    }
-
-    // Store example
-    if (accumulator.examples.size < LIMITS.maxExamplesPerField) {
-        const key = JSON.stringify(value);
-        if (!accumulator.examples.has(key)) {
-            accumulator.examples.set(key, value);
+/**
+ * Collect samples for each field path from raw data
+ */
+function collectFieldSamples(
+    data: unknown,
+    path: string = '',
+    samples: Map<string, unknown[]> = new Map()
+): Map<string, unknown[]> {
+    if (data === null || data === undefined) {
+        if (path) {
+            const existing = samples.get(path) ?? [];
+            existing.push(null);
+            samples.set(path, existing);
         }
+        return samples;
     }
 
-    if (depth >= maxDepth) return;
+    if (Array.isArray(data)) {
+        if (path) {
+            const existing = samples.get(path) ?? [];
+            existing.push(data);
+            samples.set(path, existing);
+        }
 
-    // Recurse into objects
-    if (fieldType === 'object' && typeof value === 'object' && value !== null) {
-        collectFromObject(value as PlainObject, accumulators, pathSegments, depth + 1, maxDepth);
-    }
-
-    // Recurse into arrays
-    if (fieldType === 'array' && Array.isArray(value)) {
-        for (const item of value) {
+        for (const item of data) {
             if (item === null || item === undefined) continue;
 
-            if (accumulator.firstArrayItemType === undefined) {
-                accumulator.firstArrayItemType = mapToFieldType(inferType(item));
-            }
-
             if (typeof item === 'object' && !Array.isArray(item)) {
-                collectFromObject(item as PlainObject, accumulators, [...pathSegments, '[]'], depth + 1, maxDepth);
+                collectFieldSamples(item, path ? `${path}.[]` : '[]', samples);
+            } else if (Array.isArray(item)) {
+                collectFieldSamples(item, path ? `${path}.[]` : '[]', samples);
+            } else {
+                const itemPath = path ? `${path}.[]` : '[]';
+                const existing = samples.get(itemPath) ?? [];
+                existing.push(item);
+                samples.set(itemPath, existing);
+            }
+        }
+        return samples;
+    }
+
+    if (typeof data === 'object') {
+        for (const [key, value] of Object.entries(data)) {
+            const fieldPath = path ? `${path}.${key}` : key;
+            const existing = samples.get(fieldPath) ?? [];
+            existing.push(value);
+            samples.set(fieldPath, existing);
+
+            if (value !== null && value !== undefined && typeof value === 'object') {
+                collectFieldSamples(value, fieldPath, samples);
             }
         }
     }
-}
 
-function collectFromObject(
-    obj: PlainObject,
-    accumulators: Map<string, FieldAccumulator>,
-    pathSegments: readonly string[],
-    depth: number,
-    maxDepth: number
-): void {
-    for (const [key, value] of Object.entries(obj)) {
-        const escaped = escapePathSegment(key);
-        const currentPath = [...pathSegments, escaped];
-        const pathString = buildPath(currentPath);
-
-        let accumulator = accumulators.get(pathString);
-        if (!accumulator) {
-            accumulator = createAccumulator();
-            accumulators.set(pathString, accumulator);
-        }
-
-        accumulator.totalCount++;
-
-        if (value === null || value === undefined) {
-            accumulator.nullCount++;
-            continue;
-        }
-
-        processValue(value, accumulator, accumulators, currentPath, depth, maxDepth);
-    }
+    return samples;
 }
 
 // ============================================================================
-// Type Determination
+// Genson Schema to StatsField Conversion
 // ============================================================================
 
-function determineDominantType(
-    typeCounts: Map<FieldType, number>,
-    nonNullCount: number,
-    mixedThreshold: number
-): FieldType {
-    if (typeCounts.size === 0) return 'null';
+/**
+ * Convert genson schema to flat field list with enrichment
+ */
+function gensonToFields(
+    schema: GensonSchema,
+    fieldSamples: Map<string, unknown[]>,
+    path: string = ''
+): StatsField[] {
+    const fields: StatsField[] = [];
 
-    // Merge int into number for comparison
-    const merged = new Map<FieldType, number>();
-    for (const [type, count] of typeCounts) {
-        const normalized = type === 'int' ? 'number' : type;
-        merged.set(normalized, (merged.get(normalized) ?? 0) + count);
-    }
+    if (schema.properties) {
+        for (const [key, propSchema] of Object.entries(schema.properties)) {
+            const fieldPath = path ? `${path}.${key}` : key;
+            const samples = fieldSamples.get(fieldPath) ?? [];
+            const isRequired = schema.required?.includes(key) ?? false;
+            const nullable = !isRequired || samples.some(s => s === null || s === undefined);
 
-    const sorted = [...merged.entries()].sort(([, a], [, b]) => b - a);
-    const [dominant, dominantCount] = sorted[0] ?? ['null', 0];
+            const field = schemaToField(propSchema, fieldPath, samples, nullable, fieldSamples);
+            if (field) {
+                fields.push(field);
 
-    // Check for mixed types
-    if (sorted.length > 1 && nonNullCount > 0) {
-        const secondaryCount = nonNullCount - dominantCount;
-        if (secondaryCount / nonNullCount > mixedThreshold) {
-            return 'mixed';
+                // Recurse into nested objects
+                if (propSchema.type === 'object' && propSchema.properties) {
+                    fields.push(...gensonToFields(propSchema, fieldSamples, fieldPath));
+                }
+            }
         }
     }
 
-    // Prefer int if all numbers are integers
-    if (dominant === 'number') {
-        const intCount = typeCounts.get('int') ?? 0;
-        const floatCount = typeCounts.get('number') ?? 0;
-        if (floatCount === 0 && intCount > 0) return 'int';
-    }
-
-    return dominant;
+    return fields;
 }
 
-function determineDominantFormat(
-    accumulator: FieldAccumulator,
-    formatThreshold: number
-): FieldFormat | undefined {
-    const stringCount = accumulator.typeCounts.get('string') ?? 0;
-    if (stringCount === 0 || accumulator.formatCounts.size === 0) return undefined;
-
-    const sorted = [...accumulator.formatCounts.entries()].sort(([, a], [, b]) => b - a);
-    const [topFormat, topCount] = sorted[0] ?? ['', 0];
-
-    if (topCount / stringCount >= formatThreshold) {
-        return topFormat as FieldFormat;
-    }
-
-    return undefined;
-}
-
-// ============================================================================
-// Build Stats Field
-// ============================================================================
-
-function buildStatsField(
+/**
+ * Convert a single genson schema node to StatsField with recursive itemFields
+ */
+function schemaToField(
+    schema: GensonSchema,
     path: string,
-    accumulator: FieldAccumulator,
-    formatThreshold: number,
-    mixedThreshold: number
-): StatsField {
-    const nonNullCount = accumulator.totalCount - accumulator.nullCount;
-    let type = determineDominantType(accumulator.typeCounts, nonNullCount, mixedThreshold);
-    const format = determineDominantFormat(accumulator, formatThreshold);
+    samples: unknown[],
+    nullable: boolean,
+    allSamples: Map<string, unknown[]>
+): StatsField | null {
+    const schemaType = Array.isArray(schema.type) ? schema.type[0] : schema.type;
+    let type = mapGensonType(schemaType);
+
+    // Detect format from samples
+    const format = detectFormat(samples);
 
     // Promote string to date if format indicates it
     if (type === 'string' && format && DATE_FORMATS.has(format)) {
         type = 'date';
     }
 
+    // Detect numeric strings
+    if (type === 'string') {
+        const stringValues = samples.filter(s => typeof s === 'string' && s.trim() !== '');
+        const numericCount = stringValues.filter(s =>
+            /^-?\d+\.?\d*(?:[eE][+-]?\d+)?$/.test((s as string).trim()) &&
+            !isNaN(parseFloat((s as string).trim()))
+        ).length;
+
+        if (numericCount > 0 && numericCount === stringValues.length) {
+            const hasDecimals = stringValues.some(s => (s as string).includes('.'));
+            type = hasDecimals ? 'number' : 'int';
+        }
+    }
+
     const role = inferRole(path, type, format);
     const aggregation = inferAggregation(role, path);
-    const unit = inferUnit(path, format);
+    // Only infer units for measure fields
+    const unit = role === 'measure' ? inferUnit(path, format) : undefined;
 
-    return {
+    const field: StatsField = {
         path,
         type,
-        nullable: accumulator.nullCount > 0,
+        nullable,
         role,
         aggregation,
         ...(format && { format }),
         ...(unit && { unit }),
-        ...(type === 'array' && accumulator.firstArrayItemType && { itemType: accumulator.firstArrayItemType }),
-        ...(accumulator.examples.size > 0 && { sampleValues: Array.from(accumulator.examples.values()) }),
     };
+
+    // Handle arrays
+    if (type === 'array' && schema.items) {
+        buildArrayItemFields(field, schema.items, path, allSamples);
+    }
+
+    return field;
+}
+
+/**
+ * Build itemType and itemFields for array fields recursively
+ */
+function buildArrayItemFields(
+    field: StatsField,
+    itemSchema: GensonSchema,
+    basePath: string,
+    allSamples: Map<string, unknown[]>
+): void {
+    const itemType = Array.isArray(itemSchema.type) ? itemSchema.type[0] : itemSchema.type;
+    (field as { itemType?: FieldType }).itemType = mapGensonType(itemType);
+
+    // Array of objects
+    if (itemSchema.type === 'object' && itemSchema.properties) {
+        const itemFields: StatsField[] = [];
+
+        for (const [key, propSchema] of Object.entries(itemSchema.properties)) {
+            const itemSamplePath = `${basePath}.[].${key}`;
+            const itemSamples = allSamples.get(itemSamplePath) ?? [];
+            const isRequired = itemSchema.required?.includes(key) ?? false;
+            const itemNullable = !isRequired || itemSamples.some(s => s === null);
+
+            const itemField = schemaToField(propSchema, key, itemSamples, itemNullable, allSamples);
+            if (itemField) {
+                itemFields.push(itemField);
+            }
+        }
+
+        if (itemFields.length > 0) {
+            (field as { itemFields?: StatsField[] }).itemFields = itemFields;
+        }
+    }
+
+    // Array of arrays (nested)
+    else if (itemSchema.type === 'array' && itemSchema.items) {
+        const nestedField: StatsField = {
+            path: '[]',
+            type: 'array',
+            nullable: false,
+            role: 'metadata',
+            aggregation: 'none',
+        };
+
+        buildArrayItemFields(nestedField, itemSchema.items, `${basePath}.[]`, allSamples);
+        (field as { itemFields?: StatsField[] }).itemFields = [nestedField];
+    }
+}
+
+/**
+ * Map genson type string to our FieldType
+ */
+function mapGensonType(gensonType: string): FieldType {
+    const mapping: Record<string, FieldType> = {
+        string: 'string',
+        integer: 'int',
+        number: 'number',
+        boolean: 'boolean',
+        object: 'object',
+        array: 'array',
+        null: 'null',
+    };
+    return mapping[gensonType] ?? 'string';
+}
+
+// ============================================================================
+// Semantic Enrichment
+// ============================================================================
+
+/**
+ * Detect format from samples using json-infer-types
+ */
+function detectFormat(samples: unknown[]): FieldFormat | undefined {
+    const formatCounts = new Map<string, number>();
+    let stringCount = 0;
+
+    for (const sample of samples) {
+        if (typeof sample !== 'string' || sample.trim() === '') continue;
+        stringCount++;
+
+        const inferred = inferType(sample);
+        const format = extractFieldFormat(inferred);
+        if (format) {
+            formatCounts.set(format, (formatCounts.get(format) ?? 0) + 1);
+        }
+    }
+
+    if (formatCounts.size === 0 || stringCount === 0) return undefined;
+
+    const sorted = [...formatCounts.entries()].sort(([, a], [, b]) => b - a);
+    const [topFormat, topCount] = sorted[0];
+
+    if (topCount / stringCount >= 0.8) {
+        return topFormat as FieldFormat;
+    }
+
+    return undefined;
+}
+
+/**
+ * Extract format from json-infer-types result
+ */
+function extractFieldFormat(inferred: ReturnType<typeof inferType>): FieldFormat | undefined {
+    const name = inferred.name;
+
+    if (name === 'string' && 'format' in inferred) {
+        const format = String(inferred.format);
+        const formatMap: Record<string, FieldFormat> = {
+            uri: 'url',
+            email: 'email',
+            datetime: 'datetime',
+            'date-time': 'datetime',
+            date: 'date',
+            time: 'time',
+            uuid: 'uuid',
+        };
+        return formatMap[format];
+    }
+
+    return undefined;
+}
+
+/**
+ * Infer semantic role from path, type, and format
+ */
+function inferRole(
+    path: string,
+    type: FieldType,
+    format?: FieldFormat
+): FieldRole {
+    const leafName = path.split('.').pop() ?? path;
+
+    // Check patterns in priority order
+    for (const pattern of ROLE_PATTERNS.identifier) {
+        if (pattern.test(leafName)) return 'identifier';
+    }
+
+    for (const pattern of ROLE_PATTERNS.time) {
+        if (pattern.test(leafName)) return 'time';
+    }
+
+    // Format-based inference
+    if (format === 'datetime' || format === 'date') return 'time';
+    if (format === 'url' || format === 'email') return 'dimension';
+    if (format === 'uuid') return 'identifier';
+
+    // Type-based inference
+    if (type === 'date') return 'time';
+
+    // Check measure patterns
+    for (const pattern of ROLE_PATTERNS.measure) {
+        if (pattern.test(leafName)) return 'measure';
+    }
+
+    // Check text patterns
+    for (const pattern of ROLE_PATTERNS.text) {
+        if (pattern.test(leafName)) return 'text';
+    }
+
+    // Numeric types are usually measures
+    if (type === 'int' || type === 'number') return 'measure';
+
+    // Boolean and string are usually dimensions
+    if (type === 'boolean') return 'dimension';
+    if (type === 'string') return 'dimension';
+
+    return 'metadata';
+}
+
+/**
+ * Infer aggregation based on role and path
+ */
+function inferAggregation(role: FieldRole, path: string): AggregationType {
+    if (role !== 'measure') return 'none';
+
+    const leafName = path.split('.').pop() ?? path;
+
+    for (const pattern of AVG_PATTERNS) {
+        if (pattern.test(leafName)) return 'avg';
+    }
+
+    return 'sum';
+}
+
+/**
+ * Infer unit from path
+ */
+function inferUnit(path: string, _format?: FieldFormat): string | undefined {
+    const leafName = path.split('.').pop() ?? path;
+
+    for (const { pattern, unit } of UNIT_PATTERNS) {
+        if (pattern.test(leafName)) return unit;
+    }
+
+    return undefined;
 }
 
 // ============================================================================
 // Main Export
 // ============================================================================
 
-export interface ComputeStatsOptions {
-    maxRows?: number;
-    maxDepth?: number;
-    formatThreshold?: number;
-    mixedTypeThreshold?: number;
-}
-
+/**
+ * Compute statistics and semantic schema from data
+ */
 export function computeStats(
-    input: unknown,
-    options: ComputeStatsOptions = {}
+    data: unknown,
+    _options: { maxSamples?: number } = {}
 ): StatsMultiTableSchema {
-    const {
-        maxRows = LIMITS.maxRowsToSample,
-        maxDepth = LIMITS.maxTraversalDepth,
-        formatThreshold = THRESHOLDS.formatDetection,
-        mixedTypeThreshold = THRESHOLDS.mixedType,
-    } = options;
-
-    const detected = detect(input);
     const tables: Record<string, StatsTableSchema> = {};
 
-    for (const [tableName, rows] of Object.entries(detected.tables)) {
-        const sampled = sampleRows(rows as PlainObject[], maxRows);
-        const accumulators = new Map<string, FieldAccumulator>();
+    if (Array.isArray(data)) {
+        // Array of objects - use compound schema
+        const schema = createCompoundSchema(data) as GensonSchema;
+        const fieldSamples = new Map<string, unknown[]>();
 
-        for (const row of sampled.rows) {
-            collectFromObject(row as PlainObject, accumulators, [], 0, maxDepth);
+        for (const item of data) {
+            collectFieldSamples(item, '', fieldSamples);
         }
 
-        const fields: StatsField[] = [];
-        for (const [path, accumulator] of accumulators) {
-            fields.push(buildStatsField(path, accumulator, formatThreshold, mixedTypeThreshold));
-        }
+        const fields = gensonToFields(schema, fieldSamples);
+        tables.root = {
+            fields,
+        };
+    } else if (typeof data === 'object' && data !== null) {
+        const schema = createCompoundSchema([data]) as GensonSchema;
+        const fieldSamples = collectFieldSamples(data);
+        const fields = gensonToFields(schema, fieldSamples);
 
-        fields.sort((a, b) => a.path.localeCompare(b.path));
-        tables[tableName] = { fields };
+        tables.root = {
+            fields,
+        };
     }
 
     return { tables };
 }
+
+export type { StatsField, StatsTableSchema, StatsMultiTableSchema };

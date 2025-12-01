@@ -24,6 +24,7 @@ export const TYPE_MAPPING: Record<string, string> = {
     int: 'int',
     float: 'number',
     boolean: 'boolean',
+    bool: 'boolean',  // json-infer-types returns 'bool'
     null: 'null',
     object: 'object',
     array: 'array',
