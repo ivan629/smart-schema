@@ -23,8 +23,9 @@ async function test(): Promise<void> {
 
         const outputPath = join(__dirname, '..', 'mock', 'schema-output.json');
         writeFileSync(outputPath, JSON.stringify(schema, null, 2));
-    } catch (err: unknown) {
-            console.error(err.message);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(message);
         process.exit(1);
     }
 }

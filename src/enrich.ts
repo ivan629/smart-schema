@@ -154,7 +154,6 @@ export async function enrichWithAI(
     if (verbose) console.log('[smart-schema] AI enrichment complete');
 
     return {
-        $version: 2,
         domain: ai.domain ?? 'unknown',
         description: ai.description ?? 'Data schema',
         grain: ai.grain ?? 'One record per row',
@@ -172,7 +171,6 @@ export function applyDefaults(
     entities: Entity[]
 ): SmartSchema {
     return {
-        $version: 2,
         domain: 'unknown',
         description: 'Data schema',
         grain: 'One record per row',

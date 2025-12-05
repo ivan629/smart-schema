@@ -1,5 +1,5 @@
 /**
- * SmartSchema v2
+ * SmartSchema
  *
  * Semantic schema generation for LLM understanding.
  *
@@ -13,7 +13,6 @@ import { detectStructure } from './structure.js';
 import { extractCapabilities, detectEntities } from './capabilities.js';
 import { enrichWithAI, applyDefaults } from './enrich.js';
 import type { SmartSchema } from './types.js';
-import { InvalidInputError, AIEnrichmentError, LimitExceededError } from './types.js';
 
 // ============================================================================
 // Options
@@ -38,16 +37,16 @@ export async function analyze(data: unknown, options: AnalyzeOptions): Promise<S
 
     // Validate input
     if (data === null || data === undefined) {
-        throw new InvalidInputError('Input cannot be null or undefined', 'invalid');
+        throw new Error('Input cannot be null or undefined');
     }
     if (typeof data !== 'object') {
-        throw new InvalidInputError('Input must be an object or array', 'primitive');
+        throw new Error('Input must be an object or array');
     }
     if (Array.isArray(data) && data.length === 0) {
-        throw new InvalidInputError('Input array cannot be empty', 'empty');
+        throw new Error('Input array cannot be empty');
     }
     if (!Array.isArray(data) && Object.keys(data).length === 0) {
-        throw new InvalidInputError('Input object cannot be empty', 'empty');
+        throw new Error('Input object cannot be empty');
     }
     if (!skipAI && !apiKey) {
         throw new Error('apiKey is required when skipAI is false');
@@ -78,17 +77,14 @@ export async function analyze(data: unknown, options: AnalyzeOptions): Promise<S
 
     log(`Capabilities: ${capabilities.measures.length} measures, ${capabilities.dimensions.length} dimensions`);
 
-    // Step 4: Validate limits
-    if (!skipAI) {
-        const tableCount = Object.keys(stats.tables).length;
+    // Step 4: Check limits (warn only)
+    const tableCount = Object.keys(stats.tables).length;
+    if (verbose) {
         if (tableCount > LIMITS.maxTables) {
-            throw new LimitExceededError(`Too many tables: ${tableCount} (max: ${LIMITS.maxTables})`);
+            console.warn(`[smart-schema] Large dataset: ${tableCount} tables`);
         }
         if (fields.length > LIMITS.maxFields) {
-            throw new LimitExceededError(`Too many fields: ${fields.length} (max: ${LIMITS.maxFields})`);
-        }
-        if (verbose && fields.length > LIMITS.warnFieldsThreshold) {
-            console.warn(`[smart-schema] Large schema (${fields.length} fields)`);
+            console.warn(`[smart-schema] Large schema: ${fields.length} fields`);
         }
     }
 
@@ -112,10 +108,12 @@ export async function analyze(data: unknown, options: AnalyzeOptions): Promise<S
         log('Done');
         return schema;
     } catch (error) {
-        const partial = applyDefaults(structure.defs, structure.root, capabilities, entities);
-        const message = error instanceof Error ? error.message : 'AI enrichment failed';
-        if (verbose) console.error(`[smart-schema] ${message}`);
-        throw new AIEnrichmentError(message, partial);
+        // AI failed, return schema with defaults
+        if (verbose) {
+            const message = error instanceof Error ? error.message : 'AI enrichment failed';
+            console.warn(`[smart-schema] ${message}, using defaults`);
+        }
+        return applyDefaults(structure.defs, structure.root, capabilities, entities);
     }
 }
 
@@ -124,4 +122,3 @@ export async function analyze(data: unknown, options: AnalyzeOptions): Promise<S
 // ============================================================================
 
 export type { SmartSchema, Capabilities, Entity } from './types.js';
-export { InvalidInputError, AIEnrichmentError, LimitExceededError } from './types.js';

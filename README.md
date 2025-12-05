@@ -1,25 +1,30 @@
+# smart-schema
+
 **Before:**
 ```json
 [{"id": 1, "name": "Alice", "total": 99.50, "status": "shipped"}]
 ```
 
 **After:**
-```typescript
+```json
 {
-  tables: {
-    root: {
-      fields: [
-        { path: "id", role: "identifier", description: "Unique record ID" },
-        { path: "name", role: "text", description: "Customer name", pii: "name" },
-        { path: "total", role: "measure", unit: "USD", aggregation: "sum" },
-        { path: "status", role: "dimension", description: "Fulfillment status" }
-      ],
-      capabilities: {
-        measures: ["total"],
-        dimensions: ["status"],
-        searchable: ["name"]
-      }
+  "domain": "ecommerce",
+  "description": "Customer order records with fulfillment tracking",
+  "grain": "One order per row",
+  "root": {
+    "type": "object",
+    "fields": {
+      "id": { "type": "int", "role": "identifier", "description": "Unique order ID" },
+      "name": { "type": "string", "role": "dimension", "description": "Customer name" },
+      "total": { "type": "number", "role": "measure", "unit": "USD", "aggregation": "sum", "description": "Order total amount" },
+      "status": { "type": "string", "role": "dimension", "description": "Fulfillment status" }
     }
+  },
+  "capabilities": {
+    "measures": ["total"],
+    "dimensions": ["name", "status"],
+    "identifiers": ["id"],
+    "timeFields": []
   }
 }
 ```
@@ -56,14 +61,35 @@ Structure without meaning. Skeleton without muscle.
 
 | What | You Get |
 |------|---------|
-| Structure | Types. Nesting. Nullability. Arrays. |
+| Structure | Types. Nesting. Nullability. Arrays. Maps. |
 | Semantics | What each field means. Plain English. |
-| Roles | Identifier. Measure. Dimension. Timestamp. |
-| Relationships | Foreign keys. Table connections. |
-| Entities | Customers. Orders. Products. Real objects. |
-| Capabilities | Sum this. Group that. Search here. Time-series there. |
+| Roles | Identifier. Measure. Dimension. Time. Text. |
+| Compression | `$defs` for repeated structures. Maps with keys. |
+| Entities | Detected objects with ID fields. |
+| Capabilities | Measures to sum. Dimensions to group. Time fields to filter. |
 
 Generate once. Reuse forever. Raw data never leaves.
+
+---
+
+## Output Format
+
+```typescript
+interface SmartSchema {
+    domain: string;           // "ecommerce", "analytics", etc.
+    description: string;      // What this data represents
+    grain: string;            // "One order per row"
+    $defs?: Record<string, TypeDef>;  // Reusable type definitions
+    root: NodeDef;            // Schema tree
+    capabilities: {
+        measures: string[];     // Summable fields
+        dimensions: string[];   // Groupable fields
+        identifiers: string[];  // ID fields
+        timeFields: string[];   // Date/time fields
+    };
+    entities?: Entity[];      // Detected entities
+}
+```
 
 ---
 
@@ -100,94 +126,99 @@ The schema already did that.
 
 ---
 
-## Input
-
-| Shape | Result |
-|-------|--------|
-| `[{...}, {...}]` | `tables.root` |
-| `{"users": [...], "orders": [...]}` | `tables.users`, `tables.orders` |
-| `{...}` | `tables.root`, one row |
-| `[1, 2, 3]` | `tables.root`, synthetic `value` field |
-| Primitives | `InvalidInputError` |
-| Empty | `InvalidInputError` |
-
----
-
 ## Options
 
 ```typescript
 await analyze(data, {
-    apiKey: string,              // Required. Anthropic key.
-
-    maxRows?: number,            // Default 10000. Rows sampled per table.
-    maxDepth?: number,           // Default 50. Nesting depth before truncation.
-
-    skipAI?: boolean,            // Default false. Structure only. No API calls.
-    model?: string,              // Default 'claude-sonnet-4-5-20250929'.
-    timeout?: number,            // Default 300000. Five minutes.
-
-    formatThreshold?: number,    // Default 0.9. 90% match for email/uuid/etc.
-    mixedTypeThreshold?: number, // Default 0.1. 10% secondary type flags 'mixed'.
-
-    logger?: Logger,             // Default silent. consoleLogger for noise.
+    apiKey: string,     // Required. Anthropic key.
+    skipAI?: boolean,   // Default false. Structure only, no API calls.
+    verbose?: boolean,  // Default false. Log progress to console.
 });
 ```
 
 ### Shortcuts
 
 ```typescript
-// No AI. Structure only.
+// No AI. Structure only. Fast.
 await analyze(data, { apiKey: '', skipAI: true });
 
-// Fast. Small sample.
-await analyze(data, { apiKey, maxRows: 1000, timeout: 30_000 });
-
-// Strict format detection.
-await analyze(data, { apiKey, formatThreshold: 0.95 });
-
-// Debug.
-import { consoleLogger } from 'smart-schema';
-await analyze(data, { apiKey, logger: consoleLogger });
+// With logging
+await analyze(data, { apiKey, verbose: true });
 ```
-
----
-
-## Limits
-
-| Constraint | Value | Consequence |
-|------------|-------|-------------|
-| Tables | 20 | `LimitExceededError` |
-| Fields total | 500 | `LimitExceededError` |
-| Rows per table | 10,000 | Sampled |
-| Nesting depth | 50 | Truncated |
-
-Wide datasets fail. Tall datasets get sampled. Deep datasets get flattened.
 
 ---
 
 ## Errors
 
 ```typescript
-import {
-    InvalidInputError,
-    AIEnrichmentError,
-    LimitExceededError
-} from 'smart-schema';
-
 try {
     const schema = await analyze(data, { apiKey });
 } catch (err) {
-    if (err instanceof InvalidInputError) {
-        // Primitive or empty.
-        err.reason; // 'primitive' | 'empty'
+    // Input was null, primitive, or empty
+    console.error(err.message);
+}
+```
+
+If AI enrichment fails, the library returns a schema with default descriptions instead of throwing.
+
+Large datasets (many tables/fields) trigger warnings with `verbose: true` but never throw.
+
+---
+
+## Features
+
+### Role Detection
+
+Fields are automatically assigned roles based on name patterns and types:
+
+| Role | Examples | Description |
+|------|----------|-------------|
+| `identifier` | `id`, `user_id`, `sku` | Unique identifiers |
+| `measure` | `total`, `count`, `price` | Numeric, aggregatable |
+| `dimension` | `status`, `category` | Groupable strings |
+| `time` | `created_at`, `timestamp` | Date/time fields |
+| `text` | `description`, `content` | Long-form text |
+
+### Map Detection
+
+Repeated object structures become maps:
+
+```json
+{
+  "mechanisms": {
+    "type": "map",
+    "keys": ["fear_induction", "shame_induction", "anger_farming"],
+    "values": { "$ref": "#/$defs/scored_assessment" }
+  }
+}
+```
+
+### $defs Extraction
+
+Repeated shapes are extracted to `$defs`:
+
+```json
+{
+  "$defs": {
+    "scored_assessment": {
+      "fields": {
+        "score": { "type": "int", "role": "measure", "aggregation": "avg" },
+        "confidence": { "type": "int", "role": "measure", "aggregation": "avg" }
+      }
     }
-    if (err instanceof AIEnrichmentError) {
-        // AI failed. Partial schema available.
-        err.partialSchema;
-    }
-    if (err instanceof LimitExceededError) {
-        // Too many tables or fields.
-    }
+  }
+}
+```
+
+### Entity Detection
+
+Objects with ID fields become entities:
+
+```json
+{
+  "entities": [
+    { "name": "Video", "idField": "request.video_id", "description": "..." }
+  ]
 }
 ```
 
@@ -195,13 +226,10 @@ try {
 
 ## What It Doesn't Do
 
-No storage. Persistence is yours.
-
-No diffing. No versioning. Not a registry.
-
-No validation. Describes. Doesn't enforce.
-
-No offline. Needs Anthropic API.
+- No storage. Persistence is yours.
+- No diffing. No versioning. Not a registry.
+- No validation. Describes. Doesn't enforce.
+- No offline mode. Needs Anthropic API (unless `skipAI: true`).
 
 ---
 

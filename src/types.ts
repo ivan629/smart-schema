@@ -10,7 +10,6 @@
 // ============================================================================
 
 export interface SmartSchema {
-    readonly $version: 2;
     readonly domain: string;
     readonly description: string;
     readonly grain: string;
@@ -148,34 +147,6 @@ export interface StatsTableSchema {
 
 export interface StatsMultiTableSchema {
     tables: Record<string, StatsTableSchema>;
-}
-
-// ============================================================================
-// Errors
-// ============================================================================
-
-export class InvalidInputError extends Error {
-    readonly name = 'InvalidInputError';
-    constructor(
-        message: string,
-        public readonly reason: 'primitive' | 'empty' | 'invalid'
-    ) {
-        super(message);
-    }
-}
-
-export class AIEnrichmentError extends Error {
-    readonly name = 'AIEnrichmentError';
-    constructor(
-        message: string,
-        public readonly partialSchema: SmartSchema
-    ) {
-        super(message);
-    }
-}
-
-export class LimitExceededError extends Error {
-    readonly name = 'LimitExceededError';
 }
 
 // ============================================================================
