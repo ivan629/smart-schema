@@ -1,10 +1,7 @@
 /**
- * SmartSchema v2 - Structure Module
+ * SmartSchema v2 - Structure Detection
  *
- * Detects structural patterns in stats output:
- * - Maps (objects with dynamic keys sharing same structure)
- * - $defs (reusable type definitions)
- * - Builds final schema tree with $ref references
+ * Detects maps and reusable $defs to compress schema.
  */
 
 import type {
@@ -21,52 +18,33 @@ import type {
     MapNode,
     TypeDef,
 } from './types.js';
-import { getLastPathSegment, getParentPath, getPathDepth } from './utils.js';
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-const LIMITS = {
-    minKeysForMap: 3,
-    minSiblingsForArchetype: 3,
-} as const;
+import { getLeafName, getParentPath, getPathDepth } from './utils.js';
 
 // ============================================================================
 // Types
 // ============================================================================
 
 interface FieldShape {
-    readonly type: FieldType;
-    readonly role: FieldRole;
-    readonly aggregation: AggregationType;
-    readonly format?: FieldFormat;
-    readonly unit?: string;
-    readonly nullable?: boolean;
-    readonly itemType?: FieldType;
-    readonly itemFields?: readonly StatsField[];
-}
-
-interface DetectedDef {
-    readonly name: string;
-    readonly shape: ReadonlyMap<string, FieldShape>;
-    readonly occurrences: readonly string[];
+    type: FieldType;
+    role: FieldRole;
+    aggregation: AggregationType;
+    format?: FieldFormat;
+    unit?: string;
+    nullable?: boolean;
+    itemType?: FieldType;
+    itemFields?: StatsField[];
 }
 
 export interface DetectedMap {
-    readonly path: string;
-    readonly keys: readonly string[];
-    readonly defName: string | null;
+    path: string;
+    keys: string[];
+    defName: string | null;
 }
 
-interface TreeNode {
-    readonly path: string;
-    readonly field?: StatsField;
-    readonly children: Map<string, TreeNode>;
-    readonly isArray: boolean;
-    readonly isMap: boolean;
-    readonly mapKeys?: readonly string[];
-    readonly defRef?: string;
+interface DetectedDef {
+    name: string;
+    shape: Map<string, FieldShape>;
+    occurrences: string[];
 }
 
 // ============================================================================
@@ -87,128 +65,67 @@ function fieldToShape(field: StatsField): FieldShape {
 }
 
 function shapeKey(shape: FieldShape): string {
-    return `${shape.type}:${shape.role}:${shape.aggregation}:${shape.format ?? ''}:${shape.unit ?? ''}`;
+    return `${shape.type}:${shape.role}:${shape.aggregation}`;
 }
 
-function groupShapeKey(shapes: ReadonlyMap<string, FieldShape>): string {
-    const entries = [...shapes.entries()].sort(([a], [b]) =>
-        a.localeCompare(b)
-    );
-    return entries.map(([name, shape]) => `${name}=${shapeKey(shape)}`).join('|');
-}
-
-// ============================================================================
-// Tree Building
-// ============================================================================
-
-function buildTreeFromFields(fields: readonly StatsField[]): TreeNode {
-    const root: TreeNode = {
-        path: '',
-        children: new Map(),
-        isArray: false,
-        isMap: false,
-    };
-
-    for (const field of fields) {
-        const parts = field.path.split('.');
-        let current = root;
-
-        for (let i = 0; i < parts.length; i++) {
-            const part = parts[i];
-            const currentPath = parts.slice(0, i + 1).join('.');
-
-            if (!current.children.has(part)) {
-                current.children.set(part, {
-                    path: currentPath,
-                    children: new Map(),
-                    isArray:
-                        part === '[]' ||
-                        (field.type === 'array' && i === parts.length - 1),
-                    isMap: false,
-                });
-            }
-
-            const child = current.children.get(part)!;
-
-            // Attach field data at the leaf
-            if (i === parts.length - 1) {
-                (child as { field?: StatsField }).field = field;
-            }
-
-            current = child;
-        }
-    }
-
-    return root;
+function groupKey(shapes: Map<string, FieldShape>): string {
+    return [...shapes.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, shape]) => `${name}=${shapeKey(shape)}`)
+        .join('|');
 }
 
 // ============================================================================
 // Map Detection
 // ============================================================================
 
-function groupFieldsByParent(
-    fields: readonly StatsField[]
-): Map<string, StatsField[]> {
+function groupByParent(fields: StatsField[]): Map<string, StatsField[]> {
     const groups = new Map<string, StatsField[]>();
-
     for (const field of fields) {
         const parent = getParentPath(field.path);
-        const existing = groups.get(parent) ?? [];
-        existing.push(field);
-        groups.set(parent, existing);
+        const list = groups.get(parent) ?? [];
+        list.push(field);
+        groups.set(parent, list);
     }
-
     return groups;
 }
 
-function detectMaps(
-    fields: readonly StatsField[],
-    minKeys: number = LIMITS.minKeysForMap
-): Map<string, DetectedMap> {
+function detectMaps(fields: StatsField[]): Map<string, DetectedMap> {
     const maps = new Map<string, DetectedMap>();
-    const byParent = groupFieldsByParent(fields);
+    const byParent = groupByParent(fields);
 
-    // Group parents by grandparent
-    const parentsByGrandparent = new Map<string, string[]>();
+    const byGrandparent = new Map<string, string[]>();
     for (const parent of byParent.keys()) {
         const grandparent = getParentPath(parent);
         if (!grandparent) continue;
-
-        const existing = parentsByGrandparent.get(grandparent) ?? [];
-        existing.push(parent);
-        parentsByGrandparent.set(grandparent, existing);
+        const list = byGrandparent.get(grandparent) ?? [];
+        list.push(parent);
+        byGrandparent.set(grandparent, list);
     }
 
-    // Find grandparents where all children have identical structure
-    for (const [grandparent, parents] of parentsByGrandparent) {
-        if (parents.length < minKeys) continue;
+    for (const [grandparent, parents] of byGrandparent) {
+        if (parents.length < 3) continue;
 
-        // Get shape of each parent's children
-        const shapes = parents.map((parent) => {
+        const shapes = parents.map(parent => {
             const children = byParent.get(parent) ?? [];
             const shape = new Map<string, FieldShape>();
             for (const child of children) {
-                if (getPathDepth(child.path) !== getPathDepth(parent) + 1)
-                    continue;
-                const leafName = getLastPathSegment(child.path);
-                shape.set(leafName, fieldToShape(child));
+                if (getPathDepth(child.path) !== getPathDepth(parent) + 1) continue;
+                shape.set(getLeafName(child.path), fieldToShape(child));
             }
             return { parent, shape };
         });
 
-        // Check if all shapes match
-        if (shapes.length === 0 || shapes[0].shape.size === 0) continue;
+        if (shapes.length === 0) continue;
+        const firstShape = shapes[0];
+        if (!firstShape || firstShape.shape.size === 0) continue;
 
-        const firstKey = groupShapeKey(shapes[0].shape);
-        const allMatch = shapes.every((s) => groupShapeKey(s.shape) === firstKey);
-
-        if (!allMatch) continue;
-
-        const keys = parents.map((p) => getLastPathSegment(p)).sort();
+        const firstKey = groupKey(firstShape.shape);
+        if (!shapes.every(s => groupKey(s.shape) === firstKey)) continue;
 
         maps.set(grandparent, {
             path: grandparent,
-            keys,
+            keys: parents.map(p => getLeafName(p)).sort(),
             defName: null,
         });
     }
@@ -221,200 +138,74 @@ function detectMaps(
 // ============================================================================
 
 function detectDefs(
-    fields: readonly StatsField[],
-    maps: Map<string, DetectedMap>,
-    minOccurrences: number = LIMITS.minSiblingsForArchetype
-): { defs: Map<string, DetectedDef>; updatedMaps: Map<string, DetectedMap> } {
+    fields: StatsField[],
+    maps: Map<string, DetectedMap>
+): { defs: Map<string, DetectedDef>; maps: Map<string, DetectedMap> } {
     const defs = new Map<string, DetectedDef>();
     const updatedMaps = new Map<string, DetectedMap>();
+    const shapeGroups = new Map<string, { shape: Map<string, FieldShape>; paths: string[] }>();
 
-    const shapeToOccurrences = new Map<
-        string,
-        {
-            shape: Map<string, FieldShape>;
-            paths: string[];
-            allFieldsByName: Map<string, StatsField[]>;
-        }
-    >();
-
-    // Collect shapes from map value structures
     for (const [mapPath, map] of maps) {
         if (map.keys.length === 0) continue;
 
         const firstKeyPath = `${mapPath}.${map.keys[0]}`;
         const childFields = fields.filter(
-            (f) =>
-                f.path.startsWith(firstKeyPath + '.') &&
+            f => f.path.startsWith(firstKeyPath + '.') &&
                 getPathDepth(f.path) === getPathDepth(firstKeyPath) + 1
         );
 
         if (childFields.length === 0) continue;
 
         const shape = new Map<string, FieldShape>();
-        const fieldsByName = new Map<string, StatsField[]>();
-
         for (const field of childFields) {
-            const leafName = getLastPathSegment(field.path);
-            shape.set(leafName, fieldToShape(field));
-            fieldsByName.set(leafName, [field]);
+            shape.set(getLeafName(field.path), fieldToShape(field));
         }
 
-        const key = groupShapeKey(shape);
-
-        if (shapeToOccurrences.has(key)) {
-            const existing = shapeToOccurrences.get(key)!;
+        const key = groupKey(shape);
+        const existing = shapeGroups.get(key);
+        if (existing) {
             existing.paths.push(mapPath);
-            for (const [name, fieldList] of fieldsByName) {
-                const existingList = existing.allFieldsByName.get(name) ?? [];
-                existingList.push(...fieldList);
-                existing.allFieldsByName.set(name, existingList);
-            }
         } else {
-            shapeToOccurrences.set(key, {
-                shape,
-                paths: [mapPath],
-                allFieldsByName: fieldsByName,
-            });
+            shapeGroups.set(key, { shape, paths: [mapPath] });
         }
     }
 
-    // Create defs for shapes with enough occurrences
-    for (const [, { shape, paths, allFieldsByName }] of shapeToOccurrences) {
-        if (paths.length < minOccurrences) continue;
+    for (const { shape, paths } of shapeGroups.values()) {
+        if (paths.length < 3) continue;
 
-        // Enrich array fields with itemFields from any occurrence that has them
-        const enrichedShape = new Map<string, FieldShape>();
-        for (const [name, baseShape] of shape) {
-            if (baseShape.type === 'array') {
-                const allFields = allFieldsByName.get(name) ?? [];
-                // Search across all keys in all maps for this field
-                for (const mapPath of paths) {
-                    const map = maps.get(mapPath);
-                    if (!map) continue;
-                    for (const key of map.keys) {
-                        const fieldPath = `${mapPath}.${key}.${name}`;
-                        const field = fields.find((f) => f.path === fieldPath);
-                        if (field && !allFields.includes(field)) {
-                            allFields.push(field);
-                        }
-                    }
-                }
+        const defName = inferDefName(shape);
+        defs.set(defName, { name: defName, shape, occurrences: paths });
 
-                const fieldWithItems = allFields.find(
-                    (f) => f.itemFields && f.itemFields.length > 0
-                );
-                if (fieldWithItems) {
-                    enrichedShape.set(name, fieldToShape(fieldWithItems));
-                } else {
-                    enrichedShape.set(name, baseShape);
-                }
-            } else {
-                enrichedShape.set(name, baseShape);
-            }
-        }
-
-        const defName = inferDefName(enrichedShape);
-
-        defs.set(defName, {
-            name: defName,
-            shape: enrichedShape,
-            occurrences: paths,
-        });
-
-        // Create updated maps with defName set (immutable update)
         for (const path of paths) {
             const map = maps.get(path);
             if (map) {
-                updatedMaps.set(path, {
-                    ...map,
-                    defName,
-                });
+                updatedMaps.set(path, { ...map, defName });
             }
         }
     }
 
-    // Copy maps that weren't updated
     for (const [path, map] of maps) {
         if (!updatedMaps.has(path)) {
             updatedMaps.set(path, map);
         }
     }
 
-    return { defs, updatedMaps };
+    return { defs, maps: updatedMaps };
 }
 
-function inferDefName(shape: ReadonlyMap<string, FieldShape>): string {
-    const fieldNames = [...shape.keys()];
-
-    // Common patterns
-    if (fieldNames.includes('score') && fieldNames.includes('confidence')) {
-        if (fieldNames.includes('evidence')) return 'scored_assessment';
-        return 'scored_metric';
+function inferDefName(shape: Map<string, FieldShape>): string {
+    const names = [...shape.keys()];
+    if (names.includes('score') && names.includes('confidence')) {
+        return names.includes('evidence') ? 'scored_assessment' : 'scored_metric';
     }
-
-    if (fieldNames.includes('value') && fieldNames.includes('count')) {
-        return 'value_count';
-    }
-
-    if (fieldNames.includes('id') && fieldNames.includes('name')) {
-        return 'named_entity';
-    }
-
-    // Generate from field names
-    const prefix = fieldNames.slice(0, 2).join('_');
-    return `${prefix}_item`;
+    if (names.includes('value') && names.includes('count')) return 'value_count';
+    if (names.includes('id') && names.includes('name')) return 'named_entity';
+    return `${names.slice(0, 2).join('_')}_item`;
 }
 
 // ============================================================================
 // Node Building
 // ============================================================================
-
-/**
- * Build a NodeDef from a StatsField, handling arrays recursively
- */
-function buildNodeDefFromStatsField(field: StatsField): NodeDef {
-    if (field.type === 'array') {
-        // Check for nested array (single itemField with path '[]' and type 'array')
-        if (
-            field.itemFields?.length === 1 &&
-            field.itemFields[0].path === '[]' &&
-            field.itemFields[0].type === 'array'
-        ) {
-            return {
-                type: 'array',
-                items: buildNodeDefFromStatsField(field.itemFields[0]),
-            } as ArrayNode;
-        }
-
-        // Array of objects with itemFields
-        if (field.itemFields && field.itemFields.length > 0) {
-            const itemObject: ObjectNode = {
-                type: 'object',
-                fields: {},
-            };
-
-            for (const itemField of field.itemFields) {
-                const leafName = getLastPathSegment(itemField.path);
-                (itemObject.fields as Record<string, NodeDef>)[leafName] =
-                    buildNodeDefFromStatsField(itemField);
-            }
-
-            return {
-                type: 'array',
-                items: itemObject,
-            } as ArrayNode;
-        }
-
-        // Simple array of primitives
-        return {
-            type: 'array',
-            items: { type: field.itemType ?? 'string' } as FieldNode,
-        } as ArrayNode;
-    }
-
-    // Non-array field
-    return buildFieldNode(field);
-}
 
 function buildFieldNode(field: StatsField): FieldNode {
     return {
@@ -427,172 +218,93 @@ function buildFieldNode(field: StatsField): FieldNode {
     };
 }
 
-function buildNodeDef(
-    node: TreeNode,
-    allFields: readonly StatsField[],
-    maps: ReadonlyMap<string, DetectedMap>,
-    defs: ReadonlyMap<string, DetectedDef>
-): NodeDef {
-    const field = node.field;
+function buildNodeFromField(field: StatsField): NodeDef {
+    if (field.type === 'array') {
+        if (field.itemFields && field.itemFields.length > 0) {
+            const itemFields: Record<string, NodeDef> = {};
+            for (const f of field.itemFields) {
+                itemFields[getLeafName(f.path)] = buildNodeFromField(f);
+            }
+            return { type: 'array', items: { type: 'object', fields: itemFields } };
+        }
+        return { type: 'array', items: { type: field.itemType ?? 'string' } as FieldNode };
+    }
+    return buildFieldNode(field);
+}
 
-    // Check if this is a map
-    const map = maps.get(node.path);
-    if (map) {
-        return buildMapNode(node, map, allFields, maps, defs);
+function buildTree(fields: StatsField[]): Map<string, { field?: StatsField; children: Set<string> }> {
+    const tree = new Map<string, { field?: StatsField; children: Set<string> }>();
+    tree.set('', { children: new Set() });
+
+    for (const field of fields) {
+        const parts = field.path.split('.');
+        for (let i = 0; i < parts.length; i++) {
+            const path = parts.slice(0, i + 1).join('.');
+            const parent = parts.slice(0, i).join('.');
+
+            if (!tree.has(path)) {
+                tree.set(path, { children: new Set() });
+            }
+            tree.get(parent)!.children.add(path);
+
+            if (i === parts.length - 1) {
+                tree.get(path)!.field = field;
+            }
+        }
     }
 
-    // Check if this is an array (before leaf check)
-    if (field?.type === 'array') {
-        return buildArrayNode(node, allFields, maps, defs);
-    }
-
-    // Leaf field
-    if (field && node.children.size === 0) {
-        return buildFieldNode(field);
-    }
-
-    // Object with children
-    if (node.children.size > 0) {
-        return buildObjectNode(node, allFields, maps, defs);
-    }
-
-    // Fallback
-    if (field) {
-        return buildFieldNode(field);
-    }
-
-    return { type: 'object', fields: {} };
+    return tree;
 }
 
 function buildObjectNode(
-    node: TreeNode,
-    allFields: readonly StatsField[],
-    maps: ReadonlyMap<string, DetectedMap>,
-    defs: ReadonlyMap<string, DetectedDef>
+    path: string,
+    tree: Map<string, { field?: StatsField; children: Set<string> }>,
+    maps: Map<string, DetectedMap>,
+    fields: StatsField[]
 ): ObjectNode {
-    const fields: Record<string, NodeDef> = {};
+    const node = tree.get(path);
+    const result: Record<string, NodeDef> = {};
 
-    for (const [key, child] of node.children) {
+    for (const childPath of node?.children ?? []) {
+        const key = getLeafName(childPath);
         if (key === '[]') continue;
 
-        // Check if this child should be a $ref
-        const map = maps.get(child.path);
+        const map = maps.get(childPath);
         if (map?.defName) {
-            fields[key] = {
-                $ref: `#/$defs/${map.defName}`,
-                keys: [...map.keys],
-            };
+            result[key] = { $ref: `#/$defs/${map.defName}`, keys: [...map.keys] };
             continue;
         }
 
-        fields[key] = buildNodeDef(child, allFields, maps, defs);
-    }
-
-    return {
-        type: 'object',
-        fields,
-    };
-}
-
-function buildArrayNode(
-    node: TreeNode,
-    allFields: readonly StatsField[],
-    maps: ReadonlyMap<string, DetectedMap>,
-    defs: ReadonlyMap<string, DetectedDef>
-): ArrayNode {
-    const arrayChild = node.children.get('[]');
-    const field = node.field;
-
-    // Use itemFields from stats if available
-    if (field?.itemFields && field.itemFields.length > 0) {
-        // Check for nested array
-        if (
-            field.itemFields.length === 1 &&
-            field.itemFields[0].path === '[]' &&
-            field.itemFields[0].type === 'array'
-        ) {
-            return {
-                type: 'array',
-                items: buildNodeDefFromStatsField(field.itemFields?.[0]),
-            };
+        if (map) {
+            const firstKey = map.keys[0];
+            const firstKeyPath = `${childPath}.${firstKey}`;
+            result[key] = {
+                type: 'map',
+                keys: [...map.keys],
+                values: buildObjectNode(firstKeyPath, tree, maps, fields),
+            } as MapNode;
+            continue;
         }
 
-        // Build object from itemFields
-        const itemObject: ObjectNode = {
-            type: 'object',
-            fields: {},
-        };
+        const childNode = tree.get(childPath);
+        const field = childNode?.field;
 
-        for (const itemField of field.itemFields) {
-            const leafName = getLastPathSegment(itemField.path);
-            (itemObject.fields as Record<string, NodeDef>)[leafName] =
-                buildNodeDefFromStatsField(itemField);
+        if (field?.type === 'array') {
+            result[key] = buildNodeFromField(field) as ArrayNode;
+        } else if (childNode && childNode.children.size > 0) {
+            result[key] = buildObjectNode(childPath, tree, maps, fields);
+        } else if (field) {
+            result[key] = buildFieldNode(field);
         }
-
-        return {
-            type: 'array',
-            items: itemObject,
-        };
     }
 
-    // Simple array of primitives
-    if (!arrayChild) {
-        const itemType = field?.itemType ?? 'string';
-        return {
-            type: 'array',
-            items: { type: itemType } as FieldNode,
-        };
-    }
-
-    // Array with tree children
-    if (arrayChild.children.size === 0) {
-        const itemType = field?.itemType ?? arrayChild.field?.type ?? 'object';
-        return {
-            type: 'array',
-            items: { type: itemType } as FieldNode,
-        };
-    }
-
-    // Array of complex objects
-    return {
-        type: 'array',
-        items: buildObjectNode(arrayChild, allFields, maps, defs),
-    };
-}
-
-function buildMapNode(
-    node: TreeNode,
-    map: DetectedMap,
-    allFields: readonly StatsField[],
-    maps: ReadonlyMap<string, DetectedMap>,
-    defs: ReadonlyMap<string, DetectedDef>
-): MapNode {
-    const firstKey = map.keys[0];
-    const firstKeyNode = node.children.get(firstKey);
-
-    let values: NodeDef;
-    if (map.defName) {
-        values = {
-            $ref: `#/$defs/${map.defName}`,
-        };
-    } else if (firstKeyNode) {
-        values = buildObjectNode(firstKeyNode, allFields, maps, defs);
-    } else {
-        values = { type: 'object', fields: {} };
-    }
-
-    return {
-        type: 'map',
-        keys: [...map.keys],
-        values,
-    };
+    return { type: 'object', fields: result };
 }
 
 function buildTypeDef(def: DetectedDef): TypeDef {
     const fields: Record<string, NodeDef> = {};
-
     for (const [name, shape] of def.shape) {
-        const pseudoField: StatsField = {
+        const field: StatsField = {
             path: name,
             type: shape.type,
             nullable: shape.nullable ?? false,
@@ -603,10 +315,8 @@ function buildTypeDef(def: DetectedDef): TypeDef {
             ...(shape.itemType && { itemType: shape.itemType }),
             ...(shape.itemFields && { itemFields: shape.itemFields }),
         };
-
-        fields[name] = buildNodeDefFromStatsField(pseudoField);
+        fields[name] = buildNodeFromField(field);
     }
-
     return { fields };
 }
 
@@ -615,55 +325,39 @@ function buildTypeDef(def: DetectedDef): TypeDef {
 // ============================================================================
 
 export interface StructureResult {
-    readonly defs: Record<string, TypeDef>;
-    readonly root: NodeDef;
-    readonly maps: ReadonlyMap<string, DetectedMap>;
-    readonly stats: {
-        readonly totalFields: number;
-        readonly uniqueFields: number;
-        readonly defCount: number;
-        readonly mapCount: number;
-        readonly reductionPercent: number;
+    defs: Record<string, TypeDef>;
+    root: NodeDef;
+    maps: Map<string, DetectedMap>;
+    stats: {
+        totalFields: number;
+        defCount: number;
+        mapCount: number;
+        reductionPercent: number;
     };
 }
 
-export function detectStructure(
-    stats: StatsMultiTableSchema
-): Map<string, StructureResult> {
+export function detectStructure(stats: StatsMultiTableSchema): Map<string, StructureResult> {
     const results = new Map<string, StructureResult>();
 
     for (const [tableName, table] of Object.entries(stats.tables)) {
-        const fields = table.fields;
-
-        // Detect maps and defs
+        const fields = [...table.fields];
         const initialMaps = detectMaps(fields);
-        const { defs: detectedDefs, updatedMaps: maps } = detectDefs(fields, initialMaps);
+        const { defs: detectedDefs, maps } = detectDefs(fields, initialMaps);
 
-        // Build tree
-        const tree = buildTreeFromFields(fields);
-
-        // Convert defs
         const defs: Record<string, TypeDef> = {};
         for (const [name, def] of detectedDefs) {
             defs[name] = buildTypeDef(def);
         }
 
-        // Build root node
-        const root = buildObjectNode(tree, fields, maps, detectedDefs);
+        const tree = buildTree(fields);
+        const root = buildObjectNode('', tree, maps, fields);
 
-        // Calculate stats
         const totalFields = fields.length;
         const fieldsInDefs = [...detectedDefs.values()].reduce(
-            (sum, def) => sum + def.shape.size * def.occurrences.length,
-            0
+            (sum, d) => sum + d.shape.size * d.occurrences.length, 0
         );
-        const uniqueFields =
-            totalFields -
-            fieldsInDefs +
-            [...detectedDefs.values()].reduce(
-                (sum, def) => sum + def.shape.size,
-                0
-            );
+        const uniqueFields = totalFields - fieldsInDefs +
+            [...detectedDefs.values()].reduce((sum, d) => sum + d.shape.size, 0);
 
         results.set(tableName, {
             defs,
@@ -671,18 +365,14 @@ export function detectStructure(
             maps,
             stats: {
                 totalFields,
-                uniqueFields,
                 defCount: detectedDefs.size,
                 mapCount: maps.size,
-                reductionPercent:
-                    totalFields > 0
-                        ? Math.round((1 - uniqueFields / totalFields) * 100)
-                        : 0,
+                reductionPercent: totalFields > 0
+                    ? Math.round((1 - uniqueFields / totalFields) * 100)
+                    : 0,
             },
         });
     }
 
     return results;
 }
-
-export type { DetectedDef, TreeNode };

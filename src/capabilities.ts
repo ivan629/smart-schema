@@ -1,23 +1,22 @@
 /**
- * SmartSchema v2 - Capabilities Extraction
+ * SmartSchema v2 - Capabilities
  *
- * Extracts measures, dimensions, identifiers, timeFields from schema structure.
- * Uses glob patterns for repeated structures.
+ * Extracts what you can do with the data:
+ * - measures (sum, avg)
+ * - dimensions (group by)
+ * - identifiers (join on)
+ * - timeFields (time series)
  */
 
 import type { StatsField, Capabilities, Entity } from './types.js';
 import type { DetectedMap } from './structure.js';
-import { getLastPathSegment } from './utils.js';
+import { getLeafName } from './utils.js';
 
 // ============================================================================
-// Helpers
+// Glob Path Conversion
 // ============================================================================
 
-function toGlobPath(
-    path: string,
-    maps: ReadonlyMap<string, DetectedMap>
-): string {
-    // Replace map keys with *
+function toGlobPath(path: string, maps: Map<string, DetectedMap>): string {
     let result = path;
 
     for (const [mapPath, map] of maps) {
@@ -29,10 +28,7 @@ function toGlobPath(
         }
     }
 
-    // Replace array notation
-    result = result.replace(/\.\[\]/g, '.*');
-
-    return result;
+    return result.replace(/\.\[\]/g, '.*');
 }
 
 // ============================================================================
@@ -40,8 +36,8 @@ function toGlobPath(
 // ============================================================================
 
 export function extractCapabilities(
-    fields: readonly StatsField[],
-    maps: ReadonlyMap<string, DetectedMap>
+    fields: StatsField[],
+    maps: Map<string, DetectedMap>
 ): Capabilities {
     const measures = new Set<string>();
     const dimensions = new Set<string>();
@@ -50,133 +46,89 @@ export function extractCapabilities(
     const searchable = new Set<string>();
 
     for (const field of fields) {
-        const globPath = toGlobPath(field.path, maps);
+        const glob = toGlobPath(field.path, maps);
 
         switch (field.role) {
-            case 'measure':
-                measures.add(globPath);
-                break;
-            case 'dimension':
-                dimensions.add(globPath);
-                break;
-            case 'identifier':
-                identifiers.add(globPath);
-                break;
-            case 'time':
-                timeFields.add(globPath);
-                break;
-            case 'text':
-                searchable.add(globPath);
-                break;
+            case 'measure': measures.add(glob); break;
+            case 'dimension': dimensions.add(glob); break;
+            case 'identifier': identifiers.add(glob); break;
+            case 'time': timeFields.add(glob); break;
+            case 'text': searchable.add(glob); break;
         }
     }
 
-    // Dedupe and sort
-    const dedupeAndSort = (set: Set<string>): string[] =>
-        [...new Set([...set])].sort();
-
     return {
-        measures: dedupeAndSort(measures),
-        dimensions: dedupeAndSort(dimensions),
-        identifiers: dedupeAndSort(identifiers),
-        timeFields: dedupeAndSort(timeFields),
-        ...(searchable.size > 0 && { searchable: dedupeAndSort(searchable) }),
+        measures: [...measures].sort(),
+        dimensions: [...dimensions].sort(),
+        identifiers: [...identifiers].sort(),
+        timeFields: [...timeFields].sort(),
+        ...(searchable.size > 0 && { searchable: [...searchable].sort() }),
     };
 }
 
 // ============================================================================
-// Detect Entities
+// Entity Detection
 // ============================================================================
 
-const ENTITY_PATTERNS: Record<
-    string,
-    { namePatterns: RegExp[]; idPatterns: RegExp[] }
-> = {
+const ENTITY_PATTERNS: Record<string, { name: RegExp[]; id: RegExp[] }> = {
     User: {
-        namePatterns: [/^user/i, /^customer/i, /^member/i, /^account/i],
-        idPatterns: [
-            /^user_id$/i,
-            /^customer_id$/i,
-            /^member_id$/i,
-            /^account_id$/i,
-        ],
+        name: [/^user/i, /^customer/i, /^member/i, /^account/i],
+        id: [/^user_id$/i, /^customer_id$/i, /^member_id$/i, /^account_id$/i],
     },
     Order: {
-        namePatterns: [/^order/i, /^purchase/i, /^transaction/i],
-        idPatterns: [/^order_id$/i, /^purchase_id$/i, /^transaction_id$/i],
+        name: [/^order/i, /^purchase/i, /^transaction/i],
+        id: [/^order_id$/i, /^purchase_id$/i, /^transaction_id$/i],
     },
     Product: {
-        namePatterns: [/^product/i, /^item/i, /^sku/i],
-        idPatterns: [/^product_id$/i, /^item_id$/i, /^sku$/i],
+        name: [/^product/i, /^item/i, /^sku/i],
+        id: [/^product_id$/i, /^item_id$/i, /^sku$/i],
     },
     Video: {
-        namePatterns: [/^video/i, /^media/i, /^content/i],
-        idPatterns: [/^video_id$/i, /^media_id$/i, /^content_id$/i],
-    },
-    Analysis: {
-        namePatterns: [/^analysis/i, /^result/i, /^report/i],
-        idPatterns: [/^analysis_id$/i, /^result_id$/i, /^report_id$/i],
+        name: [/^video/i, /^media/i, /^content/i],
+        id: [/^video_id$/i, /^media_id$/i, /^content_id$/i],
     },
 };
 
 export function detectEntities(
-    fields: readonly StatsField[],
-    maps: ReadonlyMap<string, DetectedMap>
+    fields: StatsField[],
+    maps: Map<string, DetectedMap>
 ): Entity[] {
     const entities: Entity[] = [];
-    const seenEntityTypes = new Set<string>();
+    const seen = new Set<string>();
 
-    // Find identifier fields
-    const idFields = fields.filter((f) => f.role === 'identifier');
+    const idFields = fields.filter(f => f.role === 'identifier');
 
     for (const idField of idFields) {
-        const leaf = getLastPathSegment(idField.path);
+        const leaf = getLeafName(idField.path);
 
-        // Check against known patterns
         for (const [entityType, patterns] of Object.entries(ENTITY_PATTERNS)) {
-            if (seenEntityTypes.has(entityType)) continue;
+            if (seen.has(entityType)) continue;
 
-            const matchesId = patterns.idPatterns.some((p) => p.test(leaf));
-            const matchesPath = patterns.namePatterns.some((p) =>
-                p.test(idField.path)
-            );
+            const matchesId = patterns.id.some(p => p.test(leaf));
+            const matchesPath = patterns.name.some(p => p.test(idField.path));
 
             if (matchesId || matchesPath) {
-                // Find name field
-                const parent = idField.path.split('.').slice(0, -1).join('.');
-                const nameField = fields.find(
-                    (f) =>
-                        f.path.startsWith(parent) &&
-                        (f.path.endsWith('.name') ||
-                            f.path.endsWith('_name') ||
-                            f.role === 'dimension')
-                );
-
                 entities.push({
                     name: entityType,
                     description: `${entityType} entity`,
                     idField: toGlobPath(idField.path, maps),
-                    ...(nameField && {
-                        nameField: toGlobPath(nameField.path, maps),
-                    }),
                 });
-
-                seenEntityTypes.add(entityType);
+                seen.add(entityType);
                 break;
             }
         }
     }
 
-    // Check for main entity from root id field
-    const rootId = idFields.find(
-        (f) => f.path === 'id' || !f.path.includes('.')
-    );
-    if (rootId && entities.length === 0) {
-        entities.push({
-            name: 'Record',
-            description: 'Main data record',
-            idField: rootId.path,
-        });
+    // Fallback: root id field
+    if (entities.length === 0) {
+        const rootId = idFields.find(f => f.path === 'id' || !f.path.includes('.'));
+        if (rootId) {
+            entities.push({
+                name: 'Record',
+                description: 'Main data record',
+                idField: rootId.path,
+            });
+        }
     }
 
     return entities;

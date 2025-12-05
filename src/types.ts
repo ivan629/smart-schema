@@ -1,8 +1,8 @@
 /**
  * SmartSchema v2 - Type Definitions
  *
- * A compressed, semantic schema format optimized for LLM understanding.
- * Structure mirrors data. Semantics inline. Redundancy eliminated via $defs.
+ * Semantic schema format for LLM understanding.
+ * Structure + Meaning + Roles + Relationships.
  */
 
 // ============================================================================
@@ -14,15 +14,14 @@ export interface SmartSchema {
     readonly domain: string;
     readonly description: string;
     readonly grain: string;
-
-    readonly $defs?: Readonly<Record<string, TypeDef>>;
+    readonly $defs?: Record<string, TypeDef>;
     readonly root: NodeDef;
     readonly capabilities: Capabilities;
-    readonly entities?: readonly Entity[];
+    readonly entities?: Entity[];
 }
 
 // ============================================================================
-// Node Types (field, object, array, map, ref)
+// Node Types
 // ============================================================================
 
 export type NodeDef = FieldNode | ObjectNode | ArrayNode | MapNode | RefNode;
@@ -35,42 +34,40 @@ export interface FieldNode {
     readonly unit?: string;
     readonly aggregation?: AggregationType;
     readonly nullable?: boolean;
-    readonly pii?: PiiType;
-    readonly ref?: string; // Foreign key: "users.id"
 }
 
 export interface ObjectNode {
     readonly type: 'object';
     readonly description?: string;
-    readonly fields: Readonly<Record<string, NodeDef>>;
+    readonly fields: Record<string, NodeDef>;
 }
 
 export interface ArrayNode {
     readonly type: 'array';
     readonly description?: string;
-    readonly items: NodeDef | string; // Inline or "$defs/typename"
+    readonly items: NodeDef;
 }
 
 export interface MapNode {
     readonly type: 'map';
     readonly description?: string;
-    readonly keys: readonly string[];
-    readonly values: NodeDef | string; // Inline or "$defs/typename"
+    readonly keys: string[];
+    readonly values: NodeDef;
 }
 
 export interface RefNode {
-    readonly $ref: string; // "#/$defs/typename"
-    readonly keys?: readonly string[]; // Override keys for maps
-    readonly description?: string; // Override description
+    readonly $ref: string;
+    readonly keys?: string[];
+    readonly description?: string;
 }
 
 // ============================================================================
-// Type Definitions (reusable shapes)
+// Type Definitions ($defs)
 // ============================================================================
 
 export interface TypeDef {
     readonly description?: string;
-    readonly fields: Readonly<Record<string, NodeDef>>;
+    readonly fields: Record<string, NodeDef>;
 }
 
 // ============================================================================
@@ -78,18 +75,11 @@ export interface TypeDef {
 // ============================================================================
 
 export interface Capabilities {
-    readonly measures: readonly string[]; // Paths with globs: "result.*.score"
-    readonly dimensions: readonly string[];
-    readonly identifiers: readonly string[];
-    readonly timeFields: readonly string[];
-    readonly searchable?: readonly string[];
-    readonly relationships?: readonly Relationship[];
-}
-
-export interface Relationship {
-    readonly from: string;
-    readonly to: string;
-    readonly type: 'one-to-one' | 'one-to-many' | 'many-to-many';
+    readonly measures: string[];
+    readonly dimensions: string[];
+    readonly identifiers: string[];
+    readonly timeFields: string[];
+    readonly searchable?: string[];
 }
 
 // ============================================================================
@@ -104,7 +94,7 @@ export interface Entity {
 }
 
 // ============================================================================
-// Field Types and Enums
+// Field Enums
 // ============================================================================
 
 export type FieldType =
@@ -114,10 +104,8 @@ export type FieldType =
     | 'boolean'
     | 'date'
     | 'null'
-    | 'mixed'
     | 'object'
-    | 'array'
-    | 'map';
+    | 'array';
 
 export type FieldRole =
     | 'identifier'
@@ -131,52 +119,35 @@ export type FieldFormat =
     | 'email'
     | 'url'
     | 'uuid'
-    | 'slug'
     | 'phone'
-    | 'currency'
-    | 'percent'
     | 'datetime'
     | 'date'
-    | 'time'
-    | 'iso8601';
+    | 'time';
 
 export type AggregationType = 'sum' | 'avg' | 'count' | 'min' | 'max' | 'none';
 
-export type PiiType =
-    | 'name'
-    | 'email'
-    | 'phone'
-    | 'address'
-    | 'ssn'
-    | 'dob'
-    | 'ip'
-    | 'financial'
-    | 'health'
-    | 'other';
-
 // ============================================================================
-// Stats Types (internal, pre-enrichment)
+// Internal Types (stats)
 // ============================================================================
 
 export interface StatsField {
-    readonly path: string;
-    readonly type: FieldType;
-    readonly nullable: boolean;
-    readonly role: FieldRole;
-    readonly aggregation: AggregationType;
-    readonly format?: FieldFormat;
-    readonly unit?: string;
-    readonly itemType?: FieldType;
-    readonly itemFields?: readonly StatsField[]; // For arrays of objects
-    readonly sampleValues?: readonly unknown[];
+    path: string;
+    type: FieldType;
+    nullable: boolean;
+    role: FieldRole;
+    aggregation: AggregationType;
+    format?: FieldFormat;
+    unit?: string;
+    itemType?: FieldType;
+    itemFields?: StatsField[];
 }
 
 export interface StatsTableSchema {
-    readonly fields: readonly StatsField[];
+    fields: StatsField[];
 }
 
 export interface StatsMultiTableSchema {
-    readonly tables: Readonly<Record<string, StatsTableSchema>>;
+    tables: Record<string, StatsTableSchema>;
 }
 
 // ============================================================================
@@ -184,7 +155,7 @@ export interface StatsMultiTableSchema {
 // ============================================================================
 
 export class InvalidInputError extends Error {
-    public readonly name = 'InvalidInputError' as const;
+    readonly name = 'InvalidInputError';
     constructor(
         message: string,
         public readonly reason: 'primitive' | 'empty' | 'invalid'
@@ -194,7 +165,7 @@ export class InvalidInputError extends Error {
 }
 
 export class AIEnrichmentError extends Error {
-    public readonly name = 'AIEnrichmentError' as const;
+    readonly name = 'AIEnrichmentError';
     constructor(
         message: string,
         public readonly partialSchema: SmartSchema
@@ -203,57 +174,22 @@ export class AIEnrichmentError extends Error {
     }
 }
 
-export class AIValidationError extends Error {
-    public readonly name = 'AIValidationError' as const;
-    constructor(
-        message: string,
-        public readonly validationErrors: unknown[]
-    ) {
-        super(message);
-    }
-}
-
 export class LimitExceededError extends Error {
-    public readonly name = 'LimitExceededError' as const;
+    readonly name = 'LimitExceededError';
 }
-
-// ============================================================================
-// Logger
-// ============================================================================
-
-export interface Logger {
-    debug(message: string): void;
-    info(message: string): void;
-    warn(message: string): void;
-    error(message: string): void;
-}
-
-export const silentLogger: Logger = {
-    debug: () => {},
-    info: () => {},
-    warn: () => {},
-    error: () => {},
-};
-
-export const consoleLogger: Logger = {
-    debug: (msg) => console.debug(`[smart-schema] ${msg}`),
-    info: (msg) => console.info(`[smart-schema] ${msg}`),
-    warn: (msg) => console.warn(`[smart-schema] ${msg}`),
-    error: (msg) => console.error(`[smart-schema] ${msg}`),
-};
 
 // ============================================================================
 // Type Guards
 // ============================================================================
 
 export function isFieldNode(node: NodeDef): node is FieldNode {
-    const type = (node as FieldNode).type;
+    const n = node as FieldNode;
     return (
-        type !== undefined &&
-        type !== 'object' &&
-        type !== 'array' &&
-        type !== 'map' &&
-        !('$ref' in node)
+        n.type !== undefined &&
+        n.type !== 'object' &&
+        n.type !== 'array' &&
+        !('$ref' in node) &&
+        !('keys' in node && 'values' in node)
     );
 }
 
@@ -266,7 +202,7 @@ export function isArrayNode(node: NodeDef): node is ArrayNode {
 }
 
 export function isMapNode(node: NodeDef): node is MapNode {
-    return (node as MapNode).type === 'map' && 'keys' in node;
+    return 'keys' in node && 'values' in node && !('$ref' in node);
 }
 
 export function isRefNode(node: NodeDef): node is RefNode {
