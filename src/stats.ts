@@ -236,18 +236,6 @@ function schemaToField(
         type = 'date';
     }
 
-    // Detect numeric strings
-    if (type === 'string') {
-        const strings = samples.filter((s): s is string => typeof s === 'string' && s.trim() !== '');
-        const numericCount = strings.filter(s =>
-            /^-?\d+\.?\d*$/.test(s.trim()) && !isNaN(parseFloat(s))
-        ).length;
-
-        if (numericCount > 0 && numericCount === strings.length) {
-            type = strings.some(s => s.includes('.')) ? 'number' : 'int';
-        }
-    }
-
     const role = inferRole(path, type, format);
     const aggregation = inferAggregation(role, path);
     const unit = role === 'measure' ? inferUnit(path) : undefined;
