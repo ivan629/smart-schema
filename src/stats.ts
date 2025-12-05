@@ -1,5 +1,5 @@
 /**
- * Stats Module - Semantic Schema Generation
+ * SmartSchema v2 - Statistics Module
  *
  * Uses genson-js for base JSON Schema generation, then enriches with:
  * - Role inference (measure, dimension, identifier, time, text)
@@ -39,40 +39,119 @@ interface GensonSchema {
 
 const ROLE_PATTERNS = {
     identifier: [
-        /\bid\b/i, /\bkey\b/i, /\buuid\b/i, /\bguid\b/i, /\bcode\b/i,
-        /\bsku\b/i, /\bref\b/i, /\bslug\b/i, /_id$/i, /Id$/,
+        /\bid\b/i,
+        /\bkey\b/i,
+        /\buuid\b/i,
+        /\bguid\b/i,
+        /\bcode\b/i,
+        /\bsku\b/i,
+        /\bref\b/i,
+        /\bslug\b/i,
+        /_id$/i,
+        /Id$/,
     ],
     time: [
-        /\bdate\b/i, /\btime\b/i, /\btimestamp\b/i, /\bcreated\b/i,
-        /\bupdated\b/i, /\bmodified\b/i, /_at$/i, /At$/, /\bwhen\b/i,
+        /\bdate\b/i,
+        /\btime\b/i,
+        /\btimestamp\b/i,
+        /\bcreated\b/i,
+        /\bupdated\b/i,
+        /\bmodified\b/i,
+        /_at$/i,
+        /At$/,
+        /\bwhen\b/i,
     ],
     measure: [
-        /\bcount\b/i, /\btotal\b/i, /\bsum\b/i, /\bamount\b/i, /\bprice\b/i,
-        /\bcost\b/i, /\bvalue\b/i, /\brate\b/i, /\bscore\b/i, /\bweight\b/i,
-        /\bheight\b/i, /\bwidth\b/i, /\blength\b/i, /\bsize\b/i, /\bage\b/i,
-        /\bduration\b/i, /\bquantity\b/i, /\bpercent/i, /\bratio\b/i,
-        /\bavg\b/i, /\baverage\b/i, /\bmin\b/i, /\bmax\b/i, /\bnum\b/i,
-        /\bnumber\b/i, /\bconfidence\b/i, /\bstrength\b/i, /\bintensity\b/i,
-        /\bfrequency\b/i, /\bvolume\b/i, /\bdistance\b/i, /\bspeed\b/i,
-        /\bbalance\b/i, /\bbudget\b/i, /\brevenue\b/i, /\bprofit\b/i,
-        /\bloss\b/i, /\bsalary\b/i, /\bincome\b/i, /\bexpense\b/i,
-        /\btokens?\b/i, /\bwords?\b/i, /\bcharacters?\b/i, /\blines?\b/i,
-        /\binstances?\b/i, /\boccurrences?\b/i, /\bdetected\b/i,
+        /\bcount\b/i,
+        /\btotal\b/i,
+        /\bsum\b/i,
+        /\bamount\b/i,
+        /\bprice\b/i,
+        /\bcost\b/i,
+        /\bvalue\b/i,
+        /\brate\b/i,
+        /\bscore\b/i,
+        /\bweight\b/i,
+        /\bheight\b/i,
+        /\bwidth\b/i,
+        /\blength\b/i,
+        /\bsize\b/i,
+        /\bage\b/i,
+        /\bduration\b/i,
+        /\bquantity\b/i,
+        /\bpercent/i,
+        /\bratio\b/i,
+        /\bavg\b/i,
+        /\baverage\b/i,
+        /\bmin\b/i,
+        /\bmax\b/i,
+        /\bnum\b/i,
+        /\bnumber\b/i,
+        /\bconfidence\b/i,
+        /\bstrength\b/i,
+        /\bintensity\b/i,
+        /\bfrequency\b/i,
+        /\bvolume\b/i,
+        /\bdistance\b/i,
+        /\bspeed\b/i,
+        /\bbalance\b/i,
+        /\bbudget\b/i,
+        /\brevenue\b/i,
+        /\bprofit\b/i,
+        /\bloss\b/i,
+        /\bsalary\b/i,
+        /\bincome\b/i,
+        /\bexpense\b/i,
+        /\btokens?\b/i,
+        /\bwords?\b/i,
+        /\bcharacters?\b/i,
+        /\blines?\b/i,
+        /\binstances?\b/i,
+        /\boccurrences?\b/i,
+        /\bdetected\b/i,
     ],
     text: [
-        /\bdescription\b/i, /\btext\b/i, /\bcontent\b/i, /\bbody\b/i,
-        /\bmessage\b/i, /\bcomment\b/i, /\bnote\b/i, /\bsummary\b/i,
-        /\bdetails?\b/i, /\bexplanation\b/i, /\breason\b/i, /\bquote\b/i,
-        /\bcontext\b/i, /\bnarrative\b/i, /\bstory\b/i, /\barticle\b/i,
-        /\bparagraph\b/i, /\bsentence\b/i, /\bexcerpt\b/i, /\bsnippet\b/i,
-        /\btranscript\b/i, /\bmarkdown\b/i, /\bhtml\b/i, /\bresponse\b/i,
-        /\bprompt\b/i, /\bquery\b/i, /\bquestion\b/i, /\banswer\b/i,
-        /\bfeedback\b/i, /\breview\b/i, /\bimpact\b/i, /\bassessment\b/i,
+        /\bdescription\b/i,
+        /\btext\b/i,
+        /\bcontent\b/i,
+        /\bbody\b/i,
+        /\bmessage\b/i,
+        /\bcomment\b/i,
+        /\bnote\b/i,
+        /\bsummary\b/i,
+        /\bdetails?\b/i,
+        /\bexplanation\b/i,
+        /\breason\b/i,
+        /\bquote\b/i,
+        /\bcontext\b/i,
+        /\bnarrative\b/i,
+        /\bstory\b/i,
+        /\barticle\b/i,
+        /\bparagraph\b/i,
+        /\bsentence\b/i,
+        /\bexcerpt\b/i,
+        /\bsnippet\b/i,
+        /\btranscript\b/i,
+        /\bmarkdown\b/i,
+        /\bhtml\b/i,
+        /\bresponse\b/i,
+        /\bprompt\b/i,
+        /\bquery\b/i,
+        /\bquestion\b/i,
+        /\banswer\b/i,
+        /\bfeedback\b/i,
+        /\breview\b/i,
+        /\bimpact\b/i,
+        /\bassessment\b/i,
     ],
 } as const;
 
 const UNIT_PATTERNS: Array<{ pattern: RegExp; unit: string }> = [
-    { pattern: /(cost|price|amount|revenue|profit|income|expense|salary|budget|balance|usd|dollar)/i, unit: 'USD' },
+    {
+        pattern:
+            /(cost|price|amount|revenue|profit|income|expense|salary|budget|balance|usd|dollar)/i,
+        unit: 'USD',
+    },
     { pattern: /(percent|pct|ratio)/i, unit: 'percent' },
     { pattern: /(tokens?)/i, unit: 'tokens' },
     { pattern: /(words?|word_count)/i, unit: 'words' },
@@ -81,13 +160,25 @@ const UNIT_PATTERNS: Array<{ pattern: RegExp; unit: string }> = [
     { pattern: /(minutes?|mins?)/i, unit: 'minutes' },
     { pattern: /(hours?|hrs?)/i, unit: 'hours' },
     { pattern: /(days?)/i, unit: 'days' },
-    { pattern: /(count|num|quantity|instances?|occurrences?)/i, unit: 'instances' },
+    {
+        pattern: /(count|num|quantity|instances?|occurrences?)/i,
+        unit: 'instances',
+    },
 ];
 
 const AVG_PATTERNS = [
-    /\bavg\b/i, /\baverage\b/i, /\bmean\b/i, /\brate\b/i, /\bratio\b/i,
-    /\bpercent/i, /\bscore\b/i, /\bconfidence\b/i, /\bstrength\b/i,
-    /\bintensity\b/i, /\bprobability\b/i, /\blikelihood\b/i,
+    /\bavg\b/i,
+    /\baverage\b/i,
+    /\bmean\b/i,
+    /\brate\b/i,
+    /\bratio\b/i,
+    /\bpercent/i,
+    /\bscore\b/i,
+    /\bconfidence\b/i,
+    /\bstrength\b/i,
+    /\bintensity\b/i,
+    /\bprobability\b/i,
+    /\blikelihood\b/i,
 ];
 
 // ============================================================================
@@ -142,7 +233,11 @@ function collectFieldSamples(
             existing.push(value);
             samples.set(fieldPath, existing);
 
-            if (value !== null && value !== undefined && typeof value === 'object') {
+            if (
+                value !== null &&
+                value !== undefined &&
+                typeof value === 'object'
+            ) {
                 collectFieldSamples(value, fieldPath, samples);
             }
         }
@@ -170,15 +265,25 @@ function gensonToFields(
             const fieldPath = path ? `${path}.${key}` : key;
             const samples = fieldSamples.get(fieldPath) ?? [];
             const isRequired = schema.required?.includes(key) ?? false;
-            const nullable = !isRequired || samples.some(s => s === null || s === undefined);
+            const nullable =
+                !isRequired ||
+                samples.some((s) => s === null || s === undefined);
 
-            const field = schemaToField(propSchema, fieldPath, samples, nullable, fieldSamples);
+            const field = schemaToField(
+                propSchema,
+                fieldPath,
+                samples,
+                nullable,
+                fieldSamples
+            );
             if (field) {
                 fields.push(field);
 
                 // Recurse into nested objects
                 if (propSchema.type === 'object' && propSchema.properties) {
-                    fields.push(...gensonToFields(propSchema, fieldSamples, fieldPath));
+                    fields.push(
+                        ...gensonToFields(propSchema, fieldSamples, fieldPath)
+                    );
                 }
             }
         }
@@ -197,7 +302,9 @@ function schemaToField(
     nullable: boolean,
     allSamples: Map<string, unknown[]>
 ): StatsField | null {
-    const schemaType = Array.isArray(schema.type) ? schema.type[0] : schema.type;
+    const schemaType = Array.isArray(schema.type)
+        ? schema.type[0]
+        : schema.type;
     let type = mapGensonType(schemaType);
 
     // Detect format from samples
@@ -210,14 +317,19 @@ function schemaToField(
 
     // Detect numeric strings
     if (type === 'string') {
-        const stringValues = samples.filter(s => typeof s === 'string' && s.trim() !== '');
-        const numericCount = stringValues.filter(s =>
-            /^-?\d+\.?\d*(?:[eE][+-]?\d+)?$/.test((s as string).trim()) &&
-            !isNaN(parseFloat((s as string).trim()))
+        const stringValues = samples.filter(
+            (s) => typeof s === 'string' && s.trim() !== ''
+        );
+        const numericCount = stringValues.filter(
+            (s) =>
+                /^-?\d+\.?\d*(?:[eE][+-]?\d+)?$/.test((s as string).trim()) &&
+                !isNaN(parseFloat((s as string).trim()))
         ).length;
 
         if (numericCount > 0 && numericCount === stringValues.length) {
-            const hasDecimals = stringValues.some(s => (s as string).includes('.'));
+            const hasDecimals = stringValues.some((s) =>
+                (s as string).includes('.')
+            );
             type = hasDecimals ? 'number' : 'int';
         }
     }
@@ -225,7 +337,7 @@ function schemaToField(
     const role = inferRole(path, type, format);
     const aggregation = inferAggregation(role, path);
     // Only infer units for measure fields
-    const unit = role === 'measure' ? inferUnit(path, format) : undefined;
+    const unit = role === 'measure' ? inferUnit(path) : undefined;
 
     const field: StatsField = {
         path,
@@ -254,7 +366,9 @@ function buildArrayItemFields(
     basePath: string,
     allSamples: Map<string, unknown[]>
 ): void {
-    const itemType = Array.isArray(itemSchema.type) ? itemSchema.type[0] : itemSchema.type;
+    const itemType = Array.isArray(itemSchema.type)
+        ? itemSchema.type[0]
+        : itemSchema.type;
     (field as { itemType?: FieldType }).itemType = mapGensonType(itemType);
 
     // Array of objects
@@ -265,9 +379,16 @@ function buildArrayItemFields(
             const itemSamplePath = `${basePath}.[].${key}`;
             const itemSamples = allSamples.get(itemSamplePath) ?? [];
             const isRequired = itemSchema.required?.includes(key) ?? false;
-            const itemNullable = !isRequired || itemSamples.some(s => s === null);
+            const itemNullable =
+                !isRequired || itemSamples.some((s) => s === null);
 
-            const itemField = schemaToField(propSchema, key, itemSamples, itemNullable, allSamples);
+            const itemField = schemaToField(
+                propSchema,
+                key,
+                itemSamples,
+                itemNullable,
+                allSamples
+            );
             if (itemField) {
                 itemFields.push(itemField);
             }
@@ -288,7 +409,12 @@ function buildArrayItemFields(
             aggregation: 'none',
         };
 
-        buildArrayItemFields(nestedField, itemSchema.items, `${basePath}.[]`, allSamples);
+        buildArrayItemFields(
+            nestedField,
+            itemSchema.items,
+            `${basePath}.[]`,
+            allSamples
+        );
         (field as { itemFields?: StatsField[] }).itemFields = [nestedField];
     }
 }
@@ -346,7 +472,9 @@ function detectFormat(samples: unknown[]): FieldFormat | undefined {
 /**
  * Extract format from json-infer-types result
  */
-function extractFieldFormat(inferred: ReturnType<typeof inferType>): FieldFormat | undefined {
+function extractFieldFormat(
+    inferred: ReturnType<typeof inferType>
+): FieldFormat | undefined {
     const name = inferred.name;
 
     if (name === 'string' && 'format' in inferred) {
@@ -431,7 +559,7 @@ function inferAggregation(role: FieldRole, path: string): AggregationType {
 /**
  * Infer unit from path
  */
-function inferUnit(path: string, _format?: FieldFormat): string | undefined {
+function inferUnit(path: string): string | undefined {
     const leafName = path.split('.').pop() ?? path;
 
     for (const { pattern, unit } of UNIT_PATTERNS) {
@@ -448,10 +576,7 @@ function inferUnit(path: string, _format?: FieldFormat): string | undefined {
 /**
  * Compute statistics and semantic schema from data
  */
-export function computeStats(
-    data: unknown,
-    _options: { maxSamples?: number } = {}
-): StatsMultiTableSchema {
+export function computeStats(data: unknown): StatsMultiTableSchema {
     const tables: Record<string, StatsTableSchema> = {};
 
     if (Array.isArray(data)) {
@@ -479,5 +604,3 @@ export function computeStats(
 
     return { tables };
 }
-
-export type { StatsField, StatsTableSchema, StatsMultiTableSchema };

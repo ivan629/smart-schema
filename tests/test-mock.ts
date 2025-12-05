@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { AIEnrichmentError, analyze } from '../src/index.js';
+import { analyze } from '../src/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -18,6 +18,7 @@ async function test(): Promise<void> {
     try {
         const schema = await analyze(data, {
             apiKey: process.env.ANTHROPIC_API_KEY,
+            verbose: true
         });
 
         const outputPath = join(__dirname, '..', 'mock', 'schema-output.json');

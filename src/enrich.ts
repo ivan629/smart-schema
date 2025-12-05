@@ -1,5 +1,5 @@
 /**
- * AI Enrichment
+ * SmartSchema v2 - AI Enrichment
  *
  * Enriches schema with semantic descriptions using Claude.
  * Only sends unique elements ($defs + unique fields) to minimize tokens.
@@ -10,18 +10,16 @@ import type {
     SmartSchema,
     TypeDef,
     NodeDef,
-    ObjectNode,
     Capabilities,
     Entity,
-    Logger,
 } from './types.js';
 import {
-    consoleLogger,
     isObjectNode,
     isArrayNode,
     isMapNode,
     isRefNode,
     isFieldNode,
+    AIValidationError,
 } from './types.js';
 import { buildEnrichmentPrompt, type AIEnrichmentResponse } from './prompts.js';
 
@@ -56,9 +54,7 @@ export class TimeoutError extends Error {
 // ============================================================================
 
 export interface EnrichOptions {
-    readonly model?: string;
-    readonly timeout?: number;
-    readonly logger?: Logger;
+    readonly verbose?: boolean;
 }
 
 // ============================================================================
@@ -68,23 +64,31 @@ export interface EnrichOptions {
 async function callAI(
     prompt: string,
     apiKey: string,
-    options: EnrichOptions
+    verbose: boolean
 ): Promise<AIEnrichmentResponse> {
-    const { model = DEFAULT_MODEL, timeout = DEFAULT_TIMEOUT, logger = consoleLogger } = options;
-
     const client = new Anthropic({ apiKey });
 
-    logger.debug(`Calling AI model: ${model}`);
+    if (verbose) {
+        console.log(`[smart-schema] Calling AI model: ${DEFAULT_MODEL}`);
+    }
 
     try {
         const response = await Promise.race([
             client.messages.create({
-                model,
+                model: DEFAULT_MODEL,
                 max_tokens: MAX_TOKENS,
                 messages: [{ role: 'user', content: prompt }],
             }),
             new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new TimeoutError(`AI request timed out after ${timeout}ms`)), timeout)
+                setTimeout(
+                    () =>
+                        reject(
+                            new TimeoutError(
+                                `AI request timed out after ${DEFAULT_TIMEOUT}ms`
+                            )
+                        ),
+                    DEFAULT_TIMEOUT
+                )
             ),
         ]);
 
@@ -107,14 +111,23 @@ async function callAI(
         try {
             return JSON.parse(jsonText) as AIEnrichmentResponse;
         } catch (parseError) {
-            logger.error(`Failed to parse AI response: ${text.slice(0, 500)}`);
-            throw new AIValidationError(
-                'Failed to parse AI response as JSON',
-                [{ message: parseError instanceof Error ? parseError.message : 'Parse error' }]
-            );
+            if (verbose) {
+                console.error(`[smart-schema] Failed to parse AI response: ${text.slice(0, 500)}`);
+            }
+            throw new AIValidationError('Failed to parse AI response as JSON', [
+                {
+                    message:
+                        parseError instanceof Error
+                            ? parseError.message
+                            : 'Parse error',
+                },
+            ]);
         }
     } catch (error) {
-        if (error instanceof TimeoutError || error instanceof AIValidationError) {
+        if (
+            error instanceof TimeoutError ||
+            error instanceof AIValidationError
+        ) {
             throw error;
         }
 
@@ -132,7 +145,10 @@ async function callAI(
 
 function enrichDefs(
     defs: Record<string, TypeDef>,
-    aiDefs?: Record<string, { description: string; fields: Record<string, { description: string }> }>
+    aiDefs?: Record<
+        string,
+        { description: string; fields: Record<string, { description: string }> }
+    >
 ): Record<string, TypeDef> {
     const result: Record<string, TypeDef> = {};
 
@@ -146,7 +162,9 @@ function enrichDefs(
             if (isFieldNode(fieldNode)) {
                 fields[fieldName] = {
                     ...fieldNode,
-                    ...(aiField?.description && { description: aiField.description }),
+                    ...(aiField?.description && {
+                        description: aiField.description,
+                    }),
                 };
             } else {
                 fields[fieldName] = fieldNode;
@@ -187,9 +205,10 @@ function enrichNode(
         return {
             ...node,
             ...(aiField?.description && { description: aiField.description }),
-            items: typeof node.items === 'string'
-                ? node.items
-                : enrichNode(node.items, `${path}.[]`, aiFields),
+            items:
+                typeof node.items === 'string'
+                    ? node.items
+                    : enrichNode(node.items, `${path}.[]`, aiFields),
         };
     }
 
@@ -197,9 +216,10 @@ function enrichNode(
         return {
             ...node,
             ...(aiField?.description && { description: aiField.description }),
-            values: typeof node.values === 'string'
-                ? node.values
-                : enrichNode(node.values, path, aiFields),
+            values:
+                typeof node.values === 'string'
+                    ? node.values
+                    : enrichNode(node.values, path, aiFields),
         };
     }
 
@@ -229,7 +249,9 @@ function enrichEntities(
 
     // Merge AI enrichment with detected entities
     const result: Entity[] = [];
-    const aiByName = new Map(aiEntities.map(e => [e.name.toLowerCase(), e]));
+    const aiByName = new Map(
+        aiEntities.map((e) => [e.name.toLowerCase(), e])
+    );
 
     for (const entity of detected) {
         const ai = aiByName.get(entity.name.toLowerCase());
@@ -254,16 +276,22 @@ export async function enrichWithAI(
     apiKey: string,
     options: EnrichOptions = {}
 ): Promise<SmartSchema> {
-    const { logger = consoleLogger } = options;
+    const { verbose = false } = options;
 
     // Build prompt
     const prompt = buildEnrichmentPrompt(defs, root, entities);
-    logger.debug(`Generated prompt (${prompt.length} chars)`);
+
+    if (verbose) {
+        console.log(`[smart-schema] Generated prompt (${prompt.length} chars)`);
+        console.log('[smart-schema] Calling AI for enrichment...');
+    }
 
     // Call AI
-    logger.info('Calling AI for enrichment...');
-    const aiResponse = await callAI(prompt, apiKey, options);
-    logger.info('AI enrichment received');
+    const aiResponse = await callAI(prompt, apiKey, verbose);
+
+    if (verbose) {
+        console.log('[smart-schema] AI enrichment received');
+    }
 
     // Apply enrichment
     const enrichedDefs = enrichDefs(defs, aiResponse.defs);
@@ -291,7 +319,7 @@ function pathToLabel(path: string): string {
     return leaf
         .replace(/_/g, ' ')
         .replace(/([a-z])([A-Z])/g, '$1 $2')
-        .replace(/\b\w/g, c => c.toUpperCase());
+        .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function applyDefaults(

@@ -7,12 +7,16 @@
  */
 
 import { LIMITS } from './constants.js';
-import { computeStats, type ComputeStatsOptions } from './stats.js';
+import { computeStats } from './stats.js';
 import { detectStructure } from './structure.js';
 import { extractCapabilities, detectEntities } from './capabilities.js';
-import { enrichWithAI, applyDefaults, type EnrichOptions } from './enrich.js';
-import type { SmartSchema, Logger } from './types.js';
-import { consoleLogger, LimitExceededError, AIEnrichmentError } from './types.js';
+import { enrichWithAI, applyDefaults } from './enrich.js';
+import type { SmartSchema } from './types.js';
+import {
+    LimitExceededError,
+    AIEnrichmentError,
+    InvalidInputError,
+} from './types.js';
 
 // ============================================================================
 // Types
@@ -22,29 +26,11 @@ export interface AnalyzeOptions {
     /** Anthropic API key. Required unless skipAI is true. */
     readonly apiKey: string;
 
-    /** Max rows to sample per table. Default: 10000 */
-    readonly maxRows?: number;
-
-    /** Max nesting depth to traverse. Default: 50 */
-    readonly maxDepth?: number;
-
     /** Skip AI enrichment, use defaults. Default: false */
     readonly skipAI?: boolean;
 
-    /** AI model to use. Default: claude-sonnet-4-5-20250929 */
-    readonly model?: string;
-
-    /** AI request timeout in ms. Default: 300000 (5 min) */
-    readonly timeout?: number;
-
-    /** Format detection threshold (0-1). Default: 0.9 */
-    readonly formatThreshold?: number;
-
-    /** Mixed type threshold (0-1). Default: 0.1 */
-    readonly mixedTypeThreshold?: number;
-
-    /** Logger instance. Default: silent */
-    readonly logger?: Logger;
+    /** Enable console logging. Default: false */
+    readonly verbose?: boolean;
 }
 
 // ============================================================================
@@ -54,7 +40,7 @@ export interface AnalyzeOptions {
 function validateLimits(
     fieldCount: number,
     tableCount: number,
-    logger: Logger
+    verbose: boolean
 ): void {
     if (tableCount > LIMITS.maxTablesForEnrichment) {
         throw new LimitExceededError(
@@ -69,9 +55,9 @@ function validateLimits(
         );
     }
 
-    if (fieldCount > LIMITS.maxFieldsWarningThreshold) {
-        logger.warn(
-            `Large schema (${fieldCount} fields) - AI enrichment may be incomplete`
+    if (verbose && fieldCount > LIMITS.maxFieldsWarningThreshold) {
+        console.warn(
+            `[smart-schema] Large schema (${fieldCount} fields) - AI enrichment may be incomplete`
         );
     }
 }
@@ -86,41 +72,48 @@ export async function analyze(
 ): Promise<SmartSchema> {
     const {
         apiKey,
-        maxRows,
-        maxDepth,
         skipAI = false,
-        model,
-        timeout,
-        formatThreshold,
-        mixedTypeThreshold,
-        logger = consoleLogger,
+        verbose = false,
     } = options;
 
-    logger.info('Starting schema analysis...');
+    const log = (msg: string) => verbose && console.log(`[smart-schema] ${msg}`);
+
+    // Input validation
+    if (data === null || data === undefined) {
+        throw new InvalidInputError('Input cannot be null or undefined', 'invalid');
+    }
+
+    if (typeof data !== 'object') {
+        throw new InvalidInputError('Input must be an object or array', 'primitive');
+    }
+
+    if (Array.isArray(data) && data.length === 0) {
+        throw new InvalidInputError('Input array cannot be empty', 'empty');
+    }
+
+    if (!Array.isArray(data) && Object.keys(data).length === 0) {
+        throw new InvalidInputError('Input object cannot be empty', 'empty');
+    }
+
+    if (!skipAI && !apiKey) {
+        throw new Error('apiKey is required when skipAI is false');
+    }
+
+    log('Starting schema analysis...');
 
     // Step 1: Compute statistics
-    logger.debug('Computing statistics...');
-    const statsOptions: ComputeStatsOptions = {
-        ...(maxRows !== undefined && { maxRows }),
-        ...(maxDepth !== undefined && { maxDepth }),
-        ...(formatThreshold !== undefined && { formatThreshold }),
-        ...(mixedTypeThreshold !== undefined && { mixedTypeThreshold }),
-    };
-    const stats = computeStats(data, statsOptions);
+    const stats = computeStats(data);
 
     const tableCount = Object.keys(stats.tables).length;
     const fieldCount = Object.values(stats.tables).reduce(
         (sum, t) => sum + t.fields.length,
         0
     );
-    logger.info(`Found ${tableCount} table(s) with ${fieldCount} total fields`);
+    log(`Found ${tableCount} table(s) with ${fieldCount} total fields`);
 
     // Step 2: Detect structure (archetypes, maps, tree)
-    logger.debug('Detecting structure...');
     const structures = detectStructure(stats);
 
-    // For now, we handle single-table (root) case
-    // Multi-table support can be added later
     const tableName = Object.keys(stats.tables)[0] ?? 'root';
     const structure = structures.get(tableName);
 
@@ -128,19 +121,18 @@ export async function analyze(
         throw new Error('Failed to detect structure');
     }
 
-    logger.info(
-        `Structure detected: ${structure.stats.defCount} $defs, ` +
+    log(
+        `Structure: ${structure.stats.defCount} $defs, ` +
         `${structure.stats.mapCount} maps, ` +
-        `${structure.stats.reductionPercent}% token reduction`
+        `${structure.stats.reductionPercent}% reduction`
     );
 
     // Step 3: Extract capabilities
-    logger.debug('Extracting capabilities...');
     const tableFields = stats.tables[tableName]?.fields ?? [];
     const capabilities = extractCapabilities(tableFields, structure.maps);
     const entities = detectEntities(tableFields, structure.maps);
 
-    logger.info(
+    log(
         `Capabilities: ${capabilities.measures.length} measures, ` +
         `${capabilities.dimensions.length} dimensions, ` +
         `${capabilities.identifiers.length} identifiers`
@@ -150,36 +142,34 @@ export async function analyze(
     const shouldEnrich = !skipAI && Boolean(apiKey);
 
     if (shouldEnrich) {
-        validateLimits(fieldCount, tableCount, logger);
+        validateLimits(fieldCount, tableCount, verbose);
     }
 
     let schema: SmartSchema;
 
     if (!shouldEnrich) {
-        logger.info('Skipping AI enrichment, applying defaults');
-        schema = applyDefaults(structure.defs, structure.root, capabilities, entities);
+        log('Skipping AI enrichment, applying defaults');
+        schema = applyDefaults(
+            structure.defs,
+            structure.root,
+            capabilities,
+            entities
+        );
     } else {
-        logger.info('Starting AI enrichment...');
+        log('Starting AI enrichment...');
 
         try {
-            const enrichOptions: EnrichOptions = {
-                logger,
-                ...(model !== undefined && { model }),
-                ...(timeout !== undefined && { timeout }),
-            };
-
             schema = await enrichWithAI(
                 structure.defs,
                 structure.root,
                 capabilities,
                 entities,
                 apiKey,
-                enrichOptions
+                { verbose }
             );
 
-            logger.info('AI enrichment complete');
+            log('AI enrichment complete');
         } catch (error) {
-            // Provide partial schema on failure
             const partialSchema = applyDefaults(
                 structure.defs,
                 structure.root,
@@ -187,14 +177,18 @@ export async function analyze(
                 entities
             );
 
-            const message = error instanceof Error ? error.message : 'AI enrichment failed';
-            logger.error(`AI enrichment failed: ${message}`);
+            const message =
+                error instanceof Error ? error.message : 'AI enrichment failed';
+
+            if (verbose) {
+                console.error(`[smart-schema] AI enrichment failed: ${message}`);
+            }
 
             throw new AIEnrichmentError(message, partialSchema);
         }
     }
 
-    logger.info('Schema analysis complete');
+    log('Schema analysis complete');
 
     return schema;
 }
@@ -203,6 +197,10 @@ export async function analyze(
 // Re-exports
 // ============================================================================
 
-export { consoleLogger, silentLogger } from './types.js';
-export type { SmartSchema, Logger } from './types.js';
-export { InvalidInputError, AIEnrichmentError, LimitExceededError } from './types.js';
+export type { SmartSchema, Capabilities, Entity } from './types.js';
+export {
+    InvalidInputError,
+    AIEnrichmentError,
+    LimitExceededError,
+} from './types.js';
+export type { StructureResult, DetectedMap } from './structure.js';

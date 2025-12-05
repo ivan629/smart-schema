@@ -1,3 +1,7 @@
+/**
+ * SmartSchema v2 - Utility Functions
+ */
+
 export function getLastPathSegment(path: string): string {
     return path.split('.').pop() ?? path;
 }
@@ -9,21 +13,45 @@ export function toReadableFieldName(fieldName: string): string {
         .toLowerCase();
 }
 
-export function pathContainsAny(path: string, patterns: readonly string[]): boolean {
+export function pathContainsAny(
+    path: string,
+    patterns: readonly string[]
+): boolean {
     const lowerPath = path.toLowerCase();
     return patterns.some((pattern) => lowerPath.includes(pattern));
 }
 
-export function pathEndsWithAny(path: string, suffixes: readonly string[]): boolean {
+export function pathEndsWithAny(
+    path: string,
+    suffixes: readonly string[]
+): boolean {
     const lowerPath = path.toLowerCase();
     return suffixes.some((suffix) => lowerPath.endsWith(suffix));
 }
 
 export function pathMatchesIdentifier(path: string): boolean {
     const lowerPath = path.toLowerCase();
-    return lowerPath === 'id' || lowerPath.endsWith('.id') || lowerPath.endsWith('_id');
+    return (
+        lowerPath === 'id' ||
+        lowerPath.endsWith('.id') ||
+        lowerPath.endsWith('_id')
+    );
 }
 
-export function countTotalFields(tables: Record<string, { fields: readonly unknown[] }>): number {
-    return Object.values(tables).reduce((total, table) => total + table.fields.length, 0);
+export function countTotalFields(
+    tables: Record<string, { fields: readonly unknown[] }>
+): number {
+    return Object.values(tables).reduce(
+        (total, table) => total + table.fields.length,
+        0
+    );
+}
+
+export function getParentPath(path: string): string {
+    const parts = path.split('.');
+    return parts.slice(0, -1).join('.');
+}
+
+export function getPathDepth(path: string): number {
+    return path.split('.').length;
 }

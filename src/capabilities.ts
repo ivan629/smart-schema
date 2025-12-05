@@ -1,46 +1,22 @@
 /**
- * Capabilities Extraction
+ * SmartSchema v2 - Capabilities Extraction
  *
  * Extracts measures, dimensions, identifiers, timeFields from schema structure.
  * Uses glob patterns for repeated structures.
  */
 
-import type {
-    StatsField,
-    StatsMultiTableSchema,
-    Capabilities,
-    Entity,
-} from './types.js';
+import type { StatsField, Capabilities, Entity } from './types.js';
 import type { DetectedMap } from './structure.js';
+import { getLastPathSegment } from './utils.js';
 
 // ============================================================================
 // Helpers
 // ============================================================================
 
-function getLeafName(path: string): string {
-    const parts = path.split('.');
-    return parts[parts.length - 1] ?? path;
-}
-
-function pathMatchesMap(path: string, maps: ReadonlyMap<string, DetectedMap>): { map: DetectedMap; keyIndex: number } | null {
-    for (const [mapPath, map] of maps) {
-        if (path.startsWith(mapPath + '.')) {
-            const remainder = path.slice(mapPath.length + 1);
-            const parts = remainder.split('.');
-            const key = parts[0];
-
-            if (map.keys.includes(key)) {
-                return {
-                    map,
-                    keyIndex: map.keys.indexOf(key),
-                };
-            }
-        }
-    }
-    return null;
-}
-
-function toGlobPath(path: string, maps: ReadonlyMap<string, DetectedMap>): string {
+function toGlobPath(
+    path: string,
+    maps: ReadonlyMap<string, DetectedMap>
+): string {
     // Replace map keys with *
     let result = path;
 
@@ -112,10 +88,18 @@ export function extractCapabilities(
 // Detect Entities
 // ============================================================================
 
-const ENTITY_PATTERNS: Record<string, { namePatterns: RegExp[]; idPatterns: RegExp[] }> = {
+const ENTITY_PATTERNS: Record<
+    string,
+    { namePatterns: RegExp[]; idPatterns: RegExp[] }
+> = {
     User: {
         namePatterns: [/^user/i, /^customer/i, /^member/i, /^account/i],
-        idPatterns: [/^user_id$/i, /^customer_id$/i, /^member_id$/i, /^account_id$/i],
+        idPatterns: [
+            /^user_id$/i,
+            /^customer_id$/i,
+            /^member_id$/i,
+            /^account_id$/i,
+        ],
     },
     Order: {
         namePatterns: [/^order/i, /^purchase/i, /^transaction/i],
@@ -143,31 +127,38 @@ export function detectEntities(
     const seenEntityTypes = new Set<string>();
 
     // Find identifier fields
-    const idFields = fields.filter(f => f.role === 'identifier');
+    const idFields = fields.filter((f) => f.role === 'identifier');
 
     for (const idField of idFields) {
-        const leaf = getLeafName(idField.path);
+        const leaf = getLastPathSegment(idField.path);
 
         // Check against known patterns
         for (const [entityType, patterns] of Object.entries(ENTITY_PATTERNS)) {
             if (seenEntityTypes.has(entityType)) continue;
 
-            const matchesId = patterns.idPatterns.some(p => p.test(leaf));
-            const matchesPath = patterns.namePatterns.some(p => p.test(idField.path));
+            const matchesId = patterns.idPatterns.some((p) => p.test(leaf));
+            const matchesPath = patterns.namePatterns.some((p) =>
+                p.test(idField.path)
+            );
 
             if (matchesId || matchesPath) {
                 // Find name field
                 const parent = idField.path.split('.').slice(0, -1).join('.');
-                const nameField = fields.find(f =>
-                    f.path.startsWith(parent) &&
-                    (f.path.endsWith('.name') || f.path.endsWith('_name') || f.role === 'dimension')
+                const nameField = fields.find(
+                    (f) =>
+                        f.path.startsWith(parent) &&
+                        (f.path.endsWith('.name') ||
+                            f.path.endsWith('_name') ||
+                            f.role === 'dimension')
                 );
 
                 entities.push({
                     name: entityType,
                     description: `${entityType} entity`,
                     idField: toGlobPath(idField.path, maps),
-                    ...(nameField && { nameField: toGlobPath(nameField.path, maps) }),
+                    ...(nameField && {
+                        nameField: toGlobPath(nameField.path, maps),
+                    }),
                 });
 
                 seenEntityTypes.add(entityType);
@@ -177,7 +168,9 @@ export function detectEntities(
     }
 
     // Check for main entity from root id field
-    const rootId = idFields.find(f => f.path === 'id' || !f.path.includes('.'));
+    const rootId = idFields.find(
+        (f) => f.path === 'id' || !f.path.includes('.')
+    );
     if (rootId && entities.length === 0) {
         entities.push({
             name: 'Record',

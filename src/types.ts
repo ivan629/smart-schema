@@ -36,7 +36,7 @@ export interface FieldNode {
     readonly aggregation?: AggregationType;
     readonly nullable?: boolean;
     readonly pii?: PiiType;
-    readonly ref?: string;  // Foreign key: "users.id"
+    readonly ref?: string; // Foreign key: "users.id"
 }
 
 export interface ObjectNode {
@@ -48,20 +48,20 @@ export interface ObjectNode {
 export interface ArrayNode {
     readonly type: 'array';
     readonly description?: string;
-    readonly items: NodeDef | string;  // Inline or "$defs/typename"
+    readonly items: NodeDef | string; // Inline or "$defs/typename"
 }
 
 export interface MapNode {
     readonly type: 'map';
     readonly description?: string;
     readonly keys: readonly string[];
-    readonly values: NodeDef | string;  // Inline or "$defs/typename"
+    readonly values: NodeDef | string; // Inline or "$defs/typename"
 }
 
 export interface RefNode {
-    readonly $ref: string;  // "#/$defs/typename"
-    readonly keys?: readonly string[];  // Override keys for maps
-    readonly description?: string;  // Override description
+    readonly $ref: string; // "#/$defs/typename"
+    readonly keys?: readonly string[]; // Override keys for maps
+    readonly description?: string; // Override description
 }
 
 // ============================================================================
@@ -78,7 +78,7 @@ export interface TypeDef {
 // ============================================================================
 
 export interface Capabilities {
-    readonly measures: readonly string[];      // Paths with globs: "result.*.score"
+    readonly measures: readonly string[]; // Paths with globs: "result.*.score"
     readonly dimensions: readonly string[];
     readonly identifiers: readonly string[];
     readonly timeFields: readonly string[];
@@ -140,13 +140,7 @@ export type FieldFormat =
     | 'time'
     | 'iso8601';
 
-export type AggregationType =
-    | 'sum'
-    | 'avg'
-    | 'count'
-    | 'min'
-    | 'max'
-    | 'none';
+export type AggregationType = 'sum' | 'avg' | 'count' | 'min' | 'max' | 'none';
 
 export type PiiType =
     | 'name'
@@ -173,7 +167,7 @@ export interface StatsField {
     readonly format?: FieldFormat;
     readonly unit?: string;
     readonly itemType?: FieldType;
-    readonly itemFields?: readonly StatsField[];  // For arrays of objects without [] notation
+    readonly itemFields?: readonly StatsField[]; // For arrays of objects
     readonly sampleValues?: readonly unknown[];
 }
 
@@ -254,11 +248,13 @@ export const consoleLogger: Logger = {
 
 export function isFieldNode(node: NodeDef): node is FieldNode {
     const type = (node as FieldNode).type;
-    return type !== undefined &&
+    return (
+        type !== undefined &&
         type !== 'object' &&
         type !== 'array' &&
         type !== 'map' &&
-        !('$ref' in node);
+        !('$ref' in node)
+    );
 }
 
 export function isObjectNode(node: NodeDef): node is ObjectNode {

@@ -1,12 +1,18 @@
 /**
- * AI Enrichment Prompts
+ * SmartSchema v2 - AI Enrichment Prompts
  *
  * Builds prompts for AI enrichment and defines response types.
  * AI only sees unique elements ($defs + unique fields), not repetitive structures.
  */
 
-import type { TypeDef, NodeDef, ObjectNode } from './types.js';
-import { isObjectNode, isArrayNode, isMapNode, isRefNode, isFieldNode } from './types.js';
+import type { TypeDef, NodeDef } from './types.js';
+import {
+    isObjectNode,
+    isArrayNode,
+    isMapNode,
+    isRefNode,
+    isFieldNode,
+} from './types.js';
 
 // ============================================================================
 // AI Response Types
@@ -57,15 +63,24 @@ function nodeToSimpleObject(node: NodeDef): unknown {
     if (isArrayNode(node)) {
         return {
             type: 'array',
-            items: typeof node.items === 'string' ? node.items : nodeToSimpleObject(node.items),
+            items:
+                typeof node.items === 'string'
+                    ? node.items
+                    : nodeToSimpleObject(node.items),
         };
     }
 
     if (isMapNode(node)) {
         return {
             type: 'map',
-            keys: node.keys.length > 5 ? [...node.keys.slice(0, 5), `... (${node.keys.length} total)`] : node.keys,
-            values: typeof node.values === 'string' ? node.values : nodeToSimpleObject(node.values),
+            keys:
+                node.keys.length > 5
+                    ? [...node.keys.slice(0, 5), `... (${node.keys.length} total)`]
+                    : node.keys,
+            values:
+                typeof node.values === 'string'
+                    ? node.values
+                    : nodeToSimpleObject(node.values),
         };
     }
 
@@ -80,7 +95,9 @@ function nodeToSimpleObject(node: NodeDef): unknown {
     return node;
 }
 
-function defsToSimpleObject(defs: Record<string, TypeDef>): Record<string, unknown> {
+function defsToSimpleObject(
+    defs: Record<string, TypeDef>
+): Record<string, unknown> {
     const result: Record<string, unknown> = {};
 
     for (const [name, def] of Object.entries(defs)) {
@@ -109,7 +126,9 @@ function collectUniquePaths(node: NodeDef, prefix: string = ''): string[] {
 
     if (isArrayNode(node)) {
         if (typeof node.items !== 'string') {
-            paths.push(...collectUniquePaths(node.items, prefix ? `${prefix}.[]` : '[]'));
+            paths.push(
+                ...collectUniquePaths(node.items, prefix ? `${prefix}.[]` : '[]')
+            );
         }
         return paths;
     }
@@ -144,9 +163,10 @@ export function buildEnrichmentPrompt(
     const simpleDefs = defsToSimpleObject(defs);
     const uniquePaths = collectUniquePaths(root);
 
-    const entityList = existingEntities.length > 0
-        ? `\n\nDetected entities:\n${existingEntities.map(e => `- ${e.name} (id: ${e.idField})`).join('\n')}`
-        : '';
+    const entityList =
+        existingEntities.length > 0
+            ? `\n\nDetected entities:\n${existingEntities.map((e) => `- ${e.name} (id: ${e.idField})`).join('\n')}`
+            : '';
 
     return `Analyze this data schema and provide semantic enrichment.
 
@@ -156,16 +176,20 @@ export function buildEnrichmentPrompt(
 ${JSON.stringify(simpleRoot, null, 2)}
 \`\`\`
 
-${Object.keys(simpleDefs).length > 0 ? `## Reusable Types ($defs)
+${
+        Object.keys(simpleDefs).length > 0
+            ? `## Reusable Types ($defs)
 
 \`\`\`json
 ${JSON.stringify(simpleDefs, null, 2)}
 \`\`\`
-` : ''}
+`
+            : ''
+    }
 
 ## Unique Field Paths
 
-${uniquePaths.map(p => `- ${p}`).join('\n')}
+${uniquePaths.map((p) => `- ${p}`).join('\n')}
 ${entityList}
 
 ## Your Task
