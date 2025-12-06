@@ -3,10 +3,14 @@
  *
  * Analyzes data structure and infers semantic roles.
  *
- * IMPROVEMENTS:
+ * FEATURES:
  * - Cardinality tracking for better role inference
  * - Value pattern detection (Unix timestamps, boolean strings, etc.)
  * - Smarter role scoring based on data characteristics
+ * - String length heuristic for text detection
+ * - Nullable type merging
+ *
+ * All patterns are defined in constants.ts for easy maintenance.
  */
 
 import { createCompoundSchema } from 'genson-js';
@@ -20,7 +24,28 @@ import type {
     FieldFormat,
     AggregationType,
 } from './types.js';
-import { DATE_FORMATS } from './constants.js';
+import {
+    DATE_FORMATS,
+    IDENTIFIER_PATTERNS,
+    TIME_PATTERNS,
+    MEASURE_PATTERNS,
+    TEXT_PATTERNS,
+    DIMENSION_PATTERNS,
+    AVG_AGGREGATION_PATTERNS,
+    NONE_AGGREGATION_PATTERNS,
+    UNIT_PATTERNS,
+    VALUE_PATTERNS,
+    STATS_SAMPLE_TRUNCATE_LENGTH,
+    MIN_SAMPLES_FOR_CARDINALITY,
+    MIN_SAMPLES_FOR_UNIQUE,
+    LOW_CARDINALITY_THRESHOLD,
+    MEDIUM_CARDINALITY_THRESHOLD,
+    MEDIUM_SAMPLE_SIZE_THRESHOLD,
+    TEXT_AVG_LENGTH_THRESHOLD,
+    TEXT_MAX_LENGTH_THRESHOLD,
+    MAX_SAMPLES_PER_FIELD,
+    type ValuePattern,
+} from './constants.js';
 
 // ============================================================================
 // Types
@@ -34,83 +59,8 @@ interface GensonSchema {
 }
 
 // ============================================================================
-// Value Patterns (NEW)
+// Value Pattern Detection
 // ============================================================================
-
-interface ValuePattern {
-    name: string;
-    test: (samples: unknown[]) => boolean;
-    type?: FieldType;
-    format?: FieldFormat;
-    role?: FieldRole;
-}
-
-const VALUE_PATTERNS: ValuePattern[] = [
-    // Unix timestamp (seconds since 1970) - years ~2001 to ~2033
-    {
-        name: 'timestamp_unix',
-        test: (samples) => {
-            const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
-            return nums.every(n => Number.isInteger(n) && n > 1_000_000_000 && n < 2_000_000_000);
-        },
-        type: 'date',
-        role: 'time',
-    },
-    // Unix timestamp (milliseconds)
-    {
-        name: 'timestamp_ms',
-        test: (samples) => {
-            const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
-            return nums.every(n => Number.isInteger(n) && n > 1_000_000_000_000 && n < 2_000_000_000_000);
-        },
-        type: 'date',
-        role: 'time',
-    },
-    // Boolean integers (0/1 only)
-    {
-        name: 'boolean_int',
-        test: (samples) => {
-            const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
-            const unique = new Set(nums);
-            return unique.size <= 2 && nums.every(n => n === 0 || n === 1);
-        },
-        role: 'dimension',
-    },
-    // Boolean strings
-    {
-        name: 'boolean_string',
-        test: (samples) => {
-            const strs = samples.filter((s): s is string => typeof s === 'string');
-            if (strs.length < 3) return false;
-            const boolValues = new Set(['true', 'false', 'yes', 'no', 'y', 'n', '1', '0', 'on', 'off']);
-            return strs.every(s => boolValues.has(s.toLowerCase()));
-        },
-        role: 'dimension',
-    },
-    // HTTP status codes (100-599)
-    {
-        name: 'http_status',
-        test: (samples) => {
-            const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
-            return nums.every(n => Number.isInteger(n) && n >= 100 && n < 600);
-        },
-        role: 'dimension',
-    },
-    // Year values (1900-2100)
-    {
-        name: 'year',
-        test: (samples) => {
-            const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
-            return nums.every(n => Number.isInteger(n) && n >= 1900 && n <= 2100);
-        },
-        role: 'time',
-    },
-];
 
 function detectValuePattern(samples: unknown[]): ValuePattern | undefined {
     for (const pattern of VALUE_PATTERNS) {
@@ -144,8 +94,8 @@ function selectDiverseSamples(samples: unknown[], maxCount: number): unknown[] {
         seen.add(key);
 
         // Truncate long strings for prompt efficiency
-        if (typeof sample === 'string' && sample.length > 50) {
-            result.push(sample.slice(0, 47) + '...');
+        if (typeof sample === 'string' && sample.length > STATS_SAMPLE_TRUNCATE_LENGTH) {
+            result.push(sample.slice(0, STATS_SAMPLE_TRUNCATE_LENGTH - 3) + '...');
         } else {
             result.push(sample);
         }
@@ -155,53 +105,15 @@ function selectDiverseSamples(samples: unknown[], maxCount: number): unknown[] {
 }
 
 // ============================================================================
-// Patterns (Name-based)
+// Pattern Matching Helpers
 // ============================================================================
 
-const PATTERNS = {
-    identifier: [
-        /\bid\b/i, /\bkey\b/i, /\buuid\b/i, /\bguid\b/i,
-        /\bsku\b/i, /\bslug\b/i, /_id$/i, /Id$/,
-    ],
-    time: [
-        /\bdate\b/i, /\btime\b/i, /\btimestamp\b/i,
-        /\bcreated\b/i, /\bupdated\b/i, /_at$/i, /At$/,
-    ],
-    measure: [
-        /\bcount\b/i, /\btotal\b/i, /\bsum\b/i, /\bamount\b/i,
-        /\bprice\b/i, /\bcost\b/i, /\bscore\b/i, /\brating\b/i,
-        /\bquantity\b/i, /\bpercent/i, /\bratio\b/i,
-        /\bavg\b/i, /\baverage\b/i, /\bmin\b/i, /\bmax\b/i,
-        /\btokens?\b/i, /\bwords?\b/i, /\bconfidence\b/i,
-        /\bweight\b/i, /\bheight\b/i, /\bwidth\b/i,
-        /\brevenue\b/i, /\bprofit\b/i, /\bbalance\b/i,
-    ],
-    text: [
-        /\bdescription\b/i, /\btext\b/i, /\bcontent\b/i,
-        /\bbody\b/i, /\bmessage\b/i, /\bcomment\b/i,
-        /\bsummary\b/i, /\bquote\b/i, /\bcontext\b/i,
-        /\breason\b/i, /\bexplanation\b/i,
-    ],
-    avgAggregation: [
-        /\bavg\b/i, /\baverage\b/i, /\brate\b/i, /\bratio\b/i,
-        /\bpercent/i, /\bscore\b/i, /\bconfidence\b/i, /\brating\b/i,
-    ],
-} as const;
-
-const UNIT_PATTERNS: Array<{ pattern: RegExp; unit: string }> = [
-    { pattern: /(cost|price|amount|revenue|profit|usd|dollar)/i, unit: 'USD' },
-    { pattern: /(percent|pct|ratio)/i, unit: 'percent' },
-    { pattern: /(tokens?)/i, unit: 'tokens' },
-    { pattern: /(words?)/i, unit: 'words' },
-    { pattern: /(bytes?|size)/i, unit: 'bytes' },
-    { pattern: /(seconds?|secs?)/i, unit: 'seconds' },
-    { pattern: /(minutes?|mins?)/i, unit: 'minutes' },
-    { pattern: /(hours?|hrs?)/i, unit: 'hours' },
-    { pattern: /(count|quantity|instances?)/i, unit: 'count' },
-];
+function matchesAnyPattern(value: string, patterns: RegExp[]): boolean {
+    return patterns.some(p => p.test(value));
+}
 
 // ============================================================================
-// Role Inference (IMPROVED with cardinality)
+// Role Inference
 // ============================================================================
 
 function inferRole(
@@ -210,7 +122,8 @@ function inferRole(
     format: FieldFormat | undefined,
     cardinality: number | undefined,
     sampleSize: number | undefined,
-    valuePatternRole: FieldRole | undefined
+    valuePatternRole: FieldRole | undefined,
+    samples: unknown[]
 ): FieldRole {
     const leaf = path.split('.').pop() ?? path;
 
@@ -220,13 +133,13 @@ function inferRole(
     }
 
     // 1. Identifiers (name-based)
-    for (const p of PATTERNS.identifier) {
-        if (p.test(leaf)) return 'identifier';
+    if (matchesAnyPattern(leaf, IDENTIFIER_PATTERNS)) {
+        return 'identifier';
     }
 
     // 2. Time fields (name-based)
-    for (const p of PATTERNS.time) {
-        if (p.test(leaf)) return 'time';
+    if (matchesAnyPattern(leaf, TIME_PATTERNS)) {
+        return 'time';
     }
     if (format === 'datetime' || format === 'date') return 'time';
     if (type === 'date') return 'time';
@@ -238,22 +151,22 @@ function inferRole(
     // 4. NUMERIC: Check name patterns FIRST, then use cardinality as tiebreaker
     if (type === 'int' || type === 'number') {
         // Check if name suggests it's a measure (takes precedence)
-        for (const p of PATTERNS.measure) {
-            if (p.test(leaf)) return 'measure';
+        if (matchesAnyPattern(leaf, MEASURE_PATTERNS)) {
+            return 'measure';
         }
 
         // Use cardinality to distinguish dimension vs identifier for unnamed numerics
-        if (cardinality !== undefined && sampleSize !== undefined && sampleSize >= 5) {
+        if (cardinality !== undefined && sampleSize !== undefined && sampleSize >= MIN_SAMPLES_FOR_CARDINALITY) {
             // All unique values = likely identifier
-            if (cardinality === sampleSize && sampleSize > 3) {
+            if (cardinality === sampleSize && sampleSize > MIN_SAMPLES_FOR_UNIQUE) {
                 return 'identifier';
             }
             // Very low cardinality (≤10 unique values) = likely dimension (enum-like)
-            if (cardinality <= 10) {
+            if (cardinality <= LOW_CARDINALITY_THRESHOLD) {
                 return 'dimension';
             }
             // Low cardinality relative to sample size = likely dimension
-            if (cardinality <= 20 && sampleSize >= 50) {
+            if (cardinality <= MEDIUM_CARDINALITY_THRESHOLD && sampleSize >= MEDIUM_SAMPLE_SIZE_THRESHOLD) {
                 return 'dimension';
             }
         }
@@ -261,18 +174,37 @@ function inferRole(
         return 'measure';
     }
 
-    // 5. String → text or dimension (with cardinality check)
+    // 5. String → text or dimension (with cardinality check and length heuristic)
     if (type === 'string') {
         // Check for text patterns first
-        for (const p of PATTERNS.text) {
-            if (p.test(leaf)) return 'text';
+        if (matchesAnyPattern(leaf, TEXT_PATTERNS)) {
+            return 'text';
         }
+
+        // String length heuristic - long strings are likely text, not dimensions
+        const stringsSamples = samples.filter((s): s is string => typeof s === 'string');
+        if (stringsSamples.length > 0) {
+            const avgLength = stringsSamples.reduce((sum, s) => sum + s.length, 0) / stringsSamples.length;
+            const maxLength = Math.max(...stringsSamples.map(s => s.length));
+
+            // Long average length or any very long string → text
+            if (avgLength > TEXT_AVG_LENGTH_THRESHOLD || maxLength > TEXT_MAX_LENGTH_THRESHOLD) {
+                return 'text';
+            }
+        }
+
+        // Check for dimension patterns
+        if (matchesAnyPattern(leaf, DIMENSION_PATTERNS)) {
+            return 'dimension';
+        }
+
         // High cardinality + all unique = likely identifier
-        if (cardinality !== undefined && sampleSize !== undefined && sampleSize >= 5) {
+        if (cardinality !== undefined && sampleSize !== undefined && sampleSize >= MIN_SAMPLES_FOR_CARDINALITY) {
             if (cardinality === sampleSize) {
                 return 'identifier';
             }
         }
+
         return 'dimension';
     }
 
@@ -287,16 +219,29 @@ function inferAggregation(role: FieldRole, path: string): AggregationType {
     if (role !== 'measure') return 'none';
 
     const leaf = path.split('.').pop() ?? path;
-    for (const p of PATTERNS.avgAggregation) {
-        if (p.test(leaf)) return 'avg';
+
+    // Check for 'none' aggregation first (limits, configs)
+    if (matchesAnyPattern(leaf, NONE_AGGREGATION_PATTERNS)) {
+        return 'none';
     }
+
+    // Check for 'avg' aggregation
+    if (matchesAnyPattern(leaf, AVG_AGGREGATION_PATTERNS)) {
+        return 'avg';
+    }
+
+    // Default: sum for counts, totals, amounts
     return 'sum';
 }
 
 function inferUnit(path: string): string | undefined {
     const leaf = path.split('.').pop() ?? path;
+    const fullPath = path.toLowerCase();
+
     for (const { pattern, unit } of UNIT_PATTERNS) {
-        if (pattern.test(leaf)) return unit;
+        if (pattern.test(leaf) || pattern.test(fullPath)) {
+            return unit;
+        }
     }
     return undefined;
 }
@@ -353,6 +298,24 @@ function mapType(gensonType: string | undefined): FieldType {
     return map[gensonType ?? 'string'] ?? 'string';
 }
 
+/**
+ * Infer actual type from sample values when schema type is null or ambiguous
+ */
+function inferTypeFromSamples(samples: unknown[]): FieldType | null {
+    const nonNullSample = samples.find(s => s !== null && s !== undefined);
+    if (nonNullSample === undefined) return null;
+
+    if (typeof nonNullSample === 'string') return 'string';
+    if (typeof nonNullSample === 'number') {
+        return Number.isInteger(nonNullSample) ? 'int' : 'number';
+    }
+    if (typeof nonNullSample === 'boolean') return 'boolean';
+    if (Array.isArray(nonNullSample)) return 'array';
+    if (typeof nonNullSample === 'object') return 'object';
+
+    return null;
+}
+
 function collectSamples(
     data: unknown,
     path: string = '',
@@ -395,6 +358,24 @@ function schemaToField(
     const schemaType = Array.isArray(schema.type) ? schema.type[0] : schema.type;
     let type = mapType(schemaType);
 
+    // Infer type from samples when schema says null
+    if (type === 'null' && samples.length > 0) {
+        const inferredType = inferTypeFromSamples(samples);
+        if (inferredType) {
+            type = inferredType;
+            nullable = true;  // Mark as nullable since some values are null
+        }
+    }
+
+    // Also handle mixed types by looking at samples
+    if (type === 'null' || (Array.isArray(schema.type) && schema.type.includes('null'))) {
+        const inferredType = inferTypeFromSamples(samples);
+        if (inferredType && inferredType !== 'null') {
+            type = inferredType;
+            nullable = true;
+        }
+    }
+
     const format = detectFormat(samples);
 
     // Promote string to date if format indicates it
@@ -402,26 +383,26 @@ function schemaToField(
         type = 'date';
     }
 
-    // NEW: Calculate cardinality
+    // Calculate cardinality
     const nonNullSamples = samples.filter(s => s != null);
     const cardinality = new Set(nonNullSamples.map(s =>
         typeof s === 'object' ? JSON.stringify(s) : String(s)
     )).size;
     const sampleSize = nonNullSamples.length;
 
-    // NEW: Detect value patterns (timestamps, boolean ints, etc.)
+    // Detect value patterns (timestamps, boolean ints, etc.)
     const valuePattern = detectValuePattern(nonNullSamples);
     if (valuePattern?.type) {
         type = valuePattern.type;
     }
 
-    // IMPROVED: Pass cardinality and value pattern to role inference
-    const role = inferRole(path, type, format, cardinality, sampleSize, valuePattern?.role);
+    // Infer semantic role
+    const role = inferRole(path, type, format, cardinality, sampleSize, valuePattern?.role, nonNullSamples);
     const aggregation = inferAggregation(role, path);
     const unit = role === 'measure' ? inferUnit(path) : undefined;
 
     // Collect diverse sample values for AI enrichment (max 5, unique, non-null)
-    const diverseSamples = selectDiverseSamples(nonNullSamples, 5);
+    const diverseSamples = selectDiverseSamples(nonNullSamples, MAX_SAMPLES_PER_FIELD);
 
     const field: StatsField = {
         path,
@@ -480,7 +461,7 @@ function gensonToFields(
                 fields.push(...gensonToFields(propSchema, samples, fieldPath));
             }
 
-            // Recurse into array items (THIS WAS MISSING!)
+            // Recurse into array items
             if (propSchema.type === 'array' && propSchema.items) {
                 const itemSchema = propSchema.items;
                 if (itemSchema.type === 'object' && itemSchema.properties) {

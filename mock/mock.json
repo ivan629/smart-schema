@@ -1,1539 +1,486 @@
-{
-  "timestamp": "2025-11-23T17:26:31.756Z",
-  "request": {
-    "transcript_word_count": 1615,
-    "video_id": "4LcOu4Vw0Ps",
-    "source_url": "https://www.youtube.com/watch?v=4LcOu4Vw0Ps"
-  },
-  "result": {
-    "cognitive_manipulation": {
-      "mechanisms": {
-        "false_dichotomy": {
-          "score": 92,
-          "confidence": 10,
-          "instance_count": 7,
-          "evidence": [
-            {
-              "quote": "you're a loser yeah but I know but how do I get a girl well you're a [ __ ] loser you're a loser",
-              "context": "Categorizing men seeking dating advice",
-              "strength": 10
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike or in a Nissan you're going to get smoked",
-              "context": "Describing male competition as binary winners/losers",
-              "strength": 9
-            },
-            {
-              "quote": "You're either with us or against us... do you want the truth or a lie",
-              "context": "Framing conversation as binary choice",
-              "strength": 8
-            },
-            {
-              "quote": "you can stay a loser and get chicks because you can yeah you can",
-              "context": "Presenting only loser/winner categories for men",
-              "strength": 9
-            },
-            {
-              "quote": "as you become a better man you'll crack through different tiers of attractiveness and eventually you get to the top",
-              "context": "Implying binary top/bottom hierarchy",
-              "strength": 8
-            }
-          ],
-          "psychological_impact": "Forces binary winner/loser identity onto listeners, eliminating nuance in self-perception. Creates anxiety about being categorized as 'loser' and desperate striving to avoid that label. Eliminates middle ground where most people exist, making self-improvement seem like escaping total failure rather than gradual growth."
-        },
-        "cherry_picking": {
-          "score": 45,
-          "confidence": 7,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "the game is rigged to become harder and harder for men it's not getting easier it's going the other way",
-              "context": "Claiming universal trend without evidence",
-              "strength": 7
-            },
-            {
-              "quote": "every single time the abortion argument is brought up this very specific case is brought up let's let's be honest that's less than not point one percent",
-              "context": "Dismissing rape cases with unsubstantiated statistic",
-              "strength": 8
-            },
-            {
-              "quote": "women sit there and watch the Kardashians all day they're addicted to dramas",
-              "context": "Generalizing all women from selective observation",
-              "strength": 7
-            }
-          ],
-          "psychological_impact": "Creates impression of universal truths from selective observations. Listeners accept claims about 'all women' or 'all men' without seeing contradictory evidence. Reinforces existing stereotypes by presenting cherry-picked examples as representative of entire groups."
-        },
-        "strawman_argument": {
-          "score": 35,
-          "confidence": 6,
-          "instance_count": 2,
-          "evidence": [
-            {
-              "quote": "I think she's some feminist or some crap so if I were to talk to her for more than two minutes I'd walk out",
-              "context": "Reducing feminism to something incompatible with conversation",
-              "strength": 7
-            },
-            {
-              "quote": "if your primary concern is that you know I'll I'm too young I need to experience more experience what what restaurants how many restaurants you have to go to",
-              "context": "Reducing women's life experiences to trivial restaurant visits",
-              "strength": 8
-            }
-          ],
-          "psychological_impact": "Misrepresents opposing viewpoints as absurd or trivial, making them easier to dismiss. Listeners learn to caricature rather than engage with different perspectives. Creates false sense of intellectual superiority by 'defeating' arguments nobody actually made."
-        },
-        "appeal_to_emotion": {
-          "score": 78,
-          "confidence": 9,
-          "instance_count": 6,
-          "evidence": [
-            {
-              "quote": "if you don't have a family and you don't have children as you get older the the Twilight years of your life or just everybody you know slowly dying and there's no new life injected",
-              "context": "Using fear of lonely death to argue for having children",
-              "strength": 9
-            },
-            {
-              "quote": "then you tell the truth and they cry um every time",
-              "context": "Priming audience to expect emotional reaction, not logical response",
-              "strength": 7
-            },
-            {
-              "quote": "I think if you're raped by somebody completely random on the street and a rapist did this to you",
-              "context": "Using extreme emotional scenario in abortion debate",
-              "strength": 8
-            },
-            {
-              "quote": "your later years are filled with debts as opposed to being filled with births and life",
-              "context": "Contrasting death imagery with life imagery emotionally",
-              "strength": 8
-            },
-            {
-              "quote": "she can give me strong Albanian half Sons maybe her",
-              "context": "Reducing relationship value to emotional tribal/genetic appeal",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Bypasses rational analysis by triggering fear (loneliness, death, being a 'loser'), tribal identity (Albanian sons), and anxiety about social status. Listeners make decisions based on emotional avoidance rather than logical evaluation. Creates urgency that prevents careful consideration."
-        },
-        "authority_manipulation": {
-          "score": 25,
-          "confidence": 5,
-          "instance_count": 1,
-          "evidence": [
-            {
-              "quote": "I have a lot of guys ask me similar to your question a guy will come to me",
-              "context": "Establishing self as authority through claimed consultation",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Minimal authority manipulation present. Speaker positions himself as expert through anecdotal claims of being consulted, but doesn't heavily invoke external authorities or credentials. Impact is establishing credibility through volume of consultations rather than explicit credentials."
-        },
-        "ad_hominem": {
-          "score": 88,
-          "confidence": 10,
-          "instance_count": 8,
-          "evidence": [
-            {
-              "quote": "how do I get a girl like bro you're a loser yeah but I know but how do I get a girl well you're a [ __ ] loser you're a loser",
-              "context": "Attacking person's character instead of addressing question",
-              "strength": 10
-            },
-            {
-              "quote": "if you're a loser it's going to be very very difficult",
-              "context": "Using character attack as argument",
-              "strength": 9
-            },
-            {
-              "quote": "I'm not going to lie to anybody here and say you don't have to improve yourself you can stay a loser",
-              "context": "Framing disagreement as being a 'loser'",
-              "strength": 9
-            },
-            {
-              "quote": "I think she's some feminist or some crap so if I were to talk to her for more than two minutes I'd walk out",
-              "context": "Dismissing person based on label rather than ideas",
-              "strength": 8
-            },
-            {
-              "quote": "you should just accept the responsibilities like a [ __ ] adult",
-              "context": "Attacking maturity of those who disagree",
-              "strength": 8
-            }
-          ],
-          "psychological_impact": "Teaches listeners to dismiss people rather than engage with arguments. Creates fear of being labeled 'loser' or 'immature,' making audience more compliant to avoid character attacks. Normalizes personal attacks as legitimate argumentation. Viewers internalize that being called names means you've lost the argument, regardless of logical merit."
-        },
-        "slippery_slope": {
-          "score": 68,
-          "confidence": 8,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "the game is rigged to become harder and harder for men it's not getting easier it's going the other way",
-              "context": "Claiming inevitable worsening trajectory without evidence",
-              "strength": 8
-            },
-            {
-              "quote": "if you don't have a bunch of children your later years are filled with debts as opposed to being filled with births and life",
-              "context": "Claiming not having children inevitably leads to death-filled existence",
-              "strength": 9
-            },
-            {
-              "quote": "if a woman comes to you with an issue and you can't fix it you'll see very quickly how how soon they lose attraction",
-              "context": "Single failure leads to inevitable relationship collapse",
-              "strength": 7
-            }
-          ],
-          "psychological_impact": "Creates disproportionate fear about future outcomes, making current decisions seem more urgent and consequential than they are. Listeners feel pressure to take extreme action now to avoid catastrophic future. Eliminates consideration of moderate paths or gradual changes. Amplifies anxiety about inaction."
-        },
-        "confirmation_bias_exploitation": {
-          "score": 82,
-          "confidence": 9,
-          "instance_count": 9,
-          "evidence": [
-            {
-              "quote": "we live in hyper-competitive environments I don't think enough men understand how competitive the world is",
-              "context": "Affirming pre-existing male anxiety about competition",
-              "strength": 8
-            },
-            {
-              "quote": "do you want the truth or a lie no tell me do you want the truth of course of course they all say truth I want the truth you could just tell me the truth then you tell the truth and they cry",
-              "context": "Confirming belief that 'truth' upsets people, positioning speaker as truth-teller",
-              "strength": 9
-            },
-            {
-              "quote": "women sit there and watch the Kardashians all day they're addicted to dramas what they care about",
-              "context": "Confirming stereotypes about women",
-              "strength": 8
-            },
-            {
-              "quote": "if a woman only talks to you and you're the only man in her life and there's never any drama or there's never any... then they're going to naturally try and find drama somewhere else",
-              "context": "Confirming belief that women create/need drama",
-              "strength": 8
-            },
-            {
-              "quote": "you have to out-compete other men you have to be as competitive as possible",
-              "context": "Confirming zero-sum competition worldview",
-              "strength": 7
-            },
-            {
-              "quote": "English is the number one best language... the perfect language",
-              "context": "Confirming English-speaker superiority beliefs",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Systematically reinforces existing beliefs about gender roles, competition, and hierarchy. Listeners feel validated in pre-existing views, making them less likely to question or examine these beliefs critically. Creates echo chamber effect where audience seeks more content that confirms rather than challenges. Strengthens tribal identity around shared beliefs."
-        },
-        "availability_heuristic": {
-          "score": 55,
-          "confidence": 7,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "I have a lot of guys ask me similar to your question a guy will come to me and go how do I get a girl",
-              "context": "Making this scenario seem common through repetition",
-              "strength": 7
-            },
-            {
-              "quote": "every single time the abortion argument is brought up this very specific case is brought up",
-              "context": "Making rape exception argument seem more common than it is",
-              "strength": 8
-            },
-            {
-              "quote": "then you tell the truth and they cry um every time",
-              "context": "Making emotional reactions seem universal through 'every time'",
-              "strength": 7
-            }
-          ],
-          "psychological_impact": "Makes specific scenarios seem more common than they are through repetitive framing ('every time,' 'a lot of guys'). Listeners overestimate frequency of these situations, distorting their perception of how common certain problems or reactions are. Creates false sense of pattern from limited anecdotes."
-        },
-        "anchoring": {
-          "score": 75,
-          "confidence": 8,
-          "instance_count": 4,
-          "evidence": [
-            {
-              "quote": "you're a loser... if you're a loser it's going to be very very difficult",
-              "context": "Anchoring listener's self-perception at 'loser' baseline",
-              "strength": 9
-            },
-            {
-              "quote": "you have to be as good looking as funny as smart as spontaneous as interesting as charismatic as rich as possible",
-              "context": "Anchoring standard at impossible maximum",
-              "strength": 8
-            },
-            {
-              "quote": "eventually you get to the top and you'll be able to have any girl you want",
-              "context": "Anchoring goal at absolute top of hierarchy",
-              "strength": 8
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike",
-              "context": "Anchoring comparison at extreme disparity (Ferrari vs bike)",
-              "strength": 7
-            }
-          ],
-          "psychological_impact": "Sets initial reference points at extremes (total loser vs. perfect man, pedal bike vs. Ferrari), making all subsequent judgments relative to these anchors. Listeners evaluate themselves against impossible standards, creating perpetual inadequacy. Makes moderate improvements seem insufficient because anchor is set at perfection."
-        },
-        "bandwagon_effect": {
-          "score": 48,
-          "confidence": 6,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "everybody else wants or you have to out-compete other men",
-              "context": "Implying universal male competition",
-              "strength": 7
-            },
-            {
-              "quote": "there's no girl you're gonna see and go oh I'll get that girl and didn't cross anyone else's mind",
-              "context": "Claiming everyone thinks the same way",
-              "strength": 6
-            },
-            {
-              "quote": "it's very common in fact it's completely considered normal for people to speak more than one language",
-              "context": "Using normalcy as justification",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Moderate use of social proof to normalize competitive mindset. Suggests 'everyone' is competing, thinking certain ways, wanting same things. Creates pressure to conform to described behaviors to avoid being abnormal. Makes described patterns seem inevitable because 'everyone does it.'"
-        }
-      },
-      "meta": {
-        "transcript_word_count": 1615,
-        "mechanisms_detected": 11,
-        "most_used_fallacy": "false_dichotomy",
-        "overall_cognitive_impact": "severe",
-        "critical_thinking_impact": "severe_negative",
-        "analysis_date": "2025-11-23T17:26:33.633Z"
+[
+  {
+    "meta": {
+      "request_id": "550e8400-e29b-41d4-a716-446655440000",
+      "correlation_id": "corr_abc123",
+      "timestamp": "2025-01-15T14:30:00.000Z",
+      "processed_at": 1705329000,
+      "duration_ms": 1523,
+      "version": "2.1.0",
+      "flags": {
+        "is_test": false,
+        "is_premium": true,
+        "retry_count": 0
       }
     },
-    "emotional_conditioning": {
-      "mechanisms": {
-        "fear_induction": {
-          "score": 72,
-          "confidence": 9,
-          "instance_count": 8,
-          "evidence": [
-            {
-              "quote": "we live in hyper-competitive environments I don't think enough men understand how competitive the world is",
-              "context": "Opening frame establishing threat environment",
-              "strength": 7
-            },
-            {
-              "quote": "you're competing against other men you're not the only man who had the idea of getting that girl",
-              "context": "Creating scarcity anxiety around relationships",
-              "strength": 8
-            },
-            {
-              "quote": "the game is rigged to become harder and harder for men it's not getting easier it's going the other way",
-              "context": "Systemic threat - things are getting worse",
-              "strength": 9
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike or in a Nissan you're going to get smoked",
-              "context": "Vivid imagery of inevitable failure",
-              "strength": 8
-            },
-            {
-              "quote": "it's going to be very very difficult and it's going to get harder and harder",
-              "context": "Escalating difficulty, no relief in sight",
-              "strength": 7
-            },
-            {
-              "quote": "if you don't have a bunch of children your later years are filled with debts as opposed to being filled with births and life",
-              "context": "Fear of lonely, death-filled future",
-              "strength": 8
-            },
-            {
-              "quote": "all in all I think there's nothing more worthwhile for people to do than have children",
-              "context": "Implicit fear of meaningless life without children",
-              "strength": 6
-            },
-            {
-              "quote": "if a woman comes to you with an issue and you can't fix it you'll see very quickly how how soon they lose attraction",
-              "context": "Fear of relationship loss due to inadequacy",
-              "strength": 8
-            }
-          ],
-          "psychological_impact": "Creates chronic anxiety about male inadequacy and competitive failure. Repeated exposure generates persistent stress hormones (cortisol), hypervigilance about status, and catastrophic thinking patterns. Viewer begins scanning environment for threats constantly, leading to exhaustion and increased suggestibility to 'solutions' offered by the speaker."
+    "tenant": {
+      "tenant_id": "tenant_8x7k2m",
+      "org_name": "Acme Corporation",
+      "plan": "enterprise",
+      "contact_email": "admin@acme.com",
+      "website": "https://acme.com",
+      "settings": {
+        "timezone": "America/New_York",
+        "locale": "en-US",
+        "features": ["analytics", "export", "api"],
+        "limits": {
+          "max_users": 500,
+          "max_storage_gb": 100,
+          "api_rate_limit": 10000
         },
-        "anger_farming": {
-          "score": 35,
-          "confidence": 7,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "the game is rigged to become harder and harder for men",
-              "context": "Suggesting systemic unfairness against men",
-              "strength": 7
-            },
-            {
-              "quote": "I saw a video of Dua LIPA... but I think she's some feminist or some crap so if I were to talk to her for more than two minutes I'd walk out",
-              "context": "Dismissive contempt toward feminism",
-              "strength": 6
-            },
-            {
-              "quote": "women sit there and watch the Kardashians all day they're addicted to dramas",
-              "context": "Generalizing and mocking women's behavior",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Moderate anger cultivation toward 'the system' and women's behavior. Creates resentment that can build over time, positioning speaker as someone who 'tells it like it is' against unfair forces. Not extreme but plants seeds of grievance."
-        },
-        "outrage_amplification": {
-          "score": 25,
-          "confidence": 6,
-          "instance_count": 2,
-          "evidence": [
-            {
-              "quote": "every single time the abortion argument is brought up this very specific case is brought up let's let's be honest that's less than not point one percent",
-              "context": "Dismissing rape exception arguments",
-              "strength": 6
-            },
-            {
-              "quote": "what restaurants how many restaurants you have to go to yeah how many times you've got to go eat until you eventually realize going to eat [ __ ]",
-              "context": "Mocking women's reasons for delaying childbirth",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Mild outrage triggering. Creates sense that certain arguments are absurd or dishonest, but not sustained enough to create addiction pattern. More dismissive than outraged."
-        },
-        "moral_disgust": {
-          "score": 42,
-          "confidence": 8,
-          "instance_count": 4,
-          "evidence": [
-            {
-              "quote": "I think it's Haram... I don't think that you should be ending human life",
-              "context": "Abortion framed as moral violation",
-              "strength": 7
-            },
-            {
-              "quote": "I think she's some feminist or some crap",
-              "context": "Feminism treated as contaminating/disgusting",
-              "strength": 6
-            },
-            {
-              "quote": "you should just accept the responsibilities like a [ __ ] adult",
-              "context": "Moral judgment on women seeking abortion",
-              "strength": 7
-            },
-            {
-              "quote": "if you don't have a family and you don't have children as you get older the the Twilight years of your life or just everybody you know slowly dying",
-              "context": "Childless life portrayed as morbid/wrong",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Moderate disgust triggering toward specific behaviors and ideologies. Creates moral binary where certain choices are framed as fundamentally wrong/disgusting. Repeated exposure strengthens in-group/out-group boundaries and reduces empathy for those making different choices."
-        },
-        "anxiety_creation": {
-          "score": 68,
-          "confidence": 9,
-          "instance_count": 7,
-          "evidence": [
-            {
-              "quote": "you have to be as competitive as possible you have to be as successful as possible in all Realms you have to be as good looking as funny as smart as spontaneous as interesting as charismatic as rich as possible",
-              "context": "Overwhelming list of requirements for success",
-              "strength": 9
-            },
-            {
-              "quote": "you need to try very hard to be your absolute best",
-              "context": "Pressure for constant maximum effort",
-              "strength": 7
-            },
-            {
-              "quote": "if you're a loser it's going to be very very difficult",
-              "context": "Binary framing: winner or loser",
-              "strength": 8
-            },
-            {
-              "quote": "if a woman only talks to you and you're the only man in her life and there's never any drama... then they're going to naturally try and find drama somewhere else and that always ends very badly for the man",
-              "context": "Anxiety about relationship maintenance requirements",
-              "strength": 8
-            },
-            {
-              "quote": "you don't want them to try and find drama outside of the relationship",
-              "context": "Fear of infidelity/relationship loss",
-              "strength": 7
-            },
-            {
-              "quote": "women want to be with a man which keeps them entertained and a man which they trust and a man which they believe can fix all of their problems",
-              "context": "Overwhelming relationship performance requirements",
-              "strength": 8
-            },
-            {
-              "quote": "you have to shock her a bit you have to be the person who can upset her you need to be entertaining all-encompassing from head to toe",
-              "context": "Complex, contradictory requirements creating confusion",
-              "strength": 7
-            }
-          ],
-          "psychological_impact": "High-level anxiety creation through impossible standards and constant performance pressure. Creates baseline worry about adequacy across multiple domains simultaneously. Viewer develops hypervigilance about self-presentation and relationship dynamics. Chronic anxiety impairs decision-making and increases dependency on external guidance (from speaker)."
-        },
-        "shame_induction": {
-          "score": 78,
-          "confidence": 10,
-          "instance_count": 9,
-          "evidence": [
-            {
-              "quote": "a guy will come to me and go how do I get a girl like bro you're a loser yeah but I know but how do I get a girl well you're a [ __ ] loser you're a loser",
-              "context": "Direct, repeated labeling as 'loser'",
-              "strength": 10
-            },
-            {
-              "quote": "why are you asking me it's like saying how do I win a race with a push bike a racing Ferraris",
-              "context": "Viewer positioned as fundamentally inadequate (bicycle vs Ferrari)",
-              "strength": 9
-            },
-            {
-              "quote": "if you're a loser it's going to be very very difficult",
-              "context": "Reinforcing loser identity",
-              "strength": 8
-            },
-            {
-              "quote": "I'm not going to lie to anybody here and say you don't have to improve yourself you can stay a loser and get chicks because you can yeah you can",
-              "context": "Sarcastic dismissal of current state",
-              "strength": 8
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike or in a Nissan you're going to get smoked",
-              "context": "Vivid imagery of inadequacy and failure",
-              "strength": 8
-            },
-            {
-              "quote": "do you want the truth or a lie... then you tell the truth and they cry",
-              "context": "Shaming emotional responses to harsh truths",
-              "strength": 7
-            },
-            {
-              "quote": "you should just accept the responsibilities like a [ __ ] adult",
-              "context": "Shaming those who don't meet his standards",
-              "strength": 7
-            },
-            {
-              "quote": "maybe young people don't understand that in time",
-              "context": "Condescending dismissal of younger viewers' understanding",
-              "strength": 6
-            },
-            {
-              "quote": "if you can financially afford it then that's what you should do",
-              "context": "Implicit shame for not having children if financially able",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Severe shame induction through repeated 'loser' labeling and inadequacy framing. Creates deep sense of personal deficiency that viewer must overcome by following speaker's advice. Shame is most powerful compliance emotion - bypasses rational thought and creates desperate need for redemption/transformation. Repeated exposure creates toxic shame (identity-level, not behavior-level), leading to self-hatred and external validation seeking from the very source inducing the shame."
-        },
-        "intermittent_reinforcement": {
-          "score": 45,
-          "confidence": 7,
-          "instance_count": 4,
-          "evidence": [
-            {
-              "quote": "there's a really long answer to give there but truthfully it doesn't matter... [launches into long answer anyway]",
-              "context": "Unpredictable content delivery - says won't explain, then does",
-              "strength": 6
-            },
-            {
-              "quote": "do you want the truth or a lie... of course of course they all say truth I want the truth you could just tell me the truth then you tell the truth and they cry",
-              "context": "Building anticipation then delivering 'forbidden truth'",
-              "strength": 7
-            },
-            {
-              "quote": "[Shifts from dating advice to women's desires to abortion to languages unpredictably]",
-              "context": "Topic switching creates unpredictable engagement hits",
-              "strength": 6
-            },
-            {
-              "quote": "I feel like you're saying that just so people don't know how many languages you speak... yeah he just listens",
-              "context": "Playful misdirection creating uncertainty about truth",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Moderate intermittent reinforcement through unpredictable topic shifts and 'truth reveals'. Creates some dopamine variability that keeps attention, but not as systematic as pure addiction-designed content. The 'harsh truth' delivery pattern (build up → reveal) does create anticipation-reward cycles that can become mildly addictive."
-        },
-        "emotional_whiplash": {
-          "score": 38,
-          "confidence": 6,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "you're a [ __ ] loser... [but then] as you become a better man you'll crack through different tiers of attractiveness and eventually you get to the top",
-              "context": "Shame → hope → possibility",
-              "strength": 7
-            },
-            {
-              "quote": "if you're a loser it's going to be very very difficult... you can stay a loser and get chicks because you can yeah you can",
-              "context": "Despair → sarcastic false hope → back to despair",
-              "strength": 6
-            },
-            {
-              "quote": "your later years are filled with debts [death]... as opposed to being filled with births and life",
-              "context": "Dark imagery → positive imagery contrast",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Moderate emotional whiplash between shame/fear and hope/possibility. Creates some emotional exhaustion but not extreme. The pattern does make viewer more receptive to guidance by destabilizing emotional baseline, but not as severe as high-manipulation content."
-        },
-        "parasocial_bonding": {
-          "score": 52,
-          "confidence": 8,
-          "instance_count": 6,
-          "evidence": [
-            {
-              "quote": "I'm not going to lie to anybody here",
-              "context": "Direct address creating intimacy/honesty bond",
-              "strength": 7
-            },
-            {
-              "quote": "do you want the truth or a lie... you could just tell me the truth",
-              "context": "Positioning as truth-teller in dishonest world",
-              "strength": 8
-            },
-            {
-              "quote": "I'm telling you... I only speak English but I also but you know what it's actually interesting",
-              "context": "Conversational, sharing personal details",
-              "strength": 6
-            },
-            {
-              "quote": "I'm just explaining why I don't learn another language",
-              "context": "Justifying personal choices to viewer as if they matter",
-              "strength": 6
-            },
-            {
-              "quote": "bro you're a loser... like bro",
-              "context": "Using 'bro' to create false peer relationship",
-              "strength": 7
-            },
-            {
-              "quote": "I think... I don't think... I feel like",
-              "context": "Repeated personal pronouns creating intimacy",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Moderate parasocial bonding through 'truth-teller' positioning and conversational intimacy. Creates sense that speaker is honest friend who tells hard truths others won't. Viewer begins to trust speaker's judgment and seek his approval. The 'I'm not going to lie to you' framing is particularly effective at lowering critical defenses while actually delivering highly subjective opinions as facts."
-        },
-        "validation_seeking": {
-          "score": 48,
-          "confidence": 7,
-          "instance_count": 5,
-          "evidence": [
-            {
-              "quote": "I don't think enough men understand how competitive the world is",
-              "context": "Implies viewer who does understand is smarter than most",
-              "strength": 7
-            },
-            {
-              "quote": "do you want the truth or a lie... of course of course they all say truth",
-              "context": "Viewer who can handle truth is superior to those who 'cry'",
-              "strength": 8
-            },
-            {
-              "quote": "maybe young people don't understand that in time",
-              "context": "Implies mature viewers will understand/agree",
-              "strength": 6
-            },
-            {
-              "quote": "let's let's be honest that's less than not point one percent",
-              "context": "'Let's be honest' creates in-group of honest thinkers",
-              "strength": 6
-            },
-            {
-              "quote": "I'm perfect in English... I'm perfect in English",
-              "context": "Models confidence viewer should aspire to, creating aspiration loop",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Moderate validation-seeking creation. Viewer who agrees with harsh truths feels superior to those who 'can't handle it'. Creates in-group of 'realistic' men vs out-group of delusional people. Repeated exposure makes viewer seek more content to maintain sense of being 'one of the smart ones who gets it', creating return behavior."
+        "integrations": {
+          "slack": { "enabled": true, "webhook_url": "https://hooks.slack.com/xxx" },
+          "salesforce": { "enabled": false, "webhook_url": null },
+          "hubspot": { "enabled": true, "webhook_url": "https://api.hubspot.com/yyy" }
         }
-      },
-      "meta": {
-        "transcript_word_count": 1615,
-        "mechanisms_detected": 8,
-        "dominant_emotion": "shame",
-        "emotional_intensity": "high",
-        "addiction_potential": "high",
-        "long_term_impact": "Prolonged exposure creates toxic shame-based identity ('I am a loser') combined with chronic anxiety about competitive inadequacy. Viewer develops hypervigilance about status, appearance, wealth, and relationship performance. The shame-hope cycle (you're inadequate BUT you can improve by following my advice) creates psychological dependency on the speaker as authority figure. Over weeks/months: increased baseline anxiety, shame-based motivation replacing intrinsic motivation, external validation seeking, reduced self-compassion, possible depression or compensatory grandiosity. The 'hyper-competitive' worldview becomes internalized, leading to constant social comparison and inability to experience contentment. Viewer becomes trapped in improvement cycle driven by shame rather than genuine growth, making them perpetually dependent on content that promises transformation while reinforcing inadequacy.",
-        "analysis_date": "2025-11-23T17:27:48.152Z"
       }
     },
-    "identity_manipulation": {
-      "mechanisms": {
-        "ingroup_formation": {
-          "score": 45,
-          "confidence": 8,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "as a man we live in hyper-competitive environments I don't think enough men understand how competitive the world is",
-              "context": "Opening framing - establishing shared male identity and special knowledge",
-              "strength": 6
-            },
-            {
-              "quote": "I'm not going to lie to anybody here... you have to improve yourself",
-              "context": "Positioning himself as truth-teller to audience who can handle reality",
-              "strength": 5
-            },
-            {
-              "quote": "do you want the truth or a lie... they all say truth I want the truth you could just tell me the truth then you tell the truth and they cry",
-              "context": "Creating identity of those who can handle harsh truths vs those who can't",
-              "strength": 7
-            }
-          ],
-          "psychological_impact": "Creates male tribal identity around 'understanding harsh reality' and competitive worldview. Positions audience as part of group that 'gets it' unlike others who are naive. Moderate formation - establishes belonging through shared gender and worldview, but doesn't create cult-like exclusivity."
-        },
-        "outgroup_dehumanization": {
-          "score": 35,
-          "confidence": 7,
-          "instance_count": 4,
-          "evidence": [
-            {
-              "quote": "bro you're a loser yeah but I know but how do I get a girl well you're a fucking loser you're a loser",
-              "context": "Describing men who ask for dating advice",
-              "strength": 7
-            },
-            {
-              "quote": "I'm not going to lie to anybody here and say you don't have to improve yourself you can stay a loser and get chicks",
-              "context": "Binary categorization of men as losers vs non-losers",
-              "strength": 6
-            },
-            {
-              "quote": "I think she's some feminist or some crap so if I were to talk to her for more than two minutes I'd walk out",
-              "context": "Dismissing feminists as not worth engaging with",
-              "strength": 5
-            },
-            {
-              "quote": "women sit there and watch the Kardashians all day they're addicted to dramas",
-              "context": "Generalizing and diminishing women's interests",
-              "strength": 4
-            }
-          ],
-          "psychological_impact": "Uses 'loser' label repeatedly to create sharp binary between acceptable and unacceptable men. Dismisses certain groups (feminists, women who watch reality TV) as beneath consideration. Not full dehumanization but creates hierarchy where some people are written off. Encourages contempt rather than empathy."
-        },
-        "victimhood_narrative": {
-          "score": 55,
-          "confidence": 9,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "the game is rigged to become harder and harder for men it's not getting easier it's going the other way",
-              "context": "Describing dating/competition landscape for men",
-              "strength": 8
-            },
-            {
-              "quote": "if you want a girl you're competing against other men... everybody else wants or you have to out-compete other men",
-              "context": "Framing relationships as zero-sum competition where men are disadvantaged",
-              "strength": 7
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike or in a Nissan you're going to get smoked",
-              "context": "Metaphor positioning average men as inherently disadvantaged in rigged system",
-              "strength": 8
-            }
-          ],
-          "psychological_impact": "Creates narrative that men face systematically rigged, increasingly difficult environment. Positions male audience as facing unfair disadvantages ('the game is rigged'). This external attribution removes agency while justifying grievance. Moderate-strong victimhood framing that could foster resentment and learned helplessness about systemic barriers."
-        },
-        "hero_narrative": {
-          "score": 25,
-          "confidence": 7,
-          "instance_count": 2,
-          "evidence": [
-            {
-              "quote": "as you become a better man you'll crack through different tiers of attractiveness and eventually you get to the top and you'll be able to have any girl you want",
-              "context": "Describing path to elite status",
-              "strength": 5
-            },
-            {
-              "quote": "I'm perfect in English so why would I speak in a language which I don't speak as well as in English",
-              "context": "Self-description as having achieved perfection",
-              "strength": 4
-            }
-          ],
-          "psychological_impact": "Limited hero narrative - mostly positions speaker as having achieved elite status ('perfect in English', 'top tier') rather than directly telling audience they're special. Creates aspirational model but doesn't heavily flatter audience as chosen/enlightened. Relatively mild mechanism."
-        },
-        "us_vs_them_thinking": {
-          "score": 50,
-          "confidence": 8,
-          "instance_count": 4,
-          "evidence": [
-            {
-              "quote": "you're a loser... if you're a loser it's going to be very very difficult",
-              "context": "Binary division between losers and winners",
-              "strength": 8
-            },
-            {
-              "quote": "you're competing against other men you have to out-compete other men",
-              "context": "Framing all male relationships as competitive rather than collaborative",
-              "strength": 7
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike",
-              "context": "Metaphor creating hierarchy of men (Ferraris vs bikes)",
-              "strength": 7
-            },
-            {
-              "quote": "I don't think enough men understand how competitive the world is",
-              "context": "Dividing men into those who understand vs those who don't",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Strong binary thinking throughout: loser/winner, Ferrari/bike, competitive/naive. Frames world as zero-sum competition where other men are threats/competitors rather than potential allies. Eliminates collaborative or nuanced middle ground. Moderate-strong us-vs-them that could increase isolation and competitive anxiety."
-        },
-        "inadequacy_creation": {
-          "score": 75,
-          "confidence": 9,
-          "instance_count": 6,
-          "evidence": [
-            {
-              "quote": "a guy will come to me and go how do I get a girl like bro you're a loser yeah but I know but how do I get a girl well you're a fucking loser you're a loser",
-              "context": "Direct attack on hypothetical audience member seeking help",
-              "strength": 9
-            },
-            {
-              "quote": "if you're a loser it's going to be very very difficult",
-              "context": "Labeling audience members as losers",
-              "strength": 8
-            },
-            {
-              "quote": "you can stay a loser and get chicks because you can yeah you can",
-              "context": "Assuming audience starts from 'loser' position",
-              "strength": 7
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike or in a Nissan you're going to get smoked",
-              "context": "Positioning audience as inferior (bike/Nissan vs Ferrari)",
-              "strength": 8
-            },
-            {
-              "quote": "you have to be as good looking as funny as smart as spontaneous as interesting as charismatic as rich as possible",
-              "context": "Implying audience lacks all these qualities",
-              "strength": 7
-            },
-            {
-              "quote": "you need to try very hard to be your absolute best",
-              "context": "Implying current self is far from adequate",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Severe and repeated attacks on audience adequacy. Uses 'loser' label multiple times, positions audience as starting from position of fundamental inadequacy across multiple dimensions (looks, wealth, charisma, etc.). Creates deep insecurity by suggesting viewer is currently a 'loser' on a 'pedal bike' competing against 'Ferraris'. Strong mechanism that would lower self-esteem and create dependency on content for validation/improvement path."
-        },
-        "comparison_spiral": {
-          "score": 70,
-          "confidence": 9,
-          "instance_count": 5,
-          "evidence": [
-            {
-              "quote": "you have to be as good looking as funny as smart as spontaneous as interesting as charismatic as rich as possible",
-              "context": "Listing endless dimensions for comparison",
-              "strength": 9
-            },
-            {
-              "quote": "you have to out-compete other men you have to be as competitive as possible you have to be as successful as possible in all Realms",
-              "context": "Demanding maximal performance across all life domains",
-              "strength": 8
-            },
-            {
-              "quote": "if you want a girl you're competing against other men you're not the only man who had the idea of getting that girl... everybody else wants",
-              "context": "Constant comparison to other competing men",
-              "strength": 8
-            },
-            {
-              "quote": "as you become a better man you'll crack through different tiers of attractiveness",
-              "context": "Creating hierarchy/tiers for constant comparison",
-              "strength": 7
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike or in a Nissan you're going to get smoked",
-              "context": "Vivid comparison metaphor positioning viewer as inferior",
-              "strength": 8
-            }
-          ],
-          "psychological_impact": "Creates exhausting comparison framework across unlimited dimensions (looks, humor, intelligence, spontaneity, charisma, wealth). Positions viewer in constant competition with all other men for scarce resources (women). No dimension is sufficient - must maximize ALL realms. Strong mechanism that would create chronic dissatisfaction, anxiety, and sense of never being enough. The 'tiers' concept ensures there's always someone higher to compare against."
-        },
-        "conditional_worth": {
-          "score": 80,
-          "confidence": 10,
-          "instance_count": 7,
-          "evidence": [
-            {
-              "quote": "you're a loser... well you're a fucking loser",
-              "context": "Worth determined by winner/loser binary",
-              "strength": 9
-            },
-            {
-              "quote": "if you're a loser it's going to be very very difficult... you can stay a loser",
-              "context": "Identity and worth tied to loser/winner status",
-              "strength": 9
-            },
-            {
-              "quote": "you have to be as good looking as funny as smart as spontaneous as interesting as charismatic as rich as possible",
-              "context": "Worth contingent on maximizing multiple external attributes",
-              "strength": 9
-            },
-            {
-              "quote": "as you become a better man you'll crack through different tiers of attractiveness and eventually you get to the top",
-              "context": "Worth determined by tier/ranking system",
-              "strength": 8
-            },
-            {
-              "quote": "you have to out-compete other men you have to be as competitive as possible you have to be as successful as possible",
-              "context": "Worth tied to competitive success and dominance",
-              "strength": 8
-            },
-            {
-              "quote": "if a woman comes to you with an issue and you can't fix it you'll see very quickly how how soon they lose attraction",
-              "context": "Male worth contingent on problem-solving ability",
-              "strength": 7
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike... you're going to get smoked",
-              "context": "Worth determined by relative status/resources (Ferrari vs bike)",
-              "strength": 8
-            }
-          ],
-          "psychological_impact": "Severe conditional worth framework. Value as a person entirely dependent on external achievements, competitive success, and status markers. Creates unstable self-worth that must be constantly proven through performance. The loser/winner binary makes worth all-or-nothing. No inherent human value - only earned value through dominance, wealth, attractiveness, problem-solving. This is core identity manipulation that would create chronic insecurity and performance anxiety."
-        },
-        "identity_replacement": {
-          "score": 40,
-          "confidence": 7,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "you need to try very hard to be your absolute best... as you become a better man you'll crack through different tiers",
-              "context": "Transformation from current inadequate self to 'better man'",
-              "strength": 6
-            },
-            {
-              "quote": "you can stay a loser... you have to up yourself you have to improve yourself",
-              "context": "Rejecting current identity (loser) for new one",
-              "strength": 7
-            },
-            {
-              "quote": "you have to be as competitive as possible you have to be as successful as possible in all Realms",
-              "context": "Adopting new competitive identity across all life domains",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Moderate identity replacement. Pushes rejection of current self ('loser') and adoption of new competitive, maximizing identity. However, doesn't explicitly demand severing past relationships or complete personality overhaul. More focused on status/performance transformation than total identity reconstruction. Still creates pressure to fundamentally change who you are rather than develop existing self."
-        }
+    "user": {
+      "user_id": "usr_9f8e7d6c",
+      "external_id": "auth0|123456",
+      "email": "john.doe@acme.com",
+      "full_name": "John Doe",
+      "avatar_url": "https://cdn.example.com/avatars/john.png",
+      "role": "admin",
+      "created_at": "2023-06-15T10:00:00Z",
+      "last_login_at": "2025-01-15T08:30:00Z",
+      "login_count": 847,
+      "is_active": 1,
+      "is_verified": true,
+      "preferences": {
+        "theme": "dark",
+        "notifications": { "email": true, "push": false, "sms": false },
+        "dashboard_layout": "grid"
       },
-      "meta": {
-        "transcript_word_count": 1615,
-        "mechanisms_detected": 8,
-        "identity_shift_detected": true,
-        "radicalization_markers": "moderate",
-        "tribal_thinking_score": 43,
-        "self_worth_impact": "severe_negative",
-        "analysis_date": "2025-11-23T17:29:10.070Z",
-        "overall_assessment": "This transcript demonstrates significant identity manipulation through systematic inadequacy creation and conditional worth messaging. The speaker repeatedly labels the audience as 'losers' while establishing that male worth is entirely contingent on competitive success across unlimited dimensions (looks, wealth, charisma, intelligence, etc.). The victimhood narrative ('the game is rigged') combines with harsh inadequacy attacks to create external blame plus internal shame. The comparison spiral ensures chronic dissatisfaction - viewers must maximize ALL realms and constantly out-compete other men. Tribal thinking is moderate (us-vs-them, winner/loser binaries) but not extreme dehumanization. Primary psychological impact: severe damage to self-worth, creation of unstable identity dependent on external validation and competitive dominance, chronic anxiety from impossible standards, and potential resentment from victimhood framing. This is classic 'tough love' manipulation that attacks self-esteem while positioning the content as the path to redemption.",
-        "cumulative_exposure_effects": "Repeated exposure would likely result in: (1) Internalized 'loser' identity requiring constant proof of worth through achievement, (2) Hypercompetitive worldview seeing other men as threats rather than potential friends/allies, (3) Chronic inadequacy and performance anxiety from impossible multi-dimensional standards, (4) Resentment toward women and 'the system' from victimhood narrative, (5) Dependency on this content/community for validation and direction, (6) Difficulty maintaining relationships that don't fit competitive framework, (7) Depression/anxiety from never feeling 'enough' despite achievements.",
-        "distinguishing_from_healthy_motivation": "Healthy motivation builds on existing strengths and encourages specific skill development without attacking core worth. This content instead: (1) Attacks fundamental identity ('you're a loser'), (2) Makes worth entirely conditional on external achievements, (3) Creates unlimited comparison dimensions ensuring perpetual inadequacy, (4) Uses shame/fear rather than inspiration, (5) Positions current self as fundamentally deficient rather than capable of growth. The key difference: healthy content says 'you have potential, let's develop it' while this says 'you're currently worthless, maybe you can earn worth through endless competition.'"
+      "tags": ["power-user", "beta-tester"]
+    },
+    "session": {
+      "session_id": "sess_abc123xyz",
+      "started_at": "2025-01-15T14:00:00Z",
+      "ended_at": null,
+      "duration_seconds": null,
+      "device": {
+        "type": "desktop",
+        "os": "macOS",
+        "os_version": "14.2",
+        "browser": "Chrome",
+        "browser_version": "120.0",
+        "screen_width": 2560,
+        "screen_height": 1440,
+        "device_pixel_ratio": 2.0,
+        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36..."
+      },
+      "location": {
+        "ip": "192.168.1.100",
+        "country_code": "US",
+        "country": "United States",
+        "region": "California",
+        "city": "San Francisco",
+        "latitude": 37.7749,
+        "longitude": -122.4194,
+        "timezone": "America/Los_Angeles"
       }
     },
-    "behavioral_conditioning": {
-      "mechanisms": {
-        "call_to_action_pressure": {
-          "score": 8,
-          "confidence": 9,
-          "instance_count": 0,
-          "evidence": [],
-          "psychological_impact": "No direct CTAs present. This is interview/conversation content without subscription requests, product pitches, or compliance training. Viewer behavior is not being conditioned through repeated action requests."
+    "events": [
+      {
+        "event_id": "evt_001",
+        "event_type": "page_view",
+        "timestamp": "2025-01-15T14:00:05Z",
+        "page": {
+          "url": "https://app.acme.com/dashboard",
+          "path": "/dashboard",
+          "title": "Dashboard | Acme",
+          "referrer": "https://google.com/search?q=acme",
+          "load_time_ms": 234
         },
-        "urgency_manipulation": {
-          "score": 12,
-          "confidence": 8,
-          "instance_count": 1,
-          "evidence": [
-            {
-              "quote": "it's going to get harder and harder the game is rigged to become harder and harder for men it's not getting easier it's going the other way",
-              "context": "Discussing dating competition",
-              "strength": 3
-            }
-          ],
-          "psychological_impact": "Mild urgency framing suggesting conditions worsen over time. Creates background anxiety but doesn't demand immediate action. More ideological framing than behavioral manipulation."
+        "properties": {}
+      },
+      {
+        "event_id": "evt_002",
+        "event_type": "button_click",
+        "timestamp": "2025-01-15T14:01:30Z",
+        "page": {
+          "url": "https://app.acme.com/dashboard",
+          "path": "/dashboard",
+          "title": "Dashboard | Acme",
+          "referrer": null,
+          "load_time_ms": null
         },
-        "social_proof_exploitation": {
-          "score": 22,
-          "confidence": 7,
-          "instance_count": 2,
-          "evidence": [
-            {
-              "quote": "you're not the only man who had the idea of getting that girl there's no girl you're gonna see and go oh I'll get that girl and didn't cross anyone else's mind everybody else wants",
-              "context": "Explaining male competition",
-              "strength": 4
-            },
-            {
-              "quote": "it's very common in fact it's completely considered normal for people to speak more than one language because everyone speaks they're normal their host language and some english",
-              "context": "Discussing language learning norms",
-              "strength": 3
-            }
-          ],
-          "psychological_impact": "Uses social comparison to establish competitive framework. Creates sense of being in constant competition with others. Moderate pressure through peer comparison rather than direct behavioral manipulation."
-        },
-        "commitment_escalation": {
-          "score": 5,
-          "confidence": 8,
-          "instance_count": 0,
-          "evidence": [],
-          "psychological_impact": "No escalating commitment ladder present. Content doesn't guide viewer from small to large commitments. This is conversational content without funnel structure."
-        },
-        "scarcity_tactics": {
-          "score": 18,
-          "confidence": 7,
-          "instance_count": 2,
-          "evidence": [
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike or in a Nissan you're going to get smoked",
-              "context": "Describing limited success opportunities",
-              "strength": 4
-            },
-            {
-              "quote": "you have to out-compete other men you have to be as competitive as possible you have to be as successful as possible in all Realms",
-              "context": "Framing success as zero-sum",
-              "strength": 4
-            }
-          ],
-          "psychological_impact": "Frames relationships and success as scarce resources in zero-sum competition. Creates anxiety about limited opportunities but doesn't directly manipulate viewer actions. More worldview conditioning than behavioral manipulation."
-        },
-        "variable_reward_schedule": {
-          "score": 45,
-          "confidence": 6,
-          "instance_count": 1,
-          "evidence": [
-            {
-              "quote": "[Pattern: Philosophical discussion → Provocative statement ('you're a loser') → Relationship advice → Controversial opinion (abortion) → Personal questions → Language discussion]",
-              "context": "Content structure throughout",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Content shifts unpredictably between topics and emotional tones. Viewer doesn't know if next segment will be advice, provocation, or personal revelation. Creates moderate engagement through unpredictability, though less engineered than typical addiction-optimized content. Interview format naturally creates some variability."
-        },
-        "cliffhanger_hooks": {
-          "score": 35,
-          "confidence": 7,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "do you want the truth or a lie no tell me do you want the truth of course of course they all say truth I want the truth you could just tell me the truth then you tell the truth and they cry um every time",
-              "context": "Before revealing opinion on what women want",
-              "strength": 5
-            },
-            {
-              "quote": "would you ever date a Kardashian me personally no I don't think I would yes your celebrity crush do I have a celebrity crush come on I'm sure you do",
-              "context": "Building to personal revelation",
-              "strength": 4
-            },
-            {
-              "quote": "all right that's good at least because that's the answer all right now what's your thoughts on abortion",
-              "context": "Transitioning to controversial topic",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Interview format creates natural tension through question-answer structure. Controversial topics teased before reveals. Moderate use of anticipation building, though more conversational than engineered cliffhangers. Creates some compulsion to hear full answers."
-        },
-        "dopamine_manipulation": {
-          "score": 52,
-          "confidence": 7,
-          "instance_count": 8,
-          "evidence": [
-            {
-              "quote": "how do I get a girl like bro you're a loser yeah but I know but how do I get a girl well you're a [ __ ] loser you're a loser",
-              "context": "Provocative, confrontational language",
-              "strength": 7
-            },
-            {
-              "quote": "do you want the truth or a lie... then you tell the truth and they cry um every time",
-              "context": "Dramatic setup and payoff",
-              "strength": 6
-            },
-            {
-              "quote": "what's your thoughts on abortion I think it's Haram all right that's it done done",
-              "context": "Controversial opinion delivered bluntly",
-              "strength": 8
-            },
-            {
-              "quote": "how many restaurants you have to go to yeah how many times you've got to go eat until you eventually realize going to eat [ __ ]",
-              "context": "Dismissive, provocative rhetoric",
-              "strength": 6
-            },
-            {
-              "quote": "Yeah I think just we'll put that one maybe you didn't no we can talk about that one",
-              "context": "Tension around controversial topic",
-              "strength": 5
-            },
-            {
-              "quote": "I feel like you're saying that just so people don't know how many languages you speak I'm telling you he's just low-key understanding yeah he just listens",
-              "context": "Playful confrontation creating intrigue",
-              "strength": 5
-            },
-            {
-              "quote": "I saw a video of Dua LIPA a long time ago and she was an Albania doing an Albanian traditional dance I thought she can give me strong Albanian half Sons maybe her but I think she's some feminist or some crap so if I were to talk to her for more than two minutes I'd walk out",
-              "context": "Personal revelation with provocative ending",
-              "strength": 6
-            },
-            {
-              "quote": "I'm perfect in English so why would I speak in a language which I don't speak as well as in English",
-              "context": "Confident, provocative self-assessment",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Content engineered for emotional spikes through controversial opinions, confrontational language, and provocative statements. Creates dopamine hits through shock value, conflict, and taboo-breaking. Rapid shifts between topics maintain arousal. Viewer brain associates content with excitement/controversy. Moderate-to-high manipulation through emotional engineering rather than information delivery."
-        },
-        "habit_formation": {
-          "score": 10,
-          "confidence": 8,
-          "instance_count": 0,
-          "evidence": [],
-          "psychological_impact": "No explicit habit-forming language present. No requests to return daily, maintain streaks, or establish viewing routines. Content doesn't attempt to become part of daily habits through direct conditioning."
+        "properties": {
+          "button_id": "export-csv",
+          "button_text": "Export to CSV",
+          "section": "reports"
         }
       },
-      "meta": {
-        "transcript_word_count": 1615,
-        "mechanisms_detected": 3,
-        "cta_count": 0,
-        "addiction_design_score": 52,
-        "manipulation_sophistication": "moderate",
-        "compliance_training": false,
-        "analysis_date": "2025-11-23T17:30:23.888Z"
-      }
-    },
-    "worldview_manipulation": {
-      "mechanisms": {
-        "conspiracy_seeding": {
-          "score": 12,
-          "confidence": 9,
-          "instance_count": 0,
-          "evidence": [],
-          "psychological_impact": "No conspiracy thinking present. Speaker makes direct claims about social dynamics without suggesting hidden plots or secret knowledge. No 'they don't want you to know' framing."
-        },
-        "black_white_thinking": {
-          "score": 68,
-          "confidence": 9,
-          "instance_count": 5,
-          "evidence": [
-            {
-              "quote": "how do I get a girl like bro you're a loser yeah but I know but how do I get a girl well you're a [ __ ] loser you're a loser",
-              "context": "Discussing dating advice - binary categorization of men",
-              "strength": 8
-            },
-            {
-              "quote": "if you're a loser it's going to be very very difficult... you can stay a loser and get chicks because you can",
-              "context": "Framing men as either 'losers' or 'winners' with no middle ground",
-              "strength": 7
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike or in a Nissan you're going to get smoked",
-              "context": "Binary metaphor - Ferrari vs pedal bike, no middle tier",
-              "strength": 8
-            },
-            {
-              "quote": "do you want the truth or a lie... then you tell the truth and they cry",
-              "context": "Framing his perspective as 'truth' vs everything else as 'lies'",
-              "strength": 9
-            },
-            {
-              "quote": "I think she's some feminist or some crap so if I were to talk to her for more than two minutes I'd walk out",
-              "context": "Binary dismissal - feminist = incompatible, no nuance",
-              "strength": 7
-            }
-          ],
-          "psychological_impact": "Creates rigid binary categories (loser/winner, truth/lies, compatible/incompatible). Eliminates middle ground and complexity in human relationships and self-improvement. After repeated exposure: viewers internalize harsh binary self-assessment, see world in extreme categories, increased anxiety about falling into 'loser' category, polarized thinking about gender relations."
-        },
-        "historical_revision": {
-          "score": 8,
-          "confidence": 8,
-          "instance_count": 0,
-          "evidence": [],
-          "psychological_impact": "No historical revision present. Speaker doesn't rewrite past events or claim 'what they taught you was wrong.'"
-        },
-        "alternative_facts": {
-          "score": 15,
-          "confidence": 7,
-          "instance_count": 1,
-          "evidence": [
-            {
-              "quote": "do you want the truth or a lie no tell me do you want the truth of course of course they all say truth I want the truth you could just tell me the truth then you tell the truth and they cry",
-              "context": "Framing his opinions about gender relations as 'the truth'",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Mild relativism - positions subjective opinions about relationships as objective 'truth' that people can't handle. Not severe alternative facts creation, but frames personal perspective as universal truth."
-        },
-        "trust_destruction": {
-          "score": 22,
-          "confidence": 8,
-          "instance_count": 1,
-          "evidence": [
-            {
-              "quote": "the game is rigged to become harder and harder for men it's not getting easier it's going the other way",
-              "context": "Discussing dating dynamics",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Mild systemic distrust - suggests 'the game is rigged' against men, but doesn't systematically attack institutions or position himself as sole truth source. Creates mild grievance narrative but not comprehensive trust destruction."
-        },
-        "expert_dismissal": {
-          "score": 5,
-          "confidence": 9,
-          "instance_count": 0,
-          "evidence": [],
-          "psychological_impact": "No expert dismissal present. Speaker doesn't attack scientists, academics, or qualified authorities. Makes claims based on personal experience/opinion but doesn't discredit expertise systematically."
-        },
-        "alternative_epistemology": {
-          "score": 18,
-          "confidence": 8,
-          "instance_count": 1,
-          "evidence": [
-            {
-              "quote": "do you want the truth or a lie... of course they all say truth I want the truth you could just tell me the truth then you tell the truth and they cry",
-              "context": "Positioning personal beliefs as 'truth' that overrides other perspectives",
-              "strength": 4
-            }
-          ],
-          "psychological_impact": "Mild alternative epistemology - positions personal experience and beliefs as 'truth' without evidence-based reasoning, but doesn't explicitly tell viewers to 'trust feelings over facts' or create systematic alternative way of knowing."
-        },
-        "reality_bubble_creation": {
-          "score": 35,
-          "confidence": 7,
-          "instance_count": 2,
-          "evidence": [
-            {
-              "quote": "women sit there and watch the Kardashians all day they're addicted to dramas what they care about",
-              "context": "Creating generalized narrative about women's behavior",
-              "strength": 6
-            },
-            {
-              "quote": "I'm not going to lie to anybody here and say you don't have to improve yourself you can stay a loser and get chicks because you can",
-              "context": "Positioning himself as truth-teller vs others who lie",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Moderate bubble creation - positions his community as understanding 'real' dynamics while implying others lie or don't understand. Creates in-group ('people who get it') vs out-group dynamic. After repeated exposure: viewers may see his perspective as uniquely truthful, begin to dismiss alternative viewpoints on gender relations."
-        },
-        "information_isolation": {
-          "score": 8,
-          "confidence": 9,
-          "instance_count": 0,
-          "evidence": [],
-          "psychological_impact": "No information isolation present. Speaker doesn't tell viewers to avoid mainstream media, not to read certain sources, or that they'll be 'brainwashed' by other information. Doesn't create closed information ecosystem."
+      {
+        "event_id": "evt_003",
+        "event_type": "api_call",
+        "timestamp": "2025-01-15T14:01:32Z",
+        "page": null,
+        "properties": {
+          "endpoint": "/api/v2/reports/export",
+          "method": "POST",
+          "status_code": 200,
+          "response_time_ms": 1847,
+          "payload_size_bytes": 52480
         }
+      }
+    ],
+    "metrics": {
+      "engagement": {
+        "page_views": 12,
+        "unique_pages": 5,
+        "clicks": 34,
+        "scroll_depth_avg": 0.73,
+        "time_on_site_seconds": 1523,
+        "bounce": false
       },
-      "meta": {
-        "transcript_word_count": 1615,
-        "mechanisms_detected": 2,
-        "radicalization_pathway": "early",
-        "reality_distortion_level": "moderate",
-        "epistemic_closure": false,
-        "conspiracy_indicators": 0,
-        "analysis_date": "2025-11-23T17:31:13.364Z"
+      "performance": {
+        "lcp_ms": 1200,
+        "fid_ms": 45,
+        "cls_score": 0.05,
+        "ttfb_ms": 180,
+        "fcp_ms": 800
+      },
+      "conversion": {
+        "goals_completed": ["signup_step_1", "signup_step_2"],
+        "goals_failed": [],
+        "funnel_stage": "activation",
+        "conversion_value_usd": 299.99,
+        "ltv_estimate_usd": 3500.00
+      },
+      "custom_scores": {
+        "health_score": { "value": 85, "percentile": 92, "trend": "up" },
+        "engagement_score": { "value": 72, "percentile": 78, "trend": "stable" },
+        "churn_risk": { "value": 15, "percentile": 23, "trend": "down" }
       }
     },
-    "psychological_exploitation": {
-      "mechanisms": {
-        "loneliness_exploitation": {
-          "score": 15,
-          "confidence": 8,
-          "instance_count": 1,
-          "evidence": [
-            {
-              "quote": "if a woman only talks to you and you're the only man in her life",
-              "context": "Discussing relationship dynamics",
-              "strength": 2
-            }
-          ],
-          "psychological_impact": "Minimal loneliness exploitation. The content assumes audience has relationship goals but doesn't systematically target social isolation or create parasocial dependency. No attempts to position speaker as viewer's only source of understanding or connection."
-        },
-        "insecurity_amplification": {
-          "score": 78,
-          "confidence": 10,
-          "instance_count": 12,
-          "evidence": [
-            {
-              "quote": "a guy will come to me and go how do I get a girl like bro you're a loser yeah but I know but how do I get a girl well you're a fucking loser you're a loser",
-              "context": "Responding to question about dating",
-              "strength": 10
-            },
-            {
-              "quote": "if you're a loser it's going to be very very difficult and it's going to get harder and harder",
-              "context": "Explaining dating competition",
-              "strength": 9
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike or in a Nissan you're going to get smoked",
-              "context": "Metaphor for male competition",
-              "strength": 9
-            },
-            {
-              "quote": "you have to be as good looking as funny as smart as spontaneous as interesting as charismatic as rich as possible",
-              "context": "Requirements for success with women",
-              "strength": 8
-            },
-            {
-              "quote": "I'm not going to lie to anybody here and say you don't have to improve yourself you can stay a loser and get chicks because you can yeah you can",
-              "context": "Sarcastic dismissal of staying as you are",
-              "strength": 8
-            },
-            {
-              "quote": "we live in hyper-competitive environments I don't think enough men understand how competitive the world is",
-              "context": "Framing worldview",
-              "strength": 7
-            },
-            {
-              "quote": "you're competing against other men you're not the only man who had the idea of getting that girl",
-              "context": "Explaining dating as competition",
-              "strength": 7
-            },
-            {
-              "quote": "the game is rigged to become harder and harder for men it's not getting easier it's going the other way",
-              "context": "Describing systemic disadvantage",
-              "strength": 8
-            },
-            {
-              "quote": "you have to out-compete other men you have to be as competitive as possible you have to be as successful as possible in all Realms",
-              "context": "Prescribing constant competition",
-              "strength": 7
-            },
-            {
-              "quote": "you need to try very hard to be your absolute best",
-              "context": "Setting impossible standards",
-              "strength": 6
-            },
-            {
-              "quote": "if a woman comes to you with an issue and you can't fix it you'll see very quickly how how soon they lose attraction",
-              "context": "Creating fear of inadequacy",
-              "strength": 8
-            },
-            {
-              "quote": "there's only so much you can do he's only so hard you can pedal there's only so many tricks and tips",
-              "context": "Implying futility without fundamental change",
-              "strength": 7
-            }
-          ],
-          "psychological_impact": "Severe insecurity amplification. Repeatedly calls audience 'losers' while establishing impossibly high standards (must be maximally attractive, funny, smart, charismatic, rich, spontaneous, interesting). Creates anxiety through 'hyper-competitive' framing and 'rigged game' narrative. Uses humiliation ('you're a fucking loser') combined with fear ('it's getting harder'). After repeated exposure: chronic inadequacy feelings, anxiety about competition, belief that current self is worthless, desperation for transformation. Classic setup for selling solutions (courses, coaching, products) to manufactured crisis."
-        },
-        "meaning_void_exploitation": {
-          "score": 35,
-          "confidence": 7,
-          "instance_count": 2,
-          "evidence": [
-            {
-              "quote": "if you don't have a family and you don't have children as you get older the the Twilight years of your life or just everybody you know slowly dying and there's no new life injected",
-              "context": "Discussing purpose of having children",
-              "strength": 6
-            },
-            {
-              "quote": "I think there's nothing more worthwhile for people to do than have children",
-              "context": "Defining life's ultimate purpose",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Moderate meaning void exploitation. Presents specific life path (having children) as only meaningful existence, with alternative being bleak ('everybody you know slowly dying'). Creates existential anxiety about childlessness. However, doesn't position speaker as sole source of meaning or create cult-like mission. More traditional values advocacy than systematic exploitation of existential emptiness."
-        },
-        "financial_desperation": {
-          "score": 25,
-          "confidence": 6,
-          "instance_count": 2,
-          "evidence": [
-            {
-              "quote": "it doesn't matter if it's getting a girl or it's making money or it's getting status",
-              "context": "Listing competitive domains",
-              "strength": 4
-            },
-            {
-              "quote": "you have to be as... rich as possible",
-              "context": "Requirements for success",
-              "strength": 5
-            }
-          ],
-          "psychological_impact": "Mild financial desperation exploitation. Mentions wealth as requirement for success but doesn't systematically exploit money anxiety or promise get-rich-quick solutions in this transcript. Wealth presented as one of many competitive requirements rather than primary focus."
-        },
-        "health_anxiety_exploitation": {
-          "score": 5,
-          "confidence": 9,
-          "instance_count": 0,
-          "evidence": [],
-          "psychological_impact": "No health anxiety exploitation detected. Content doesn't create or exploit health fears, make medical claims, or undermine medical professionals."
-        },
-        "love_bombing": {
-          "score": 8,
-          "confidence": 9,
-          "instance_count": 1,
-          "evidence": [
-            {
-              "quote": "I'm perfect in English so why would I speak in a language which I don't speak as well as in English",
-              "context": "Self-description regarding language",
-              "strength": 2
-            }
-          ],
-          "psychological_impact": "Minimal love bombing. Speaker demonstrates narcissistic self-regard ('I'm perfect') but doesn't shower audience with excessive praise or affection to create dependency. The self-aggrandizement is about speaker, not manipulative positive attention toward audience."
-        },
-        "gaslighting": {
-          "score": 42,
-          "confidence": 8,
-          "instance_count": 3,
-          "evidence": [
-            {
-              "quote": "do you want the truth or a lie no tell me do you want the truth of course of course they all say truth I want the truth you could just tell me the truth then you tell the truth and they cry",
-              "context": "Setting up to deliver 'harsh truths' about women",
-              "strength": 7
-            },
-            {
-              "quote": "I don't think enough men understand how competitive the world is",
-              "context": "Implying audience's perception is wrong",
-              "strength": 6
-            },
-            {
-              "quote": "I'm not going to lie to anybody here and say you don't have to improve yourself you can stay a loser and get chicks because you can",
-              "context": "Dismissing alternative perspectives sarcastically",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Moderate gaslighting. Positions speaker as sole truth-teller ('you want the truth... then you tell the truth and they cry') while implying audience's current understanding is naive or wrong. Creates dynamic where speaker's harsh assessments are 'reality' and disagreement is denial. After repeated exposure: increased self-doubt, acceptance of speaker's framing as objective truth, difficulty trusting own perceptions of relationships and self-worth."
-        },
-        "negging": {
-          "score": 72,
-          "confidence": 10,
-          "instance_count": 8,
-          "evidence": [
-            {
-              "quote": "a guy will come to me and go how do I get a girl like bro you're a loser yeah but I know but how do I get a girl well you're a fucking loser",
-              "context": "Responding to audience question",
-              "strength": 10
-            },
-            {
-              "quote": "if you're a loser it's going to be very very difficult",
-              "context": "Conditional put-down",
-              "strength": 9
-            },
-            {
-              "quote": "if you're going to be on a race track and there's going to be Ferraris there and you're going to be on a pedal bike or in a Nissan you're going to get smoked",
-              "context": "Metaphorical diminishment",
-              "strength": 8
-            },
-            {
-              "quote": "I'm not going to lie to anybody here and say you don't have to improve yourself you can stay a loser and get chicks because you can",
-              "context": "Sarcastic dismissal framed as honesty",
-              "strength": 8
-            },
-            {
-              "quote": "what do you want me to do there's only so much you can do",
-              "context": "Expressing futility of helping 'losers'",
-              "strength": 7
-            },
-            {
-              "quote": "I saw a video of Dua LIPA... but I think she's some feminist or some crap so if I were to talk to her for more than two minutes I'd walk out",
-              "context": "Dismissing potential partner",
-              "strength": 6
-            },
-            {
-              "quote": "how many restaurants you have to go to yeah how many times you've got to go eat until you eventually realize going to eat fucking I mean",
-              "context": "Mocking women's life experiences",
-              "strength": 7
-            },
-            {
-              "quote": "accept the responsibilities like a fucking adult",
-              "context": "Calling women who seek abortion immature",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "High-level negging. Systematically uses insults ('loser', 'fucking loser') mixed with conditional acceptance ('as you become a better man'). Creates insecurity while positioning speaker as arbiter of worth. The pattern: harsh criticism → implication you could improve → but you're currently worthless. Classic pickup artist technique scaled to audience level. After repeated exposure: chronic approval-seeking from speaker, internalized belief of inadequacy, willingness to accept abuse as 'tough love', vulnerability to purchasing solutions."
-        },
-        "trauma_bonding": {
-          "score": 55,
-          "confidence": 8,
-          "instance_count": 4,
-          "evidence": [
-            {
-              "quote": "a guy will come to me and go how do I get a girl like bro you're a loser... you have to improve yourself",
-              "context": "Harsh criticism followed by improvement path",
-              "strength": 8
-            },
-            {
-              "quote": "if you're a loser it's going to be very very difficult... you have to up yourself you have to improve yourself",
-              "context": "Creating fear then offering hope",
-              "strength": 7
-            },
-            {
-              "quote": "the game is rigged to become harder and harder for men... as you become a better man you'll crack through different tiers",
-              "context": "Doom followed by possibility",
-              "strength": 7
-            },
-            {
-              "quote": "I'm not going to lie to anybody... you have to improve yourself",
-              "context": "Framing abuse as honesty/care",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Moderate trauma bonding pattern. Alternates between harsh criticism ('you're a fucking loser') and offering path to redemption ('improve yourself', 'crack through tiers'). Creates cycle of: insult → anxiety → hope → need for speaker's guidance. The 'brutal honesty' framing disguises abuse as care. After repeated exposure: emotional attachment to speaker despite harsh treatment, belief that criticism = caring, increased tolerance for verbal abuse, seeking speaker's approval to resolve anxiety he created."
-        },
-        "dependency_creation": {
-          "score": 48,
-          "confidence": 7,
-          "instance_count": 5,
-          "evidence": [
-            {
-              "quote": "you have to be as good looking as funny as smart as spontaneous as interesting as charismatic as rich as possible you need to try very hard to be your absolute best",
-              "context": "Setting impossible standards requiring guidance",
-              "strength": 7
-            },
-            {
-              "quote": "there's only so many tricks and tips there's only so many game things you can say so many pickup lines",
-              "context": "Implying need for deeper transformation/guidance",
-              "strength": 6
-            },
-            {
-              "quote": "as you become a better man you'll crack through different tiers of attractiveness",
-              "context": "Positioning speaker as guide through tiers",
-              "strength": 7
-            },
-            {
-              "quote": "I have a lot of guys ask me... a guy will come to me",
-              "context": "Positioning self as authority men seek out",
-              "strength": 5
-            },
-            {
-              "quote": "the game is rigged to become harder and harder for men",
-              "context": "Creating need for insider knowledge/guidance",
-              "strength": 6
-            }
-          ],
-          "psychological_impact": "Moderate dependency creation. Establishes impossibly high standards across multiple domains (looks, humor, intelligence, spontaneity, charisma, wealth) that require guidance to achieve. Positions speaker as authority who understands 'the game' and can guide through 'tiers'. Creates learned helplessness through 'rigged game' narrative while offering self as solution. However, doesn't explicitly state 'you need me' or 'you can't do this alone'. After repeated exposure: belief that transformation requires speaker's framework, external locus of control, seeking speaker's content for validation and direction."
+    "billing": {
+      "subscription_id": "sub_xyz789",
+      "plan_id": "plan_enterprise_annual",
+      "status": "active",
+      "mrr_usd": 999.00,
+      "arr_usd": 11988.00,
+      "currency": "USD",
+      "billing_cycle": "annual",
+      "current_period_start": "2025-01-01",
+      "current_period_end": "2025-12-31",
+      "payment_method": {
+        "type": "credit_card",
+        "brand": "visa",
+        "last4": "4242",
+        "exp_month": 12,
+        "exp_year": 2027
+      },
+      "invoices": [
+        {
+          "invoice_id": "inv_001",
+          "invoice_number": "INV-2025-0001",
+          "amount_usd": 11988.00,
+          "tax_usd": 0.00,
+          "total_usd": 11988.00,
+          "status": "paid",
+          "issued_at": "2025-01-01T00:00:00Z",
+          "paid_at": "2025-01-01T00:05:23Z",
+          "line_items": [
+            { "description": "Enterprise Plan (Annual)", "quantity": 1, "unit_price_usd": 11988.00, "total_usd": 11988.00 }
+          ]
         }
-      },
-      "meta": {
-        "transcript_word_count": 1615,
-        "mechanisms_detected": 7,
-        "exploitation_severity": "high",
-        "most_vulnerable_to": "Young men (18-30) experiencing dating difficulties, social rejection, or romantic loneliness. Those with existing low self-esteem, limited dating experience, social anxiety, or feelings of inadequacy in competitive domains (career, status, relationships). Men from communities emphasizing traditional masculinity who feel 'left behind' by social changes. Particularly vulnerable: socially isolated men seeking male role models and concrete advice for dating success.",
-        "cult_indicators": 0,
-        "ethical_concern": "high",
-        "analysis_date": "2025-11-23T17:31:52.886Z"
-      }
-    },
-    "summary": {
-      "overall_manipulation_score": 50,
-      "addiction_potential": "low",
-      "radicalization_risk": "none",
-      "exploitation_severity": "moderate",
-      "primary_mechanisms": [
-        "Cognitive: false dichotomy",
-        "Cognitive: ad hominem",
-        "Cognitive: confirmation bias exploitation",
-        "Identity: conditional worth",
-        "Cognitive: appeal to emotion"
       ],
-      "immediate_effects": [
-        "Elevated heart rate and cortisol (fear response)",
-        "Heightened vigilance and worry"
-      ],
-      "long_term_effects": [
-        "Reduced critical thinking ability",
-        "Chronic anxiety and hypervigilance",
-        "Emotional dysregulation and content addiction",
-        "Chronic low self-esteem and approval-seeking"
+      "discounts": [
+        { "code": "ANNUAL20", "type": "percentage", "value": 20, "expires_at": null }
       ]
     },
-    "success": true,
-    "costs": {
-      "totalCost": "0.3914",
-      "totalTokens": 45298
+    "ml_predictions": {
+      "churn_model_v3": {
+        "model_id": "churn_v3_20250101",
+        "prediction": "low_risk",
+        "probability": 0.12,
+        "confidence_interval": [0.08, 0.18],
+        "features_used": 47,
+        "top_factors": [
+          { "feature": "login_frequency", "importance": 0.23, "direction": "positive" },
+          { "feature": "support_tickets", "importance": 0.18, "direction": "negative" },
+          { "feature": "feature_adoption", "importance": 0.15, "direction": "positive" }
+        ],
+        "computed_at": "2025-01-15T06:00:00Z"
+      },
+      "upsell_model_v2": {
+        "model_id": "upsell_v2_20250101",
+        "prediction": "high_potential",
+        "probability": 0.78,
+        "confidence_interval": [0.71, 0.84],
+        "features_used": 32,
+        "top_factors": [
+          { "feature": "user_growth_rate", "importance": 0.31, "direction": "positive" },
+          { "feature": "api_usage_pct", "importance": 0.22, "direction": "positive" },
+          { "feature": "current_plan_utilization", "importance": 0.19, "direction": "positive" }
+        ],
+        "computed_at": "2025-01-15T06:00:00Z"
+      }
+    },
+    "experiments": {
+      "exp_new_onboarding": {
+        "experiment_id": "exp_001",
+        "variant": "treatment_b",
+        "enrolled_at": "2025-01-10T12:00:00Z",
+        "converted": true,
+        "conversion_value": 1.0,
+        "exposure_count": 3
+      },
+      "exp_pricing_page": {
+        "experiment_id": "exp_002",
+        "variant": "control",
+        "enrolled_at": "2025-01-12T09:30:00Z",
+        "converted": false,
+        "conversion_value": 0.0,
+        "exposure_count": 1
+      }
+    },
+    "support": {
+      "tickets": [
+        {
+          "ticket_id": "tkt_12345",
+          "subject": "Cannot export large reports",
+          "description": "When I try to export reports with more than 10,000 rows, the export fails with a timeout error. This is blocking our quarterly review process and needs urgent attention.",
+          "priority": "high",
+          "status": "resolved",
+          "category": "bug",
+          "created_at": "2025-01-10T14:30:00Z",
+          "updated_at": "2025-01-12T09:15:00Z",
+          "resolved_at": "2025-01-12T09:15:00Z",
+          "first_response_minutes": 45,
+          "resolution_minutes": 2565,
+          "satisfaction_score": 5,
+          "agent_id": "agent_alice",
+          "tags": ["export", "performance", "p1"]
+        }
+      ],
+      "nps_responses": [
+        {
+          "response_id": "nps_001",
+          "score": 9,
+          "feedback": "Great product, would recommend to colleagues!",
+          "submitted_at": "2025-01-05T16:00:00Z",
+          "segment": "promoter"
+        }
+      ],
+      "csat_avg": 4.7,
+      "total_tickets": 3,
+      "open_tickets": 0
+    },
+    "audit_log": [
+      {
+        "log_id": "log_001",
+        "action": "settings.update",
+        "actor_id": "usr_9f8e7d6c",
+        "actor_type": "user",
+        "resource_type": "organization",
+        "resource_id": "tenant_8x7k2m",
+        "changes": {
+          "before": { "max_users": 250 },
+          "after": { "max_users": 500 }
+        },
+        "ip_address": "192.168.1.100",
+        "timestamp": "2025-01-14T11:30:00Z",
+        "success": true
+      }
+    ],
+    "computed": {
+      "customer_health": "healthy",
+      "lifecycle_stage": "growth",
+      "account_age_days": 579,
+      "days_since_last_activity": 0,
+      "feature_adoption_pct": 0.67,
+      "seats_used_pct": 0.45,
+      "api_quota_used_pct": 0.12
+    },
+    "_internal": {
+      "shard_id": 7,
+      "partition_key": "2025-01",
+      "etl_batch_id": "batch_20250115_143000",
+      "schema_version": 14,
+      "data_quality_flags": []
+    }
+  },
+  {
+    "meta": {
+      "request_id": "660e8400-e29b-41d4-a716-446655440001",
+      "correlation_id": "corr_def456",
+      "timestamp": "2025-01-15T14:35:00.000Z",
+      "processed_at": 1705329300,
+      "duration_ms": 892,
+      "version": "2.1.0",
+      "flags": {
+        "is_test": true,
+        "is_premium": false,
+        "retry_count": 2
+      }
+    },
+    "tenant": {
+      "tenant_id": "tenant_3y9z1n",
+      "org_name": "StartupCo",
+      "plan": "starter",
+      "contact_email": "hello@startupco.io",
+      "website": "https://startupco.io",
+      "settings": {
+        "timezone": "Europe/London",
+        "locale": "en-GB",
+        "features": ["analytics"],
+        "limits": {
+          "max_users": 10,
+          "max_storage_gb": 5,
+          "api_rate_limit": 1000
+        },
+        "integrations": {
+          "slack": { "enabled": false, "webhook_url": null },
+          "salesforce": { "enabled": false, "webhook_url": null },
+          "hubspot": { "enabled": false, "webhook_url": null }
+        }
+      }
+    },
+    "user": {
+      "user_id": "usr_1a2b3c4d",
+      "external_id": null,
+      "email": "founder@startupco.io",
+      "full_name": "Jane Smith",
+      "avatar_url": null,
+      "role": "owner",
+      "created_at": "2025-01-10T08:00:00Z",
+      "last_login_at": "2025-01-15T14:30:00Z",
+      "login_count": 12,
+      "is_active": 1,
+      "is_verified": false,
+      "preferences": {
+        "theme": "light",
+        "notifications": { "email": true, "push": true, "sms": false },
+        "dashboard_layout": "list"
+      },
+      "tags": []
+    },
+    "session": {
+      "session_id": "sess_def456abc",
+      "started_at": "2025-01-15T14:30:00Z",
+      "ended_at": "2025-01-15T14:35:00Z",
+      "duration_seconds": 300,
+      "device": {
+        "type": "mobile",
+        "os": "iOS",
+        "os_version": "17.2",
+        "browser": "Safari",
+        "browser_version": "17.0",
+        "screen_width": 390,
+        "screen_height": 844,
+        "device_pixel_ratio": 3.0,
+        "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X)..."
+      },
+      "location": {
+        "ip": "86.12.45.201",
+        "country_code": "GB",
+        "country": "United Kingdom",
+        "region": "England",
+        "city": "London",
+        "latitude": 51.5074,
+        "longitude": -0.1278,
+        "timezone": "Europe/London"
+      }
+    },
+    "events": [],
+    "metrics": {
+      "engagement": {
+        "page_views": 3,
+        "unique_pages": 2,
+        "clicks": 5,
+        "scroll_depth_avg": 0.45,
+        "time_on_site_seconds": 300,
+        "bounce": true
+      },
+      "performance": {
+        "lcp_ms": 2800,
+        "fid_ms": 120,
+        "cls_score": 0.15,
+        "ttfb_ms": 450,
+        "fcp_ms": 1500
+      },
+      "conversion": {
+        "goals_completed": [],
+        "goals_failed": ["signup_complete"],
+        "funnel_stage": "trial",
+        "conversion_value_usd": 0.00,
+        "ltv_estimate_usd": 150.00
+      },
+      "custom_scores": {
+        "health_score": { "value": 45, "percentile": 32, "trend": "down" },
+        "engagement_score": { "value": 28, "percentile": 15, "trend": "down" },
+        "churn_risk": { "value": 72, "percentile": 85, "trend": "up" }
+      }
+    },
+    "billing": {
+      "subscription_id": null,
+      "plan_id": "plan_free_trial",
+      "status": "trialing",
+      "mrr_usd": 0.00,
+      "arr_usd": 0.00,
+      "currency": "GBP",
+      "billing_cycle": null,
+      "current_period_start": "2025-01-10",
+      "current_period_end": "2025-01-24",
+      "payment_method": null,
+      "invoices": [],
+      "discounts": []
+    },
+    "ml_predictions": {
+      "churn_model_v3": {
+        "model_id": "churn_v3_20250101",
+        "prediction": "high_risk",
+        "probability": 0.72,
+        "confidence_interval": [0.65, 0.79],
+        "features_used": 47,
+        "top_factors": [
+          { "feature": "login_frequency", "importance": 0.28, "direction": "negative" },
+          { "feature": "feature_adoption", "importance": 0.24, "direction": "negative" },
+          { "feature": "trial_day", "importance": 0.18, "direction": "negative" }
+        ],
+        "computed_at": "2025-01-15T06:00:00Z"
+      },
+      "upsell_model_v2": {
+        "model_id": "upsell_v2_20250101",
+        "prediction": "low_potential",
+        "probability": 0.15,
+        "confidence_interval": [0.10, 0.22],
+        "features_used": 32,
+        "top_factors": [
+          { "feature": "user_growth_rate", "importance": 0.25, "direction": "negative" },
+          { "feature": "engagement_score", "importance": 0.21, "direction": "negative" },
+          { "feature": "company_size", "importance": 0.17, "direction": "negative" }
+        ],
+        "computed_at": "2025-01-15T06:00:00Z"
+      }
+    },
+    "experiments": {},
+    "support": {
+      "tickets": [],
+      "nps_responses": [],
+      "csat_avg": null,
+      "total_tickets": 0,
+      "open_tickets": 0
+    },
+    "audit_log": [],
+    "computed": {
+      "customer_health": "at_risk",
+      "lifecycle_stage": "trial",
+      "account_age_days": 5,
+      "days_since_last_activity": 0,
+      "feature_adoption_pct": 0.12,
+      "seats_used_pct": 0.10,
+      "api_quota_used_pct": 0.00
+    },
+    "_internal": {
+      "shard_id": 3,
+      "partition_key": "2025-01",
+      "etl_batch_id": "batch_20250115_143500",
+      "schema_version": 14,
+      "data_quality_flags": ["incomplete_profile", "no_payment_method"]
     }
   }
-}
+]

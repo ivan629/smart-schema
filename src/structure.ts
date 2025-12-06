@@ -7,10 +7,11 @@
  * - Smart naming for $defs
  *
  * IMPROVEMENTS:
+ * - Semantic pattern detection from constants.ts
  * - Intelligent $def naming based on field composition
  * - Common prefix extraction
- * - Role-based naming
- * - Semantic pattern detection
+ * - Role-based naming fallback
+ * - Map detection for dynamic key objects
  */
 
 import type {
@@ -25,6 +26,25 @@ import type {
     TypeDef,
     FieldRole,
 } from './types.js';
+import {
+    SEMANTIC_DEF_PATTERNS,
+    ROLE_DEF_NAMES,
+    ID_FIELD_PATTERNS,
+    NAME_FIELD_PATTERNS,
+    MAP_KEY_PATTERNS,
+    MAP_DETECTION_THRESHOLD,
+    NON_MAP_OBJECT_NAMES,
+    MIN_SEMANTIC_MATCH_SCORE,
+    REQUIRED_FIELD_SCORE_WEIGHT,
+    EXTRA_FIELD_PENALTY,
+    MAP_KEY_MATCH_RATIO,
+    MIN_KEYS_FOR_VARIANCE_CHECK,
+    MAX_KEY_LENGTH_VARIANCE,
+    MIN_DEF_REUSE_COUNT,
+    MIN_DEF_FIELD_COUNT,
+    MAP_KEY_RATIO_THRESHOLD,
+    type SemanticDefPattern,
+} from './constants.js';
 
 // ============================================================================
 // Types
@@ -43,7 +63,7 @@ interface StructureResult {
 }
 
 // ============================================================================
-// Smart $def Naming (NEW)
+// Smart $def Naming
 // ============================================================================
 
 /**
@@ -106,56 +126,87 @@ function getDominantRole(fields: StatsField[]): FieldRole | null {
 }
 
 /**
- * Detect semantic patterns in field composition
+ * Check if field name matches ID patterns
+ */
+function isIdField(fieldName: string): boolean {
+    const lower = fieldName.toLowerCase();
+    return ID_FIELD_PATTERNS.some(p =>
+        lower === p || lower.endsWith('_' + p) || lower.endsWith(p)
+    );
+}
+
+/**
+ * Check if field name matches name/label patterns
+ */
+function isNameField(fieldName: string): boolean {
+    const lower = fieldName.toLowerCase();
+    return NAME_FIELD_PATTERNS.some(p =>
+        lower === p || lower.includes(p)
+    );
+}
+
+/**
+ * Detect semantic patterns in field composition using SEMANTIC_DEF_PATTERNS.
+ * Returns the best matching pattern name or null.
  */
 function detectSemanticPattern(fields: StatsField[]): string | null {
-    const fieldNames = new Set(fields.map(f => f.path.split('.').pop()?.toLowerCase()));
+    const fieldNames = new Set(
+        fields.map(f => f.path.split('.').pop()?.toLowerCase() ?? '')
+    );
 
-    // Score + confidence pattern → "scored_metric" or "rating"
-    if (fieldNames.has('score') && fieldNames.has('confidence')) {
-        return 'scored_metric';
+    let bestMatch: { name: string; score: number } | null = null;
+
+    for (const pattern of SEMANTIC_DEF_PATTERNS) {
+        // Check if all required fields are present
+        const hasAllRequired = pattern.requiredFields.every(req =>
+            fieldNames.has(req.toLowerCase())
+        );
+
+        if (!hasAllRequired) continue;
+
+        // Check exclusions
+        if (pattern.excludeFields) {
+            const hasExcluded = pattern.excludeFields.some(exc =>
+                fieldNames.has(exc.toLowerCase())
+            );
+            if (hasExcluded) continue;
+        }
+
+        // Calculate match score
+        let score = pattern.requiredFields.length * REQUIRED_FIELD_SCORE_WEIGHT;  // Base score from required
+
+        // Bonus for optional fields present
+        if (pattern.optionalFields) {
+            const optionalMatches = pattern.optionalFields.filter(opt =>
+                fieldNames.has(opt.toLowerCase())
+            ).length;
+            score += optionalMatches;
+        }
+
+        // Penalty for extra fields not in pattern
+        const patternFields = new Set([
+            ...pattern.requiredFields,
+            ...(pattern.optionalFields ?? []),
+        ].map(f => f.toLowerCase()));
+
+        const extraFields = [...fieldNames].filter(f => !patternFields.has(f)).length;
+        score -= extraFields * EXTRA_FIELD_PENALTY;
+
+        if (!bestMatch || score > bestMatch.score) {
+            bestMatch = { name: pattern.name, score };
+        }
     }
 
-    // ID + name pattern → "named_entity"
-    const hasId = [...fieldNames].some(n => n?.endsWith('id') || n === 'id');
-    const hasName = fieldNames.has('name') || fieldNames.has('title') || fieldNames.has('label');
+    // Only return if we have a reasonable match
+    if (bestMatch && bestMatch.score >= MIN_SEMANTIC_MATCH_SCORE) {
+        return bestMatch.name;
+    }
+
+    // Fallback: check for ID + name pattern (very common)
+    const hasId = [...fieldNames].some(isIdField);
+    const hasName = [...fieldNames].some(isNameField);
     if (hasId && hasName) {
         return 'named_entity';
-    }
-
-    // Min/max/avg pattern → "range_metrics" or "statistics"
-    if (fieldNames.has('min') && fieldNames.has('max')) {
-        return 'range_metrics';
-    }
-    if ((fieldNames.has('min') || fieldNames.has('max')) && fieldNames.has('avg')) {
-        return 'statistics';
-    }
-
-    // Start/end pattern → "time_range" or "period"
-    if (fieldNames.has('start') && fieldNames.has('end')) {
-        return 'time_range';
-    }
-    if (fieldNames.has('start_date') && fieldNames.has('end_date')) {
-        return 'date_range';
-    }
-
-    // Lat/lng pattern → "coordinates" or "location"
-    if ((fieldNames.has('lat') || fieldNames.has('latitude')) &&
-        (fieldNames.has('lng') || fieldNames.has('longitude'))) {
-        return 'coordinates';
-    }
-
-    // Width/height pattern → "dimensions"
-    if (fieldNames.has('width') && fieldNames.has('height')) {
-        return 'dimensions';
-    }
-
-    // Created/updated pattern → "timestamps"
-    const timeFields = [...fieldNames].filter(n =>
-        n?.includes('created') || n?.includes('updated') || n?.endsWith('_at')
-    );
-    if (timeFields.length >= 2) {
-        return 'timestamps';
     }
 
     return null;
@@ -183,18 +234,10 @@ function generateDefName(fields: StatsField[], parentPath: string): string {
         return `${common}_data`;
     }
 
-    // 3. Try role-based naming
+    // 3. Try role-based naming using ROLE_DEF_NAMES
     const dominantRole = getDominantRole(fields);
-    if (dominantRole) {
-        const roleNames: Record<FieldRole, string> = {
-            measure: 'metrics',
-            dimension: 'attributes',
-            identifier: 'keys',
-            time: 'timestamps',
-            text: 'content',
-            metadata: 'metadata',
-        };
-        return roleNames[dominantRole];
+    if (dominantRole && ROLE_DEF_NAMES[dominantRole]) {
+        return ROLE_DEF_NAMES[dominantRole];
     }
 
     // 4. Use parent path context
@@ -207,10 +250,59 @@ function generateDefName(fields: StatsField[], parentPath: string): string {
 
     // 5. Fallback: concatenate first two field names
     if (fieldNames.length >= 2) {
-        return `${fieldNames[0]}_${fieldNames[1]}_group`;
+        const name1 = fieldNames[0].replace(/_/g, '');
+        const name2 = fieldNames[1].replace(/_/g, '');
+        return `${name1}_${name2}`;
     }
 
     return 'item';
+}
+
+// ============================================================================
+// Map Detection
+// ============================================================================
+
+/**
+ * Check if a set of keys looks like dynamic map keys
+ */
+function looksLikeMapKeys(keys: string[]): boolean {
+    if (keys.length < MAP_DETECTION_THRESHOLD) {
+        return false;
+    }
+
+    // Check if all keys match one of the map key patterns
+    const matchCount = keys.filter(key =>
+        MAP_KEY_PATTERNS.some(pattern => pattern.test(key))
+    ).length;
+
+    // If most keys match a pattern, it's likely a map
+    if (matchCount >= keys.length * MAP_KEY_MATCH_RATIO) {
+        return true;
+    }
+
+    // Check if keys have similar structure (same character composition)
+    const keyLengths = keys.map(k => k.length);
+    const avgLength = keyLengths.reduce((a, b) => a + b, 0) / keyLengths.length;
+    const lengthVariance = keyLengths.reduce((sum, len) =>
+        sum + Math.pow(len - avgLength, 2), 0
+    ) / keyLengths.length;
+
+    // Low variance in length + many keys = likely a map
+    if (keys.length >= MIN_KEYS_FOR_VARIANCE_CHECK && lengthVariance < MAX_KEY_LENGTH_VARIANCE) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Check if an object name suggests it should NOT be a map
+ */
+function isKnownObjectType(name: string): boolean {
+    const lower = name.toLowerCase();
+    return NON_MAP_OBJECT_NAMES.some(known =>
+        lower === known || lower.endsWith('_' + known)
+    );
 }
 
 // ============================================================================
@@ -367,11 +459,22 @@ function resolveRefs(
 // Main Export
 // ============================================================================
 
-export function buildStructure(schema: StatsTableSchema): StructureResult {
+export interface BuildStructureOptions {
+    /** Enable map detection for dynamic key objects */
+    detectMaps?: boolean;
+    /** Sample data for more accurate map detection */
+    samples?: unknown[];
+}
+
+export function buildStructure(
+    schema: StatsTableSchema,
+    options: BuildStructureOptions = {}
+): StructureResult {
+    const { detectMaps: shouldDetectMaps = true, samples } = options;
     const $defsMap = new Map<string, DefCandidate>();
 
     // Build initial structure
-    const root = buildObjectNode(schema.fields, '', $defsMap, '');
+    let root = buildObjectNode(schema.fields, '', $defsMap, '');
 
     // Convert candidates to actual $defs with smart names
     const $defs: Record<string, TypeDef> = {};
@@ -380,7 +483,7 @@ export function buildStructure(schema: StatsTableSchema): StructureResult {
 
     for (const [signature, candidate] of $defsMap) {
         // Only create $def if used more than once OR has meaningful structure
-        if (candidate.paths.length < 2 && candidate.fields.length < 3) {
+        if (candidate.paths.length < MIN_DEF_REUSE_COUNT && candidate.fields.length < MIN_DEF_FIELD_COUNT) {
             continue;
         }
 
@@ -408,23 +511,165 @@ export function buildStructure(schema: StatsTableSchema): StructureResult {
     }
 
     // Resolve references to use new names
-    const resolvedRoot = resolveRefs(root, signatureToName);
+    root = resolveRefs(root, signatureToName) as ObjectNode;
+
+    // Optionally detect maps
+    if (shouldDetectMaps) {
+        if (samples && samples.length > 0) {
+            // Use sample data for more accurate detection
+            root = detectMapsFromSamples(root, samples[0], '') as ObjectNode;
+        } else {
+            // Fall back to key-pattern based detection
+            root = detectMaps(root, [], '') as ObjectNode;
+        }
+    }
 
     return {
-        root: resolvedRoot,
+        root,
         $defs: Object.keys($defs).length > 0 ? $defs : {},
     };
 }
 
 /**
- * Detect if an object is actually a map (dynamic keys)
+ * Detect if an object is actually a map (dynamic keys).
+ * Analyzes the keys and their values to determine if this is
+ * a true map vs a structured object.
  */
 export function detectMaps(
     node: NodeDef,
     samples: unknown[],
     path: string = ''
 ): NodeDef {
-    // This is a simplified version - full implementation would analyze
-    // key patterns across samples to detect true maps vs objects
+    // Handle object nodes
+    if ('fields' in node) {
+        const objNode = node as ObjectNode;
+        const keys = Object.keys(objNode.fields);
+        const nodeName = path.split('.').pop() ?? '';
+
+        // Skip if this is a known object type
+        if (!isKnownObjectType(nodeName)) {
+            // Check if keys look like dynamic map keys
+            if (looksLikeMapKeys(keys)) {
+                // Verify all values have similar structure
+                const signatures = new Set<string>();
+
+                for (const [, child] of Object.entries(objNode.fields)) {
+                    if ('type' in child) {
+                        signatures.add((child as FieldNode).type);
+                    } else if ('fields' in child) {
+                        const childKeys = Object.keys((child as ObjectNode).fields).sort().join(',');
+                        signatures.add(`object:${childKeys}`);
+                    }
+                }
+
+                // If all values have same structure, convert to map
+                if (signatures.size === 1) {
+                    const firstChild = Object.values(objNode.fields)[0];
+                    const mapNode: MapNode = {
+                        type: 'map',
+                        keys: { type: 'string' } as FieldNode,
+                        values: detectMaps(firstChild, samples, `${path}.*`),
+                    };
+                    return mapNode;
+                }
+            }
+        }
+
+        // Recurse into children
+        const newFields: Record<string, NodeDef> = {};
+        for (const [key, child] of Object.entries(objNode.fields)) {
+            newFields[key] = detectMaps(child, samples, path ? `${path}.${key}` : key);
+        }
+        return { ...objNode, fields: newFields };
+    }
+
+    // Handle array nodes
+    if ('items' in node) {
+        const arrayNode = node as ArrayNode;
+        return {
+            ...arrayNode,
+            items: detectMaps(arrayNode.items, samples, `${path}[]`),
+        };
+    }
+
+    return node;
+}
+
+/**
+ * Detect maps by analyzing sample data directly.
+ * This is more accurate than key pattern matching alone.
+ */
+export function detectMapsFromSamples(
+    node: NodeDef,
+    sampleData: unknown,
+    path: string = ''
+): NodeDef {
+    if (sampleData === null || sampleData === undefined) {
+        return node;
+    }
+
+    // Handle object nodes
+    if ('fields' in node && typeof sampleData === 'object' && !Array.isArray(sampleData)) {
+        const objNode = node as ObjectNode;
+        const nodeName = path.split('.').pop() ?? '';
+        const dataKeys = Object.keys(sampleData as object);
+
+        // Skip if this is a known object type
+        if (!isKnownObjectType(nodeName)) {
+            // Check if we have more keys in data than in schema (dynamic)
+            const schemaKeys = Object.keys(objNode.fields);
+
+            if (dataKeys.length > schemaKeys.length * MAP_KEY_RATIO_THRESHOLD ||
+                (dataKeys.length >= MAP_DETECTION_THRESHOLD && looksLikeMapKeys(dataKeys))) {
+
+                // Get value structures
+                const valueTypes = new Set<string>();
+                for (const key of dataKeys) {
+                    const value = (sampleData as Record<string, unknown>)[key];
+                    if (value === null || value === undefined) continue;
+
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                        const objKeys = Object.keys(value).sort().join(',');
+                        valueTypes.add(`object:${objKeys}`);
+                    } else {
+                        valueTypes.add(typeof value);
+                    }
+                }
+
+                // If consistent value types, it's a map
+                if (valueTypes.size === 1) {
+                    // Find a representative child from schema or create one
+                    const firstSchemaChild = Object.values(objNode.fields)[0];
+                    if (firstSchemaChild) {
+                        const mapNode: MapNode = {
+                            type: 'map',
+                            keys: { type: 'string' } as FieldNode,
+                            values: firstSchemaChild,
+                        };
+                        return mapNode;
+                    }
+                }
+            }
+        }
+
+        // Recurse into children
+        const newFields: Record<string, NodeDef> = {};
+        for (const [key, child] of Object.entries(objNode.fields)) {
+            const childData = (sampleData as Record<string, unknown>)[key];
+            newFields[key] = detectMapsFromSamples(child, childData, path ? `${path}.${key}` : key);
+        }
+        return { ...objNode, fields: newFields };
+    }
+
+    // Handle arrays
+    if ('items' in node && Array.isArray(sampleData)) {
+        const arrayNode = node as ArrayNode;
+        const firstItem = sampleData[0];
+        return {
+            ...arrayNode,
+            items: detectMapsFromSamples(arrayNode.items, firstItem, `${path}[]`),
+        };
+    }
+
     return node;
 }

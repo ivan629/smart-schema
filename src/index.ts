@@ -57,8 +57,12 @@ export async function generate(
     const fields = stats.tables.root?.fields ?? [];
     if (verbose) console.log(`smart-schema: ${fields.length} fields detected`);
 
-    // 2. Build structure with $defs
-    const { root, $defs } = buildStructure(stats.tables.root ?? { fields: [] });
+    // 2. Build structure with $defs and map detection
+    const samples = Array.isArray(data) ? data : [data];
+    const { root, $defs } = buildStructure(stats.tables.root ?? { fields: [] }, {
+        detectMaps: true,
+        samples,
+    });
 
     // 3. Extract capabilities
     const capabilities = extractCapabilities(fields);
@@ -118,6 +122,6 @@ export type {
 } from './types.js';
 
 export { computeStats } from './stats.js';
-export { buildStructure } from './structure.js';
+export { buildStructure, type BuildStructureOptions } from './structure.js';
 export { extractCapabilities, detectEntities, inferGrain } from './capabilities.js';
 export { enrichSchema, enrichSchemaSync } from './enrich.js';

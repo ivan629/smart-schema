@@ -16,10 +16,29 @@
  * - Output validation + retry with exponential backoff
  * - User override preservation
  * - $defs support
+ * - IMPROVED: Expanded heuristic corrections
  */
 
 import Anthropic from '@anthropic-ai/sdk';
 import type { SmartSchema, NodeDef, Entity, StatsField } from './types.js';
+import {
+    HEURISTIC_MEASURE_PATTERNS,
+    HEURISTIC_AVG_PATTERNS,
+    HEURISTIC_NONE_PATTERNS,
+    HEURISTIC_TEXT_PATTERNS,
+    HEURISTIC_TIME_PATTERNS,
+    HEURISTIC_DIMENSION_PATTERNS,
+    HEURISTIC_UNIT_MAP,
+    AI_MAX_RETRIES,
+    AI_TOKEN_BASE,
+    AI_TOKEN_PER_PATTERN,
+    AI_TOKEN_MAX,
+    SAMPLE_TRUNCATE_LENGTH,
+    MAX_SAMPLES_PER_FIELD,
+    ROLE_PRIORITY_ORDER,
+    PATTERN_COLLAPSE_THRESHOLD,
+} from './constants.js';
+import { getStructureFingerprint } from './utils.js';
 
 // ============================================================================
 // Types
@@ -153,21 +172,6 @@ const ENRICHMENT_TOOL: Anthropic.Tool = {
 // ============================================================================
 
 /**
- * Get structural fingerprint for a path's descendants.
- * Used to group structurally similar siblings.
- */
-function getStructureFingerprint(descendantPaths: string[]): string {
-    const childKeys = new Set<string>();
-    for (const path of descendantPaths) {
-        const firstPart = path.split('.')[0];
-        if (firstPart) {
-            childKeys.add(firstPart.replace(/\[\d+\]/g, '[]'));
-        }
-    }
-    return [...childKeys].sort().join(',');
-}
-
-/**
  * Extract unique patterns from all fields.
  *
  * Key insight: Only collapse siblings that have SIMILAR sub-structure.
@@ -219,7 +223,7 @@ function extractUniquePatterns(fields: FieldContext[]): PatternContext[] {
 
         for (const [parent, childMap] of parentChildDescendants) {
             const realChildren = [...childMap.keys()].filter(c => c !== '*' && c !== '[]');
-            if (realChildren.length <= 3) continue;
+            if (realChildren.length <= PATTERN_COLLAPSE_THRESHOLD) continue;
 
             // Group children by their structural fingerprint
             const fingerprintGroups = new Map<string, string[]>();
@@ -236,7 +240,7 @@ function extractUniquePatterns(fields: FieldContext[]): PatternContext[] {
             // Only collapse groups with >3 structurally similar children
             // AND only if they have non-empty structure (not leaf nodes)
             for (const [fingerprint, children] of fingerprintGroups) {
-                if (children.length > 3 && fingerprint !== '') {
+                if (children.length > PATTERN_COLLAPSE_THRESHOLD && fingerprint !== '') {
                     if (!childrenToCollapse.has(parent)) {
                         childrenToCollapse.set(parent, new Set());
                     }
@@ -303,9 +307,8 @@ function extractUniquePatterns(fields: FieldContext[]): PatternContext[] {
         const depthB = b.pattern.split('.').length;
         if (depthA !== depthB) return depthA - depthB;
 
-        const roleOrder = ['identifier', 'measure', 'time', 'dimension', 'text', 'metadata'];
-        const roleA = roleOrder.indexOf(a.role) ?? 99;
-        const roleB = roleOrder.indexOf(b.role) ?? 99;
+        const roleA = ROLE_PRIORITY_ORDER.indexOf(a.role) ?? 99;
+        const roleB = ROLE_PRIORITY_ORDER.indexOf(b.role) ?? 99;
         return roleA - roleB;
     });
 }
@@ -319,10 +322,10 @@ function formatSamples(samples: string[]): string {
     if (!samples || samples.length === 0) return '';
 
     const formatted = samples
-        .slice(0, 5)
+        .slice(0, MAX_SAMPLES_PER_FIELD)
         .map(s => {
             // Truncate long samples
-            if (s.length > 60) return `"${s.slice(0, 57)}..."`;
+            if (s.length > SAMPLE_TRUNCATE_LENGTH) return `"${s.slice(0, SAMPLE_TRUNCATE_LENGTH - 3)}..."`;
             return `"${s}"`;
         })
         .join(', ');
@@ -508,7 +511,7 @@ export async function enrichSchema(
 
     const client = new Anthropic({ apiKey });
     const model = 'claude-sonnet-4-20250514';
-    const maxRetries = 3;
+    const maxRetries = AI_MAX_RETRIES;
 
     // 1. Collect all fields
     const allFields = buildFieldContexts(schema, options.statsFields);
@@ -526,7 +529,7 @@ export async function enrichSchema(
     const defNames = buildDefContexts(schema.$defs as Record<string, { fields: Record<string, unknown> }> | undefined);
 
     // 4. Scale tokens with pattern count (increased for corrections)
-    const maxTokens = Math.min(8192, 768 + patterns.length * 40);
+    const maxTokens = Math.min(AI_TOKEN_MAX, AI_TOKEN_BASE + patterns.length * AI_TOKEN_PER_PATTERN);
 
     const input: EnrichmentInput = {
         domain: schema.domain,
@@ -734,32 +737,80 @@ function applyFieldCorrections(
 /**
  * Apply heuristic corrections based on field name patterns.
  * This catches common misclassifications that the AI might miss.
+ * Uses patterns from constants.ts for maintainability.
  */
 function applyHeuristicCorrections(key: string, field: Record<string, any>): void {
     const keyLower = key.toLowerCase();
 
-    // Skip if not a numeric type
-    if (field.type !== 'int' && field.type !== 'number') return;
+    // Helper to check if key contains any of the patterns
+    const matchesAny = (patterns: string[]): boolean =>
+        patterns.some(p => keyLower.includes(p));
 
-    // Fields named "strength", "score", "rating", "level" should be measures
-    const measureNames = ['strength', 'score', 'rating', 'level', 'intensity', 'severity'];
-    if (measureNames.some(n => keyLower.includes(n)) && field.role !== 'measure') {
-        field.role = 'measure';
-        // Also set appropriate aggregation if not set
-        if (!field.aggregation || field.aggregation === 'sum') {
-            field.aggregation = 'avg';
+    // Helper to check if key matches exactly or ends with pattern
+    const matchesExact = (patterns: string[]): boolean =>
+        patterns.some(p => keyLower === p || keyLower.endsWith('_' + p));
+
+    // =========================================================================
+    // MEASURE CORRECTIONS - numeric fields that should be measures
+    // =========================================================================
+    if (field.type === 'int' || field.type === 'number') {
+        if (matchesAny(HEURISTIC_MEASURE_PATTERNS) && field.role !== 'measure') {
+            field.role = 'measure';
+        }
+
+        // Set appropriate aggregation for measures
+        if (field.role === 'measure') {
+            if (matchesAny(HEURISTIC_NONE_PATTERNS)) {
+                field.aggregation = 'none';
+            } else if (matchesAny(HEURISTIC_AVG_PATTERNS)) {
+                field.aggregation = 'avg';
+            } else if (!field.aggregation || field.aggregation === 'none') {
+                // Default to sum for counts, totals, amounts
+                field.aggregation = 'sum';
+            }
+        }
+
+        // Detect units from field names
+        if (field.role === 'measure' && !field.unit) {
+            for (const { patterns, unit } of HEURISTIC_UNIT_MAP) {
+                if (matchesAny(patterns)) {
+                    field.unit = unit;
+                    break;
+                }
+            }
         }
     }
 
-    // Detect scale units from value patterns or field names
-    if (field.role === 'measure' && !field.unit) {
-        if (keyLower.includes('score') || keyLower.includes('rating')) {
-            // Scores are typically 0-100 or 1-10
-            field.unit = 'scale_1_100';
-        } else if (keyLower.includes('strength') || keyLower.includes('intensity')) {
-            // Strength/intensity often 1-10
-            field.unit = 'scale_1_10';
+    // =========================================================================
+    // TEXT CORRECTIONS - string fields that should be text
+    // =========================================================================
+    if (field.type === 'string' && field.role === 'dimension') {
+        if (matchesAny(HEURISTIC_TEXT_PATTERNS)) {
+            field.role = 'text';
         }
+    }
+
+    // =========================================================================
+    // TIME CORRECTIONS - string fields that should be time
+    // =========================================================================
+    if (field.type === 'string' && field.role !== 'time') {
+        if (matchesAny(HEURISTIC_TIME_PATTERNS)) {
+            field.role = 'time';
+        }
+    }
+
+    // =========================================================================
+    // DIMENSION CORRECTIONS - fields that should be dimensions
+    // =========================================================================
+    if (field.type === 'string' && field.role !== 'time' && field.role !== 'text') {
+        if (matchesExact(HEURISTIC_DIMENSION_PATTERNS)) {
+            field.role = 'dimension';
+        }
+    }
+
+    // Boolean fields should always be dimensions
+    if (field.type === 'boolean' && field.role !== 'dimension') {
+        field.role = 'dimension';
     }
 }
 
@@ -810,8 +861,14 @@ export function enrichSchemaSync(schema: SmartSchema): SmartSchema {
 function generateDefaultDescriptions(node: NodeDef, prefix: string): void {
     if ('fields' in node && node.fields) {
         for (const [key, child] of Object.entries(node.fields)) {
-            if (typeof child === 'object' && !('description' in child)) {
-                (child as any).description = generateSmartDefault(key, child);
+            if (typeof child === 'object') {
+                // Apply heuristic corrections first
+                applyHeuristicCorrections(key, child as any);
+
+                // Then generate description if missing
+                if (!('description' in child)) {
+                    (child as any).description = generateSmartDefault(key, child);
+                }
             }
 
             generateDefaultDescriptions(child, prefix ? `${prefix}.${key}` : key);
