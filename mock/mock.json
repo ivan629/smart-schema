@@ -1,486 +1,2017 @@
-[
-  {
-    "meta": {
-      "request_id": "550e8400-e29b-41d4-a716-446655440000",
-      "correlation_id": "corr_abc123",
-      "timestamp": "2025-01-15T14:30:00.000Z",
-      "processed_at": 1705329000,
-      "duration_ms": 1523,
-      "version": "2.1.0",
-      "flags": {
-        "is_test": false,
-        "is_premium": true,
-        "retry_count": 0
-      }
-    },
-    "tenant": {
-      "tenant_id": "tenant_8x7k2m",
-      "org_name": "Acme Corporation",
-      "plan": "enterprise",
-      "contact_email": "admin@acme.com",
-      "website": "https://acme.com",
-      "settings": {
-        "timezone": "America/New_York",
-        "locale": "en-US",
-        "features": ["analytics", "export", "api"],
-        "limits": {
-          "max_users": 500,
-          "max_storage_gb": 100,
-          "api_rate_limit": 10000
+{
+  "tables": {
+    "orders": [
+      {
+        "order_id": "ORD-2024-001847",
+        "external_order_ref": "SHOP-X7B2K9",
+        "order_number": 1847,
+        "created_at": "2024-11-15T09:23:41Z",
+        "updated_at": "2024-11-15T14:02:18Z",
+        "completed_at": "2024-11-15T14:02:18Z",
+        "scheduled_delivery_date": "2024-11-18",
+        "customer": {
+          "customer_id": "CUST-88271",
+          "account_number": "ACC-2019-88271",
+          "type": "business",
+          "tier": "gold",
+          "name": "Acme Industries Ltd",
+          "tax_id": "US-EIN-12-3456789",
+          "is_verified": 1,
+          "is_tax_exempt": 0,
+          "is_wholesale": true,
+          "is_vip": false,
+          "can_purchase_restricted": true,
+          "allow_credit": 1,
+          "has_api_access": true,
+          "enabled_notifications": 1,
+          "disabled_marketing": 0,
+          "should_auto_renew": true,
+          "credit_limit_usd": 50000,
+          "available_credit_usd": 32450.75,
+          "lifetime_value_usd": 284750.00,
+          "lifetime_orders": 847,
+          "avg_order_value_usd": 336.18,
+          "days_since_first_order": 1847,
+          "days_since_last_order": 12,
+          "account_age_months": 61,
+          "nps_score": 9,
+          "health_score": 87,
+          "churn_probability": 0.12,
+          "contact": {
+            "primary_email": "orders@acme-industries.com",
+            "billing_email": "billing@acme-industries.com",
+            "phone": "+1-555-123-4567",
+            "mobile": "+1-555-987-6543"
+          },
+          "addresses": {
+            "billing": {
+              "line1": "100 Industrial Parkway",
+              "line2": "Suite 400",
+              "city": "Chicago",
+              "state": "IL",
+              "postal_code": "60601",
+              "country_code": "US",
+              "country": "United States",
+              "is_validated": true,
+              "validation_score": 0.98,
+              "latitude": 41.8781,
+              "longitude": -87.6298
+            },
+            "shipping": {
+              "line1": "100 Industrial Parkway",
+              "line2": "Dock 7",
+              "city": "Chicago",
+              "state": "IL",
+              "postal_code": "60601",
+              "country_code": "US",
+              "country": "United States",
+              "is_validated": true,
+              "validation_score": 0.95,
+              "latitude": 41.8781,
+              "longitude": -87.6298
+            },
+            "warehouse": {
+              "line1": "5000 Distribution Center Blvd",
+              "line2": null,
+              "city": "Gary",
+              "state": "IN",
+              "postal_code": "46402",
+              "country_code": "US",
+              "country": "United States",
+              "is_validated": true,
+              "validation_score": 0.99,
+              "latitude": 41.5934,
+              "longitude": -87.3464
+            }
+          },
+          "segments": ["b2b", "manufacturing", "midwest", "high-value"],
+          "tags": {
+            "acquisition_source": "trade_show",
+            "sales_rep": "jsmith",
+            "vertical": "industrial",
+            "contract_type": "annual"
+          },
+          "preferences": {
+            "currency": "USD",
+            "language": "en-US",
+            "timezone": "America/Chicago",
+            "date_format": "MM/DD/YYYY",
+            "communication_channels": {
+              "email": true,
+              "sms": false,
+              "push": true,
+              "phone": true,
+              "mail": false
+            },
+            "notification_settings": {
+              "order_updates": { "enabled": true, "frequency": "realtime", "channels": ["email", "push"] },
+              "promotions": { "enabled": false, "frequency": null, "channels": [] },
+              "invoices": { "enabled": true, "frequency": "immediate", "channels": ["email"] },
+              "reports": { "enabled": true, "frequency": "weekly", "channels": ["email"] }
+            }
+          },
+          "custom_attributes": {
+            "duns_number": "12-345-6789",
+            "industry_code": "NAICS-332",
+            "employee_count_range": "100-500",
+            "annual_revenue_range": "$10M-$50M"
+          },
+          "risk_assessment": {
+            "score": 23,
+            "level": "low",
+            "factors": {
+              "payment_history": { "score": 95, "weight": 0.4, "trend": "stable" },
+              "credit_utilization": { "score": 65, "weight": 0.25, "trend": "improving" },
+              "order_patterns": { "score": 88, "weight": 0.2, "trend": "stable" },
+              "market_conditions": { "score": 72, "weight": 0.15, "trend": "declining" }
+            },
+            "last_reviewed_at": "2024-11-01T00:00:00Z",
+            "next_review_at": "2025-02-01T00:00:00Z"
+          }
+        },
+        "channel": "api",
+        "source": "erp_integration",
+        "source_metadata": {
+          "erp_system": "SAP",
+          "erp_version": "S/4HANA 2023",
+          "integration_id": "INT-SAP-001",
+          "sync_timestamp": "2024-11-15T09:23:40Z"
+        },
+        "currency": "USD",
+        "exchange_rate": 1.0,
+        "exchange_rate_locked_at": null,
+        "pricing_tier": "wholesale_gold",
+        "pricing_rules_applied": ["BULK_10PCT", "LOYALTY_5PCT", "SEASONAL_2024Q4"],
+        "line_items": [
+          {
+            "line_id": "LN-001",
+            "sequence": 1,
+            "product": {
+              "sku": "WDG-PRO-1000",
+              "upc": "012345678901",
+              "ean": "0012345678901",
+              "asin": "B08N5WRWNW",
+              "mpn": "WDG-1000-PRO",
+              "name": "Professional Widget 1000",
+              "short_description": "High-performance industrial widget",
+              "category_path": ["Industrial", "Widgets", "Professional Grade"],
+              "category_id": "CAT-IND-WDG-PRO",
+              "brand": "WidgetCorp",
+              "manufacturer": "WidgetCorp Industries",
+              "model": "Pro 1000",
+              "variant": {
+                "color": "Industrial Gray",
+                "size": "Large",
+                "material": "Titanium Alloy",
+                "voltage": "220V"
+              },
+              "dimensions": {
+                "length_cm": 45.5,
+                "width_cm": 30.2,
+                "height_cm": 15.8,
+                "weight_kg": 12.4,
+                "volume_cm3": 21694.18
+              },
+              "attributes": {
+                "is_hazardous": false,
+                "is_fragile": true,
+                "is_oversized": false,
+                "requires_signature": true,
+                "is_serialized": true,
+                "is_lotted": true,
+                "shelf_life_days": null,
+                "country_of_origin": "DE",
+                "harmonized_code": "8479.89.9499"
+              },
+              "inventory": {
+                "in_stock": true,
+                "quantity_available": 847,
+                "quantity_reserved": 124,
+                "quantity_on_order": 500,
+                "reorder_point": 200,
+                "reorder_quantity": 500,
+                "lead_time_days": 14,
+                "safety_stock": 100,
+                "locations": {
+                  "WH-CHI-01": { "quantity": 547, "bin": "A-12-3", "last_counted_at": "2024-11-10T00:00:00Z" },
+                  "WH-LAX-01": { "quantity": 200, "bin": "B-05-1", "last_counted_at": "2024-11-12T00:00:00Z" },
+                  "WH-NYC-01": { "quantity": 100, "bin": "C-22-4", "last_counted_at": "2024-11-08T00:00:00Z" }
+                }
+              },
+              "pricing": {
+                "list_price_usd": 249.99,
+                "cost_usd": 142.50,
+                "map_price_usd": 224.99,
+                "msrp_usd": 279.99,
+                "margin_pct": 0.43,
+                "markup_pct": 0.754,
+                "tier_prices": {
+                  "retail": 249.99,
+                  "wholesale_silver": 212.49,
+                  "wholesale_gold": 199.99,
+                  "wholesale_platinum": 187.49,
+                  "distributor": 174.99
+                }
+              },
+              "ratings": {
+                "average": 4.7,
+                "count": 1284,
+                "distribution": { "5": 892, "4": 284, "3": 67, "2": 28, "1": 13 },
+                "nps": 72,
+                "recommendation_pct": 0.94
+              },
+              "seo": {
+                "meta_title": "Professional Widget 1000 - Industrial Grade | WidgetCorp",
+                "meta_description": "High-performance Professional Widget 1000 for industrial applications. Titanium alloy construction.",
+                "keywords": ["widget", "industrial", "professional", "titanium"],
+                "canonical_url": "/products/widgets/professional/wdg-pro-1000"
+              }
+            },
+            "quantity_ordered": 25,
+            "quantity_shipped": 25,
+            "quantity_backordered": 0,
+            "quantity_canceled": 0,
+            "quantity_returned": 0,
+            "unit_price_usd": 199.99,
+            "unit_cost_usd": 142.50,
+            "unit_discount_usd": 50.00,
+            "unit_tax_usd": 13.50,
+            "line_subtotal_usd": 4999.75,
+            "line_discount_usd": 1250.00,
+            "line_tax_usd": 337.47,
+            "line_total_usd": 4087.22,
+            "margin_usd": 1437.25,
+            "margin_pct": 0.352,
+            "discounts_applied": [
+              { "code": "BULK25", "type": "percentage", "value": 10, "amount_usd": 499.98, "reason": "Bulk order discount" },
+              { "code": "LOYAL2024", "type": "fixed", "value": 750.02, "amount_usd": 750.02, "reason": "Loyalty reward" }
+            ],
+            "taxes": [
+              { "jurisdiction": "Illinois", "type": "state_sales", "rate": 0.0625, "amount_usd": 234.20 },
+              { "jurisdiction": "Chicago", "type": "city_sales", "rate": 0.0275, "amount_usd": 103.27 }
+            ],
+            "serial_numbers": ["SN-2024-001", "SN-2024-002", "SN-2024-003"],
+            "lot_numbers": [{ "lot": "LOT-2024-Q3-001", "quantity": 25, "expiry": null }],
+            "fulfillment": {
+              "warehouse_id": "WH-CHI-01",
+              "picked_at": "2024-11-15T10:45:00Z",
+              "packed_at": "2024-11-15T11:30:00Z",
+              "shipped_at": "2024-11-15T13:00:00Z",
+              "picker_id": "EMP-4521",
+              "packer_id": "EMP-3892",
+              "pick_duration_seconds": 847,
+              "pack_duration_seconds": 1245,
+              "bin_location": "A-12-3",
+              "package_id": "PKG-001"
+            },
+            "custom_fields": {
+              "customer_part_number": "ACME-WDG-001",
+              "project_code": "PRJ-2024-Q4-EXPANSION",
+              "cost_center": "CC-4500",
+              "gl_code": "6200-100"
+            }
+          },
+          {
+            "line_id": "LN-002",
+            "sequence": 2,
+            "product": {
+              "sku": "GSK-STD-500",
+              "upc": "012345678902",
+              "ean": "0012345678902",
+              "asin": "B08N5WSKGK",
+              "mpn": "GSK-500-STD",
+              "name": "Standard Gasket Set 500",
+              "short_description": "Universal gasket set for industrial applications",
+              "category_path": ["Industrial", "Gaskets", "Standard"],
+              "category_id": "CAT-IND-GSK-STD",
+              "brand": "SealMaster",
+              "manufacturer": "SealMaster Corp",
+              "model": "Standard 500",
+              "variant": {
+                "material": "Neoprene",
+                "temperature_rating": "High"
+              },
+              "dimensions": {
+                "length_cm": 30.0,
+                "width_cm": 20.0,
+                "height_cm": 5.0,
+                "weight_kg": 0.85,
+                "volume_cm3": 3000.0
+              },
+              "attributes": {
+                "is_hazardous": false,
+                "is_fragile": false,
+                "is_oversized": false,
+                "requires_signature": false,
+                "is_serialized": false,
+                "is_lotted": true,
+                "shelf_life_days": 1825,
+                "country_of_origin": "US",
+                "harmonized_code": "4016.93.5010"
+              },
+              "inventory": {
+                "in_stock": true,
+                "quantity_available": 5847,
+                "quantity_reserved": 324,
+                "quantity_on_order": 2000,
+                "reorder_point": 1000,
+                "reorder_quantity": 2000,
+                "lead_time_days": 7,
+                "safety_stock": 500,
+                "locations": {
+                  "WH-CHI-01": { "quantity": 3000, "bin": "D-08-2", "last_counted_at": "2024-11-10T00:00:00Z" },
+                  "WH-LAX-01": { "quantity": 1500, "bin": "E-12-1", "last_counted_at": "2024-11-12T00:00:00Z" },
+                  "WH-NYC-01": { "quantity": 1347, "bin": "F-04-3", "last_counted_at": "2024-11-08T00:00:00Z" }
+                }
+              },
+              "pricing": {
+                "list_price_usd": 34.99,
+                "cost_usd": 18.25,
+                "map_price_usd": 29.99,
+                "msrp_usd": 39.99,
+                "margin_pct": 0.478,
+                "markup_pct": 0.917,
+                "tier_prices": {
+                  "retail": 34.99,
+                  "wholesale_silver": 29.74,
+                  "wholesale_gold": 27.99,
+                  "wholesale_platinum": 26.24,
+                  "distributor": 24.49
+                }
+              },
+              "ratings": {
+                "average": 4.3,
+                "count": 847,
+                "distribution": { "5": 412, "4": 284, "3": 98, "2": 35, "1": 18 },
+                "nps": 58,
+                "recommendation_pct": 0.87
+              },
+              "seo": {
+                "meta_title": "Standard Gasket Set 500 - Universal Industrial | SealMaster",
+                "meta_description": "Universal Standard Gasket Set 500 for industrial applications. Neoprene construction, high temperature rated.",
+                "keywords": ["gasket", "seal", "industrial", "neoprene"],
+                "canonical_url": "/products/gaskets/standard/gsk-std-500"
+              }
+            },
+            "quantity_ordered": 100,
+            "quantity_shipped": 100,
+            "quantity_backordered": 0,
+            "quantity_canceled": 0,
+            "quantity_returned": 0,
+            "unit_price_usd": 27.99,
+            "unit_cost_usd": 18.25,
+            "unit_discount_usd": 7.00,
+            "unit_tax_usd": 1.89,
+            "line_subtotal_usd": 2799.00,
+            "line_discount_usd": 700.00,
+            "line_tax_usd": 188.91,
+            "line_total_usd": 2287.91,
+            "margin_usd": 974.00,
+            "margin_pct": 0.426,
+            "discounts_applied": [
+              { "code": "BULK100", "type": "percentage", "value": 15, "amount_usd": 419.85, "reason": "100+ units discount" },
+              { "code": "Q4PROMO", "type": "fixed", "value": 280.15, "amount_usd": 280.15, "reason": "Q4 promotion" }
+            ],
+            "taxes": [
+              { "jurisdiction": "Illinois", "type": "state_sales", "rate": 0.0625, "amount_usd": 131.19 },
+              { "jurisdiction": "Chicago", "type": "city_sales", "rate": 0.0275, "amount_usd": 57.72 }
+            ],
+            "serial_numbers": null,
+            "lot_numbers": [
+              { "lot": "LOT-2024-Q2-047", "quantity": 60, "expiry": "2029-06-30" },
+              { "lot": "LOT-2024-Q3-012", "quantity": 40, "expiry": "2029-09-30" }
+            ],
+            "fulfillment": {
+              "warehouse_id": "WH-CHI-01",
+              "picked_at": "2024-11-15T10:30:00Z",
+              "packed_at": "2024-11-15T11:15:00Z",
+              "shipped_at": "2024-11-15T13:00:00Z",
+              "picker_id": "EMP-4521",
+              "packer_id": "EMP-3892",
+              "pick_duration_seconds": 423,
+              "pack_duration_seconds": 612,
+              "bin_location": "D-08-2",
+              "package_id": "PKG-001"
+            },
+            "custom_fields": {
+              "customer_part_number": "ACME-GSK-002",
+              "project_code": "PRJ-2024-Q4-EXPANSION",
+              "cost_center": "CC-4500",
+              "gl_code": "6200-200"
+            }
+          }
+        ],
+        "totals": {
+          "items_count": 2,
+          "units_count": 125,
+          "subtotal_usd": 7798.75,
+          "discount_usd": 1950.00,
+          "shipping_usd": 125.00,
+          "handling_usd": 25.00,
+          "insurance_usd": 78.49,
+          "tax_usd": 526.38,
+          "total_usd": 6603.62,
+          "total_cost_usd": 4387.50,
+          "total_margin_usd": 2216.12,
+          "margin_pct": 0.336,
+          "currency_totals": {
+            "EUR": { "total": 6075.33, "exchange_rate": 0.92 },
+            "GBP": { "total": 5218.86, "exchange_rate": 0.79 },
+            "CAD": { "total": 8980.92, "exchange_rate": 1.36 }
+          }
+        },
+        "shipping": {
+          "method": "ground_freight",
+          "carrier": "FedEx Freight",
+          "carrier_code": "FEDEX_FREIGHT",
+          "service_level": "standard",
+          "tracking_numbers": ["7489274892748927"],
+          "estimated_delivery_date": "2024-11-18",
+          "actual_delivery_date": null,
+          "ship_date": "2024-11-15",
+          "shipping_cost_usd": 125.00,
+          "handling_cost_usd": 25.00,
+          "insurance_cost_usd": 78.49,
+          "is_signature_required": true,
+          "is_residential": false,
+          "packages": [
+            {
+              "package_id": "PKG-001",
+              "tracking_number": "7489274892748927",
+              "weight_kg": 13.25,
+              "dimensions": { "length_cm": 60, "width_cm": 40, "height_cm": 30 },
+              "packaging_type": "pallet",
+              "contents": ["LN-001", "LN-002"],
+              "declared_value_usd": 6375.13
+            }
+          ],
+          "origin": {
+            "warehouse_id": "WH-CHI-01",
+            "address": {
+              "line1": "1000 Warehouse Way",
+              "city": "Chicago",
+              "state": "IL",
+              "postal_code": "60609",
+              "country_code": "US"
+            }
+          },
+          "destination": {
+            "address_type": "shipping",
+            "address": {
+              "line1": "100 Industrial Parkway",
+              "line2": "Dock 7",
+              "city": "Chicago",
+              "state": "IL",
+              "postal_code": "60601",
+              "country_code": "US"
+            },
+            "special_instructions": "Call before delivery. Dock hours 7AM-4PM."
+          },
+          "customs": null
+        },
+        "payment": {
+          "method": "net_terms",
+          "terms": "NET30",
+          "due_date": "2024-12-15",
+          "status": "pending",
+          "transactions": [],
+          "credit_applied_usd": 0,
+          "gift_card_applied_usd": 0,
+          "store_credit_applied_usd": 0,
+          "po_number": "PO-2024-ACME-4521",
+          "billing_address": {
+            "line1": "100 Industrial Parkway",
+            "line2": "Suite 400",
+            "city": "Chicago",
+            "state": "IL",
+            "postal_code": "60601",
+            "country_code": "US"
+          }
+        },
+        "status": {
+          "order_status": "shipped",
+          "payment_status": "pending",
+          "fulfillment_status": "fulfilled",
+          "return_status": "none",
+          "fraud_status": "passed",
+          "fraud_score": 12,
+          "fraud_signals": []
+        },
+        "flags": {
+          "is_gift": false,
+          "is_recurring": false,
+          "is_subscription": false,
+          "is_backorder": false,
+          "is_preorder": false,
+          "is_priority": true,
+          "is_expedited": false,
+          "is_tax_exempt": false,
+          "requires_review": false,
+          "has_hazmat": false,
+          "has_oversized": false,
+          "has_restricted": false
+        },
+        "notes": {
+          "customer_notes": "Please include packing slip.",
+          "internal_notes": "VIP customer - priority handling",
+          "gift_message": null,
+          "special_instructions": "Fragile items - handle with care"
+        },
+        "timeline": [
+          { "event": "order_placed", "timestamp": "2024-11-15T09:23:41Z", "actor": "system", "details": { "source": "api" } },
+          { "event": "payment_authorized", "timestamp": "2024-11-15T09:23:45Z", "actor": "system", "details": { "method": "net_terms" } },
+          { "event": "order_confirmed", "timestamp": "2024-11-15T09:24:00Z", "actor": "system", "details": {} },
+          { "event": "picking_started", "timestamp": "2024-11-15T10:30:00Z", "actor": "EMP-4521", "details": { "warehouse": "WH-CHI-01" } },
+          { "event": "picking_completed", "timestamp": "2024-11-15T11:00:00Z", "actor": "EMP-4521", "details": { "duration_minutes": 30 } },
+          { "event": "packing_started", "timestamp": "2024-11-15T11:15:00Z", "actor": "EMP-3892", "details": {} },
+          { "event": "packing_completed", "timestamp": "2024-11-15T11:45:00Z", "actor": "EMP-3892", "details": { "packages": 1 } },
+          { "event": "shipped", "timestamp": "2024-11-15T13:00:00Z", "actor": "system", "details": { "carrier": "FedEx Freight", "tracking": "7489274892748927" } }
+        ],
+        "metadata": {
+          "api_version": "2024-11",
+          "client_id": "erp-sap-integration",
+          "request_id": "req_8a7f6e5d4c3b2a1",
+          "idempotency_key": "idem_2024111509234187271",
+          "ip_address": "10.0.1.50",
+          "user_agent": "SAP-Integration/2.1.0"
+        },
+        "analytics": {
+          "attribution": {
+            "first_touch": { "channel": "trade_show", "campaign": "industryexpo_2019", "medium": "event" },
+            "last_touch": { "channel": "direct", "campaign": null, "medium": null },
+            "linear": [
+              { "channel": "trade_show", "weight": 0.2 },
+              { "channel": "email", "weight": 0.3 },
+              { "channel": "direct", "weight": 0.5 }
+            ]
+          },
+          "session_id": null,
+          "device_type": null,
+          "browser": null,
+          "conversion_time_hours": 0.5,
+          "touchpoints_count": 1
         },
         "integrations": {
-          "slack": { "enabled": true, "webhook_url": "https://hooks.slack.com/xxx" },
-          "salesforce": { "enabled": false, "webhook_url": null },
-          "hubspot": { "enabled": true, "webhook_url": "https://api.hubspot.com/yyy" }
-        }
-      }
-    },
-    "user": {
-      "user_id": "usr_9f8e7d6c",
-      "external_id": "auth0|123456",
-      "email": "john.doe@acme.com",
-      "full_name": "John Doe",
-      "avatar_url": "https://cdn.example.com/avatars/john.png",
-      "role": "admin",
-      "created_at": "2023-06-15T10:00:00Z",
-      "last_login_at": "2025-01-15T08:30:00Z",
-      "login_count": 847,
-      "is_active": 1,
-      "is_verified": true,
-      "preferences": {
-        "theme": "dark",
-        "notifications": { "email": true, "push": false, "sms": false },
-        "dashboard_layout": "grid"
-      },
-      "tags": ["power-user", "beta-tester"]
-    },
-    "session": {
-      "session_id": "sess_abc123xyz",
-      "started_at": "2025-01-15T14:00:00Z",
-      "ended_at": null,
-      "duration_seconds": null,
-      "device": {
-        "type": "desktop",
-        "os": "macOS",
-        "os_version": "14.2",
-        "browser": "Chrome",
-        "browser_version": "120.0",
-        "screen_width": 2560,
-        "screen_height": 1440,
-        "device_pixel_ratio": 2.0,
-        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36..."
-      },
-      "location": {
-        "ip": "192.168.1.100",
-        "country_code": "US",
-        "country": "United States",
-        "region": "California",
-        "city": "San Francisco",
-        "latitude": 37.7749,
-        "longitude": -122.4194,
-        "timezone": "America/Los_Angeles"
-      }
-    },
-    "events": [
-      {
-        "event_id": "evt_001",
-        "event_type": "page_view",
-        "timestamp": "2025-01-15T14:00:05Z",
-        "page": {
-          "url": "https://app.acme.com/dashboard",
-          "path": "/dashboard",
-          "title": "Dashboard | Acme",
-          "referrer": "https://google.com/search?q=acme",
-          "load_time_ms": 234
-        },
-        "properties": {}
-      },
-      {
-        "event_id": "evt_002",
-        "event_type": "button_click",
-        "timestamp": "2025-01-15T14:01:30Z",
-        "page": {
-          "url": "https://app.acme.com/dashboard",
-          "path": "/dashboard",
-          "title": "Dashboard | Acme",
-          "referrer": null,
-          "load_time_ms": null
-        },
-        "properties": {
-          "button_id": "export-csv",
-          "button_text": "Export to CSV",
-          "section": "reports"
-        }
-      },
-      {
-        "event_id": "evt_003",
-        "event_type": "api_call",
-        "timestamp": "2025-01-15T14:01:32Z",
-        "page": null,
-        "properties": {
-          "endpoint": "/api/v2/reports/export",
-          "method": "POST",
-          "status_code": 200,
-          "response_time_ms": 1847,
-          "payload_size_bytes": 52480
+          "erp": {
+            "synced": true,
+            "synced_at": "2024-11-15T09:24:00Z",
+            "external_id": "SAP-SO-2024-001847",
+            "status": "confirmed"
+          },
+          "shipping": {
+            "synced": true,
+            "synced_at": "2024-11-15T13:00:00Z",
+            "external_id": "FEDEX-7489274892748927",
+            "status": "in_transit"
+          },
+          "accounting": {
+            "synced": true,
+            "synced_at": "2024-11-15T14:00:00Z",
+            "external_id": "QB-INV-2024-001847",
+            "status": "pending"
+          },
+          "crm": {
+            "synced": true,
+            "synced_at": "2024-11-15T09:25:00Z",
+            "external_id": "SF-OPP-001847",
+            "status": "won"
+          }
         }
       }
     ],
-    "metrics": {
-      "engagement": {
-        "page_views": 12,
-        "unique_pages": 5,
-        "clicks": 34,
-        "scroll_depth_avg": 0.73,
-        "time_on_site_seconds": 1523,
-        "bounce": false
-      },
-      "performance": {
-        "lcp_ms": 1200,
-        "fid_ms": 45,
-        "cls_score": 0.05,
-        "ttfb_ms": 180,
-        "fcp_ms": 800
-      },
-      "conversion": {
-        "goals_completed": ["signup_step_1", "signup_step_2"],
-        "goals_failed": [],
-        "funnel_stage": "activation",
-        "conversion_value_usd": 299.99,
-        "ltv_estimate_usd": 3500.00
-      },
-      "custom_scores": {
-        "health_score": { "value": 85, "percentile": 92, "trend": "up" },
-        "engagement_score": { "value": 72, "percentile": 78, "trend": "stable" },
-        "churn_risk": { "value": 15, "percentile": 23, "trend": "down" }
+    "products": [
+      {
+        "product_id": "PROD-WDG-PRO-1000",
+        "sku": "WDG-PRO-1000",
+        "gtin": {
+          "upc": "012345678901",
+          "ean": "0012345678901",
+          "isbn": null,
+          "asin": "B08N5WRWNW"
+        },
+        "identifiers": {
+          "mpn": "WDG-1000-PRO",
+          "brand_sku": "WCORP-PRO1000",
+          "legacy_sku": "OLD-WDG-1000",
+          "vendor_sku": "VNDR-WDG-1000"
+        },
+        "name": {
+          "default": "Professional Widget 1000",
+          "short": "Pro Widget 1000",
+          "long": "WidgetCorp Professional Grade Widget Model 1000",
+          "localized": {
+            "en-US": "Professional Widget 1000",
+            "en-GB": "Professional Widget 1000",
+            "de-DE": "Professionelles Widget 1000",
+            "fr-FR": "Widget Professionnel 1000",
+            "es-ES": "Widget Profesional 1000",
+            "ja-JP": "プロフェッショナルウィジェット1000"
+          }
+        },
+        "description": {
+          "short": "High-performance industrial widget for professional use",
+          "long": "The Professional Widget 1000 is our flagship industrial widget, designed for demanding professional environments. Featuring titanium alloy construction and precision engineering, this widget delivers unmatched performance and durability.",
+          "html": "<p>The <strong>Professional Widget 1000</strong> is our flagship industrial widget...</p>",
+          "localized": {
+            "en-US": "High-performance industrial widget for professional use",
+            "de-DE": "Hochleistungs-Industrie-Widget für den professionellen Einsatz"
+          }
+        },
+        "brand": {
+          "id": "BRAND-WCORP",
+          "name": "WidgetCorp",
+          "logo_url": "https://cdn.example.com/brands/widgetcorp/logo.png",
+          "website": "https://widgetcorp.example.com"
+        },
+        "manufacturer": {
+          "id": "MFG-WCORP-IND",
+          "name": "WidgetCorp Industries GmbH",
+          "country": "DE",
+          "warranty_provider": true
+        },
+        "taxonomy": {
+          "categories": [
+            { "id": "CAT-IND", "name": "Industrial", "level": 1, "is_primary": false },
+            { "id": "CAT-IND-WDG", "name": "Widgets", "level": 2, "is_primary": false },
+            { "id": "CAT-IND-WDG-PRO", "name": "Professional Grade", "level": 3, "is_primary": true }
+          ],
+          "collections": ["new-arrivals", "best-sellers", "professional-tools"],
+          "tags": ["widget", "industrial", "professional", "titanium", "precision"],
+          "google_category": "Hardware > Tools > Industrial Tools",
+          "facebook_category": "Industrial Equipment"
+        },
+        "type": "physical",
+        "status": "active",
+        "visibility": {
+          "is_visible": true,
+          "is_searchable": true,
+          "is_featured": true,
+          "channels": ["web", "mobile", "api", "marketplace"],
+          "regions": ["US", "CA", "EU", "UK", "AU"],
+          "customer_groups": ["all", "wholesale", "distributor"]
+        },
+        "variants": [
+          {
+            "variant_id": "VAR-WDG-PRO-1000-GRAY-L-TI-220",
+            "sku": "WDG-PRO-1000-GRAY-L-TI-220",
+            "name": "Pro Widget 1000 - Gray/Large/Titanium/220V",
+            "options": {
+              "color": { "value": "Industrial Gray", "hex": "#4A4A4A", "swatch_url": null },
+              "size": { "value": "Large", "code": "L" },
+              "material": { "value": "Titanium Alloy", "code": "TI" },
+              "voltage": { "value": "220V", "code": "220" }
+            },
+            "pricing": {
+              "list_price_usd": 249.99,
+              "sale_price_usd": null,
+              "cost_usd": 142.50,
+              "map_price_usd": 224.99,
+              "msrp_usd": 279.99
+            },
+            "inventory": {
+              "track_inventory": true,
+              "allow_backorder": true,
+              "quantity_available": 847,
+              "quantity_reserved": 124,
+              "low_stock_threshold": 50
+            },
+            "dimensions": {
+              "length_cm": 45.5,
+              "width_cm": 30.2,
+              "height_cm": 15.8,
+              "weight_kg": 12.4
+            },
+            "images": [
+              { "url": "https://cdn.example.com/products/wdg-pro-1000/gray-large-ti-220-1.jpg", "alt": "Front view", "position": 1, "is_primary": true },
+              { "url": "https://cdn.example.com/products/wdg-pro-1000/gray-large-ti-220-2.jpg", "alt": "Side view", "position": 2, "is_primary": false }
+            ],
+            "is_default": true,
+            "is_active": true,
+            "position": 1
+          },
+          {
+            "variant_id": "VAR-WDG-PRO-1000-GRAY-L-TI-110",
+            "sku": "WDG-PRO-1000-GRAY-L-TI-110",
+            "name": "Pro Widget 1000 - Gray/Large/Titanium/110V",
+            "options": {
+              "color": { "value": "Industrial Gray", "hex": "#4A4A4A", "swatch_url": null },
+              "size": { "value": "Large", "code": "L" },
+              "material": { "value": "Titanium Alloy", "code": "TI" },
+              "voltage": { "value": "110V", "code": "110" }
+            },
+            "pricing": {
+              "list_price_usd": 249.99,
+              "sale_price_usd": null,
+              "cost_usd": 142.50,
+              "map_price_usd": 224.99,
+              "msrp_usd": 279.99
+            },
+            "inventory": {
+              "track_inventory": true,
+              "allow_backorder": true,
+              "quantity_available": 523,
+              "quantity_reserved": 87,
+              "low_stock_threshold": 50
+            },
+            "dimensions": {
+              "length_cm": 45.5,
+              "width_cm": 30.2,
+              "height_cm": 15.8,
+              "weight_kg": 12.4
+            },
+            "images": [
+              { "url": "https://cdn.example.com/products/wdg-pro-1000/gray-large-ti-110-1.jpg", "alt": "Front view", "position": 1, "is_primary": true }
+            ],
+            "is_default": false,
+            "is_active": true,
+            "position": 2
+          }
+        ],
+        "pricing": {
+          "default_currency": "USD",
+          "prices": {
+            "USD": { "list": 249.99, "sale": null, "cost": 142.50, "map": 224.99, "msrp": 279.99 },
+            "EUR": { "list": 229.99, "sale": null, "cost": 131.10, "map": 206.99, "msrp": 257.59 },
+            "GBP": { "list": 197.49, "sale": null, "cost": 112.58, "map": 177.74, "msrp": 221.19 },
+            "CAD": { "list": 339.99, "sale": null, "cost": 193.80, "map": 305.99, "msrp": 380.79 }
+          },
+          "tier_pricing": {
+            "retail": { "min_qty": 1, "price_usd": 249.99, "discount_pct": 0 },
+            "wholesale_silver": { "min_qty": 10, "price_usd": 212.49, "discount_pct": 0.15 },
+            "wholesale_gold": { "min_qty": 25, "price_usd": 199.99, "discount_pct": 0.20 },
+            "wholesale_platinum": { "min_qty": 50, "price_usd": 187.49, "discount_pct": 0.25 },
+            "distributor": { "min_qty": 100, "price_usd": 174.99, "discount_pct": 0.30 }
+          },
+          "quantity_breaks": [
+            { "min_qty": 1, "max_qty": 9, "price_usd": 249.99 },
+            { "min_qty": 10, "max_qty": 24, "price_usd": 237.49 },
+            { "min_qty": 25, "max_qty": 49, "price_usd": 224.99 },
+            { "min_qty": 50, "max_qty": 99, "price_usd": 212.49 },
+            { "min_qty": 100, "max_qty": null, "price_usd": 199.99 }
+          ],
+          "margins": {
+            "gross_margin_pct": 0.43,
+            "markup_pct": 0.754,
+            "contribution_margin_pct": 0.38
+          },
+          "tax": {
+            "tax_class": "standard",
+            "tax_code": "TPP",
+            "is_tax_exempt": false
+          }
+        },
+        "inventory": {
+          "track_inventory": true,
+          "allow_backorder": true,
+          "backorder_limit": 100,
+          "low_stock_threshold": 200,
+          "out_of_stock_threshold": 0,
+          "total_available": 847,
+          "total_reserved": 124,
+          "total_on_hand": 971,
+          "total_on_order": 500,
+          "reorder_point": 200,
+          "reorder_quantity": 500,
+          "lead_time_days": 14,
+          "safety_stock": 100,
+          "warehouse_inventory": {
+            "WH-CHI-01": {
+              "quantity_available": 547,
+              "quantity_reserved": 80,
+              "quantity_on_hand": 627,
+              "bin_location": "A-12-3",
+              "zone": "A",
+              "last_counted_at": "2024-11-10T00:00:00Z",
+              "last_received_at": "2024-11-05T00:00:00Z",
+              "average_daily_sales": 8.5,
+              "days_of_supply": 64
+            },
+            "WH-LAX-01": {
+              "quantity_available": 200,
+              "quantity_reserved": 30,
+              "quantity_on_hand": 230,
+              "bin_location": "B-05-1",
+              "zone": "B",
+              "last_counted_at": "2024-11-12T00:00:00Z",
+              "last_received_at": "2024-11-01T00:00:00Z",
+              "average_daily_sales": 5.2,
+              "days_of_supply": 38
+            },
+            "WH-NYC-01": {
+              "quantity_available": 100,
+              "quantity_reserved": 14,
+              "quantity_on_hand": 114,
+              "bin_location": "C-22-4",
+              "zone": "C",
+              "last_counted_at": "2024-11-08T00:00:00Z",
+              "last_received_at": "2024-10-28T00:00:00Z",
+              "average_daily_sales": 3.8,
+              "days_of_supply": 26
+            }
+          }
+        },
+        "shipping": {
+          "is_shippable": true,
+          "is_free_shipping": false,
+          "shipping_class": "oversized",
+          "handling_time_days": 1,
+          "dimensions": {
+            "length_cm": 45.5,
+            "width_cm": 30.2,
+            "height_cm": 15.8,
+            "weight_kg": 12.4,
+            "dimensional_weight_kg": 4.15
+          },
+          "packaging": {
+            "type": "box",
+            "material": "corrugated",
+            "dimensions": { "length_cm": 50, "width_cm": 35, "height_cm": 20 },
+            "weight_kg": 0.8
+          },
+          "restrictions": {
+            "is_hazmat": false,
+            "is_fragile": true,
+            "is_oversized": false,
+            "is_ltl_only": false,
+            "requires_signature": true,
+            "no_po_box": true,
+            "restricted_countries": ["CU", "IR", "KP", "SY"],
+            "restricted_states": []
+          },
+          "customs": {
+            "country_of_origin": "DE",
+            "harmonized_code": "8479.89.9499",
+            "eccn": "EAR99",
+            "schedule_b": "8479.89.9499"
+          }
+        },
+        "attributes": {
+          "technical": {
+            "power_watts": 1500,
+            "voltage_options": ["110V", "220V"],
+            "frequency_hz": 60,
+            "amperage": 13.6,
+            "efficiency_rating": "A+",
+            "noise_level_db": 45,
+            "operating_temp_min_c": -10,
+            "operating_temp_max_c": 50,
+            "humidity_range_pct": "10-90",
+            "ip_rating": "IP54",
+            "certifications": ["CE", "UL", "CSA", "RoHS"]
+          },
+          "physical": {
+            "color_family": "Gray",
+            "finish": "Matte",
+            "material_primary": "Titanium Alloy",
+            "material_secondary": "ABS Plastic",
+            "assembly_required": false,
+            "tools_required": false
+          },
+          "warranty": {
+            "warranty_type": "manufacturer",
+            "warranty_duration_months": 36,
+            "warranty_description": "3-year limited manufacturer warranty",
+            "extended_warranty_available": true
+          },
+          "compliance": {
+            "prop65_warning": false,
+            "reach_compliant": true,
+            "rohs_compliant": true,
+            "ul_listed": true,
+            "fda_approved": false
+          }
+        },
+        "media": {
+          "images": [
+            { "id": "IMG-001", "url": "https://cdn.example.com/products/wdg-pro-1000/main.jpg", "alt": "Main product image", "type": "main", "position": 1, "width": 1200, "height": 1200 },
+            { "id": "IMG-002", "url": "https://cdn.example.com/products/wdg-pro-1000/angle.jpg", "alt": "Angle view", "type": "gallery", "position": 2, "width": 1200, "height": 1200 },
+            { "id": "IMG-003", "url": "https://cdn.example.com/products/wdg-pro-1000/detail.jpg", "alt": "Detail view", "type": "gallery", "position": 3, "width": 1200, "height": 1200 }
+          ],
+          "videos": [
+            { "id": "VID-001", "url": "https://cdn.example.com/products/wdg-pro-1000/demo.mp4", "thumbnail": "https://cdn.example.com/products/wdg-pro-1000/demo-thumb.jpg", "title": "Product Demo", "duration_seconds": 180 }
+          ],
+          "documents": [
+            { "id": "DOC-001", "url": "https://cdn.example.com/products/wdg-pro-1000/manual.pdf", "title": "User Manual", "type": "manual", "language": "en" },
+            { "id": "DOC-002", "url": "https://cdn.example.com/products/wdg-pro-1000/specs.pdf", "title": "Technical Specifications", "type": "specs", "language": "en" },
+            { "id": "DOC-003", "url": "https://cdn.example.com/products/wdg-pro-1000/msds.pdf", "title": "Safety Data Sheet", "type": "msds", "language": "en" }
+          ]
+        },
+        "seo": {
+          "meta_title": "Professional Widget 1000 - Industrial Grade | WidgetCorp",
+          "meta_description": "High-performance Professional Widget 1000 for industrial applications. Titanium alloy construction, 3-year warranty.",
+          "meta_keywords": ["widget", "industrial", "professional", "titanium", "widgetcorp"],
+          "slug": "professional-widget-1000",
+          "canonical_url": "https://example.com/products/widgets/professional/wdg-pro-1000",
+          "og_title": "Professional Widget 1000",
+          "og_description": "High-performance industrial widget for professional use",
+          "og_image": "https://cdn.example.com/products/wdg-pro-1000/og.jpg",
+          "structured_data": {
+            "@type": "Product",
+            "aggregateRating": { "ratingValue": 4.7, "reviewCount": 1284 }
+          }
+        },
+        "reviews": {
+          "average_rating": 4.7,
+          "total_reviews": 1284,
+          "rating_distribution": {
+            "5_star": { "count": 892, "percentage": 0.695 },
+            "4_star": { "count": 284, "percentage": 0.221 },
+            "3_star": { "count": 67, "percentage": 0.052 },
+            "2_star": { "count": 28, "percentage": 0.022 },
+            "1_star": { "count": 13, "percentage": 0.010 }
+          },
+          "nps_score": 72,
+          "recommendation_rate": 0.94,
+          "verified_purchase_rate": 0.87,
+          "average_sentiment_score": 0.82,
+          "top_positive_keywords": ["durable", "reliable", "quality", "professional"],
+          "top_negative_keywords": ["heavy", "expensive", "loud"],
+          "featured_reviews": [
+            {
+              "review_id": "REV-001",
+              "author": "John D.",
+              "rating": 5,
+              "title": "Excellent industrial widget",
+              "content": "This widget has exceeded my expectations...",
+              "verified_purchase": true,
+              "helpful_votes": 127,
+              "created_at": "2024-10-15T00:00:00Z"
+            }
+          ]
+        },
+        "related": {
+          "cross_sells": ["GSK-STD-500", "LUB-IND-1L", "TOL-SET-PRO"],
+          "up_sells": ["WDG-PRO-2000", "WDG-ENT-1000"],
+          "accessories": ["ACC-WDG-STAND", "ACC-WDG-COVER", "ACC-WDG-CASE"],
+          "alternatives": ["WDG-STD-1000", "COMP-WDG-PRO"],
+          "frequently_bought_together": [
+            { "sku": "GSK-STD-500", "frequency": 0.45 },
+            { "sku": "LUB-IND-1L", "frequency": 0.32 },
+            { "sku": "TOL-SET-PRO", "frequency": 0.28 }
+          ]
+        },
+        "analytics": {
+          "views_30d": 15847,
+          "views_90d": 42891,
+          "unique_visitors_30d": 12453,
+          "add_to_cart_30d": 2847,
+          "purchases_30d": 847,
+          "conversion_rate_30d": 0.068,
+          "cart_abandonment_rate": 0.703,
+          "avg_time_on_page_seconds": 127,
+          "bounce_rate": 0.32,
+          "revenue_30d_usd": 168847.53,
+          "revenue_90d_usd": 458291.87,
+          "units_sold_30d": 847,
+          "units_sold_90d": 2341,
+          "return_rate": 0.023,
+          "search_impressions_30d": 28471,
+          "search_clicks_30d": 4521,
+          "search_ctr": 0.159,
+          "search_position_avg": 3.2
+        },
+        "lifecycle": {
+          "status": "active",
+          "stage": "mature",
+          "created_at": "2022-03-15T00:00:00Z",
+          "published_at": "2022-03-20T00:00:00Z",
+          "updated_at": "2024-11-10T00:00:00Z",
+          "last_sold_at": "2024-11-15T09:23:41Z",
+          "discontinued_at": null,
+          "end_of_life_at": null,
+          "version": 47,
+          "revision_history": [
+            { "version": 47, "changed_at": "2024-11-10T00:00:00Z", "changed_by": "system", "changes": ["pricing_update"] },
+            { "version": 46, "changed_at": "2024-11-01T00:00:00Z", "changed_by": "admin@example.com", "changes": ["description_update", "seo_update"] }
+          ]
+        },
+        "flags": {
+          "is_active": true,
+          "is_visible": true,
+          "is_searchable": true,
+          "is_featured": true,
+          "is_new": false,
+          "is_bestseller": true,
+          "is_sale": false,
+          "is_clearance": false,
+          "is_discontinued": false,
+          "is_backorderable": true,
+          "is_preorderable": false,
+          "is_gift_wrappable": false,
+          "is_returnable": true,
+          "is_taxable": true,
+          "is_shippable": true,
+          "requires_shipping": true
+        },
+        "metadata": {
+          "source": "pim",
+          "source_id": "PIM-PROD-12847",
+          "import_batch": "IMP-2024-11-01",
+          "data_quality_score": 0.95,
+          "completeness_score": 0.92,
+          "last_enriched_at": "2024-11-01T00:00:00Z",
+          "custom_fields": {
+            "legacy_product_id": "OLD-12847",
+            "erp_material_number": "MAT-WDG-PRO-1000"
+          }
+        }
       }
-    },
-    "billing": {
-      "subscription_id": "sub_xyz789",
-      "plan_id": "plan_enterprise_annual",
-      "status": "active",
-      "mrr_usd": 999.00,
-      "arr_usd": 11988.00,
-      "currency": "USD",
-      "billing_cycle": "annual",
-      "current_period_start": "2025-01-01",
-      "current_period_end": "2025-12-31",
-      "payment_method": {
-        "type": "credit_card",
-        "brand": "visa",
-        "last4": "4242",
-        "exp_month": 12,
-        "exp_year": 2027
-      },
-      "invoices": [
-        {
-          "invoice_id": "inv_001",
-          "invoice_number": "INV-2025-0001",
-          "amount_usd": 11988.00,
-          "tax_usd": 0.00,
-          "total_usd": 11988.00,
-          "status": "paid",
-          "issued_at": "2025-01-01T00:00:00Z",
-          "paid_at": "2025-01-01T00:05:23Z",
-          "line_items": [
-            { "description": "Enterprise Plan (Annual)", "quantity": 1, "unit_price_usd": 11988.00, "total_usd": 11988.00 }
+    ],
+    "customers": [
+      {
+        "customer_id": "CUST-88271",
+        "external_ids": {
+          "erp_id": "SAP-CUST-88271",
+          "crm_id": "SF-ACC-88271",
+          "legacy_id": "OLD-CUST-88271",
+          "tax_id": "US-EIN-12-3456789"
+        },
+        "account": {
+          "account_number": "ACC-2019-88271",
+          "type": "business",
+          "tier": "gold",
+          "status": "active",
+          "verified_at": "2019-02-20T00:00:00Z",
+          "created_at": "2019-02-15T00:00:00Z",
+          "activated_at": "2019-02-20T00:00:00Z",
+          "last_activity_at": "2024-11-15T09:23:41Z"
+        },
+        "company": {
+          "name": "Acme Industries Ltd",
+          "legal_name": "Acme Industries Limited",
+          "dba": "Acme Industrial",
+          "type": "corporation",
+          "industry": {
+            "primary": "Manufacturing",
+            "naics_code": "332",
+            "sic_code": "3599",
+            "vertical": "Industrial Equipment"
+          },
+          "size": {
+            "employee_count": 247,
+            "employee_range": "100-500",
+            "annual_revenue_usd": 28500000,
+            "revenue_range": "$10M-$50M"
+          },
+          "founded_year": 1987,
+          "website": "https://acme-industries.example.com",
+          "social": {
+            "linkedin": "https://linkedin.com/company/acme-industries",
+            "twitter": null,
+            "facebook": null
+          }
+        },
+        "contacts": {
+          "primary": {
+            "contact_id": "CONT-88271-001",
+            "first_name": "Robert",
+            "last_name": "Johnson",
+            "title": "Procurement Manager",
+            "email": "rjohnson@acme-industries.com",
+            "phone": "+1-555-123-4567",
+            "mobile": "+1-555-987-6543",
+            "is_primary": true,
+            "receives_invoices": true,
+            "receives_shipping_updates": true
+          },
+          "billing": {
+            "contact_id": "CONT-88271-002",
+            "first_name": "Sarah",
+            "last_name": "Williams",
+            "title": "Accounts Payable",
+            "email": "billing@acme-industries.com",
+            "phone": "+1-555-123-4568",
+            "mobile": null,
+            "is_primary": false,
+            "receives_invoices": true,
+            "receives_shipping_updates": false
+          },
+          "technical": {
+            "contact_id": "CONT-88271-003",
+            "first_name": "Michael",
+            "last_name": "Chen",
+            "title": "Operations Engineer",
+            "email": "mchen@acme-industries.com",
+            "phone": "+1-555-123-4569",
+            "mobile": "+1-555-111-2222",
+            "is_primary": false,
+            "receives_invoices": false,
+            "receives_shipping_updates": true
+          }
+        },
+        "addresses": {
+          "billing": {
+            "address_id": "ADDR-88271-001",
+            "type": "billing",
+            "is_default": true,
+            "is_verified": true,
+            "line1": "100 Industrial Parkway",
+            "line2": "Suite 400",
+            "line3": null,
+            "city": "Chicago",
+            "state": "IL",
+            "postal_code": "60601",
+            "country_code": "US",
+            "country": "United States",
+            "phone": "+1-555-123-4567",
+            "validation": {
+              "is_validated": true,
+              "validation_score": 0.98,
+              "validated_at": "2024-01-15T00:00:00Z",
+              "validation_source": "usps"
+            },
+            "geo": {
+              "latitude": 41.8781,
+              "longitude": -87.6298,
+              "timezone": "America/Chicago",
+              "metro_area": "Chicago-Naperville-Elgin"
+            }
+          },
+          "shipping": {
+            "address_id": "ADDR-88271-002",
+            "type": "shipping",
+            "is_default": true,
+            "is_verified": true,
+            "line1": "100 Industrial Parkway",
+            "line2": "Dock 7",
+            "line3": null,
+            "city": "Chicago",
+            "state": "IL",
+            "postal_code": "60601",
+            "country_code": "US",
+            "country": "United States",
+            "phone": "+1-555-123-4570",
+            "validation": {
+              "is_validated": true,
+              "validation_score": 0.95,
+              "validated_at": "2024-01-15T00:00:00Z",
+              "validation_source": "usps"
+            },
+            "geo": {
+              "latitude": 41.8781,
+              "longitude": -87.6298,
+              "timezone": "America/Chicago",
+              "metro_area": "Chicago-Naperville-Elgin"
+            },
+            "shipping_instructions": {
+              "dock_hours": "7AM-4PM",
+              "appointment_required": true,
+              "forklift_available": true,
+              "max_vehicle_size": "53ft trailer",
+              "special_instructions": "Call before delivery"
+            }
+          }
+        },
+        "billing": {
+          "payment_terms": "NET30",
+          "credit_limit_usd": 50000,
+          "available_credit_usd": 32450.75,
+          "current_balance_usd": 17549.25,
+          "past_due_amount_usd": 0,
+          "is_credit_approved": true,
+          "credit_approved_at": "2024-01-01T00:00:00Z",
+          "credit_approved_by": "credit_team",
+          "default_currency": "USD",
+          "tax_exempt": false,
+          "tax_exempt_id": null,
+          "payment_methods": [
+            {
+              "method_id": "PM-88271-001",
+              "type": "ach",
+              "is_default": true,
+              "is_verified": true,
+              "bank_name": "First National Bank",
+              "account_last4": "4521",
+              "routing_last4": "1234"
+            },
+            {
+              "method_id": "PM-88271-002",
+              "type": "credit_card",
+              "is_default": false,
+              "is_verified": true,
+              "card_brand": "visa",
+              "card_last4": "4242",
+              "exp_month": 12,
+              "exp_year": 2026
+            }
+          ],
+          "invoicing": {
+            "delivery_method": "email",
+            "format": "pdf",
+            "consolidate_invoices": true,
+            "consolidation_day": 15,
+            "po_required": true
+          }
+        },
+        "metrics": {
+          "lifetime": {
+            "total_orders": 847,
+            "total_revenue_usd": 284750.00,
+            "total_profit_usd": 98472.50,
+            "avg_order_value_usd": 336.18,
+            "avg_margin_pct": 0.346,
+            "total_units_purchased": 24871,
+            "total_products_purchased": 127,
+            "total_returns": 12,
+            "return_rate": 0.014,
+            "total_refunds_usd": 3847.25
+          },
+          "ytd": {
+            "total_orders": 127,
+            "total_revenue_usd": 42847.50,
+            "total_profit_usd": 14821.25,
+            "avg_order_value_usd": 337.38,
+            "vs_ly_revenue_pct": 0.12,
+            "vs_ly_orders_pct": 0.08
+          },
+          "rolling_12m": {
+            "total_orders": 152,
+            "total_revenue_usd": 51284.75,
+            "total_profit_usd": 17742.25,
+            "avg_order_value_usd": 337.40,
+            "monthly_trend": [
+              { "month": "2024-01", "orders": 12, "revenue_usd": 4021.50 },
+              { "month": "2024-02", "orders": 11, "revenue_usd": 3701.25 },
+              { "month": "2024-03", "orders": 14, "revenue_usd": 4715.00 },
+              { "month": "2024-04", "orders": 13, "revenue_usd": 4378.50 },
+              { "month": "2024-05", "orders": 12, "revenue_usd": 4042.00 },
+              { "month": "2024-06", "orders": 11, "revenue_usd": 3704.75 },
+              { "month": "2024-07", "orders": 13, "revenue_usd": 4381.00 },
+              { "month": "2024-08", "orders": 14, "revenue_usd": 4718.50 },
+              { "month": "2024-09", "orders": 12, "revenue_usd": 4045.00 },
+              { "month": "2024-10", "orders": 15, "revenue_usd": 5055.50 },
+              { "month": "2024-11", "orders": 14, "revenue_usd": 4718.25 }
+            ]
+          },
+          "engagement": {
+            "days_since_first_order": 1847,
+            "days_since_last_order": 0,
+            "average_days_between_orders": 2.2,
+            "purchase_frequency_30d": 14,
+            "purchase_frequency_90d": 38,
+            "account_age_days": 2100,
+            "active_months": 61,
+            "consecutive_active_months": 24
+          },
+          "product_affinity": {
+            "top_categories": [
+              { "category": "Widgets", "revenue_usd": 142847.50, "orders": 423, "share_pct": 0.502 },
+              { "category": "Gaskets", "revenue_usd": 85247.25, "orders": 312, "share_pct": 0.299 },
+              { "category": "Tools", "revenue_usd": 56655.25, "orders": 112, "share_pct": 0.199 }
+            ],
+            "top_products": [
+              { "sku": "WDG-PRO-1000", "revenue_usd": 89847.50, "quantity": 450, "orders": 89 },
+              { "sku": "GSK-STD-500", "revenue_usd": 42147.25, "quantity": 1505, "orders": 156 },
+              { "sku": "WDG-STD-500", "revenue_usd": 28471.00, "quantity": 285, "orders": 71 }
+            ],
+            "brand_preference": {
+              "WidgetCorp": 0.52,
+              "SealMaster": 0.31,
+              "ToolPro": 0.17
+            }
+          }
+        },
+        "scores": {
+          "health_score": {
+            "value": 87,
+            "percentile": 92,
+            "trend": "stable",
+            "factors": {
+              "recency": { "score": 95, "weight": 0.25 },
+              "frequency": { "score": 88, "weight": 0.25 },
+              "monetary": { "score": 85, "weight": 0.25 },
+              "engagement": { "score": 80, "weight": 0.25 }
+            },
+            "computed_at": "2024-11-15T00:00:00Z"
+          },
+          "nps": {
+            "score": 9,
+            "category": "promoter",
+            "survey_date": "2024-10-01T00:00:00Z",
+            "feedback": "Great products and excellent customer service"
+          },
+          "churn_risk": {
+            "probability": 0.12,
+            "level": "low",
+            "percentile": 15,
+            "factors": {
+              "declining_frequency": false,
+              "declining_aov": false,
+              "support_issues": false,
+              "payment_issues": false
+            },
+            "model_version": "churn_v3",
+            "computed_at": "2024-11-15T00:00:00Z"
+          },
+          "upsell_potential": {
+            "probability": 0.68,
+            "recommended_products": ["WDG-PRO-2000", "TOL-SET-ENT"],
+            "estimated_value_usd": 12500,
+            "model_version": "upsell_v2",
+            "computed_at": "2024-11-15T00:00:00Z"
+          },
+          "ltv": {
+            "current_usd": 284750.00,
+            "predicted_1y_usd": 52000,
+            "predicted_3y_usd": 142000,
+            "predicted_lifetime_usd": 485000,
+            "model_version": "ltv_v4",
+            "computed_at": "2024-11-15T00:00:00Z"
+          }
+        },
+        "segments": {
+          "primary": "enterprise",
+          "rfm": "Champions",
+          "lifecycle": "loyal",
+          "value_tier": "high",
+          "behavioral": ["frequent_buyer", "bulk_orderer", "early_adopter"],
+          "custom": ["b2b", "manufacturing", "midwest", "high-value"]
+        },
+        "marketing": {
+          "acquisition": {
+            "source": "trade_show",
+            "medium": "event",
+            "campaign": "industryexpo_2019",
+            "acquired_at": "2019-02-15T00:00:00Z"
+          },
+          "preferences": {
+            "email_opt_in": true,
+            "sms_opt_in": false,
+            "mail_opt_in": false,
+            "phone_opt_in": true,
+            "personalization_opt_in": true
+          },
+          "subscriptions": {
+            "newsletter": { "subscribed": true, "subscribed_at": "2019-02-20T00:00:00Z" },
+            "promotions": { "subscribed": false, "unsubscribed_at": "2023-05-15T00:00:00Z" },
+            "product_updates": { "subscribed": true, "subscribed_at": "2019-02-20T00:00:00Z" }
+          },
+          "campaigns": {
+            "total_sent": 247,
+            "total_opened": 198,
+            "total_clicked": 87,
+            "open_rate": 0.802,
+            "click_rate": 0.352,
+            "last_campaign_at": "2024-11-10T00:00:00Z",
+            "last_opened_at": "2024-11-10T14:30:00Z"
+          }
+        },
+        "support": {
+          "total_tickets": 23,
+          "open_tickets": 0,
+          "avg_resolution_hours": 4.2,
+          "csat_avg": 4.7,
+          "last_ticket_at": "2024-09-15T00:00:00Z",
+          "escalations": 1,
+          "sentiment_trend": "positive"
+        },
+        "permissions": {
+          "can_order": true,
+          "can_view_pricing": true,
+          "can_view_inventory": true,
+          "can_use_net_terms": true,
+          "can_request_quotes": true,
+          "can_access_api": true,
+          "requires_po": true,
+          "requires_approval": false,
+          "approval_threshold_usd": null
+        },
+        "integrations": {
+          "erp": {
+            "system": "SAP S/4HANA",
+            "customer_id": "SAP-CUST-88271",
+            "synced": true,
+            "last_sync_at": "2024-11-15T09:24:00Z"
+          },
+          "crm": {
+            "system": "Salesforce",
+            "account_id": "SF-ACC-88271",
+            "owner": "jsmith@example.com",
+            "synced": true,
+            "last_sync_at": "2024-11-15T09:25:00Z"
+          }
+        },
+        "audit": {
+          "created_at": "2019-02-15T00:00:00Z",
+          "created_by": "system",
+          "updated_at": "2024-11-15T09:24:00Z",
+          "updated_by": "erp_sync",
+          "version": 847,
+          "change_history": [
+            { "timestamp": "2024-11-15T09:24:00Z", "field": "last_activity_at", "old_value": null, "new_value": "2024-11-15T09:23:41Z", "actor": "system" },
+            { "timestamp": "2024-11-01T00:00:00Z", "field": "tier", "old_value": "silver", "new_value": "gold", "actor": "admin@example.com" }
           ]
         }
-      ],
-      "discounts": [
-        { "code": "ANNUAL20", "type": "percentage", "value": 20, "expires_at": null }
-      ]
-    },
-    "ml_predictions": {
-      "churn_model_v3": {
-        "model_id": "churn_v3_20250101",
-        "prediction": "low_risk",
-        "probability": 0.12,
-        "confidence_interval": [0.08, 0.18],
-        "features_used": 47,
-        "top_factors": [
-          { "feature": "login_frequency", "importance": 0.23, "direction": "positive" },
-          { "feature": "support_tickets", "importance": 0.18, "direction": "negative" },
-          { "feature": "feature_adoption", "importance": 0.15, "direction": "positive" }
-        ],
-        "computed_at": "2025-01-15T06:00:00Z"
-      },
-      "upsell_model_v2": {
-        "model_id": "upsell_v2_20250101",
-        "prediction": "high_potential",
-        "probability": 0.78,
-        "confidence_interval": [0.71, 0.84],
-        "features_used": 32,
-        "top_factors": [
-          { "feature": "user_growth_rate", "importance": 0.31, "direction": "positive" },
-          { "feature": "api_usage_pct", "importance": 0.22, "direction": "positive" },
-          { "feature": "current_plan_utilization", "importance": 0.19, "direction": "positive" }
-        ],
-        "computed_at": "2025-01-15T06:00:00Z"
-      }
-    },
-    "experiments": {
-      "exp_new_onboarding": {
-        "experiment_id": "exp_001",
-        "variant": "treatment_b",
-        "enrolled_at": "2025-01-10T12:00:00Z",
-        "converted": true,
-        "conversion_value": 1.0,
-        "exposure_count": 3
-      },
-      "exp_pricing_page": {
-        "experiment_id": "exp_002",
-        "variant": "control",
-        "enrolled_at": "2025-01-12T09:30:00Z",
-        "converted": false,
-        "conversion_value": 0.0,
-        "exposure_count": 1
-      }
-    },
-    "support": {
-      "tickets": [
-        {
-          "ticket_id": "tkt_12345",
-          "subject": "Cannot export large reports",
-          "description": "When I try to export reports with more than 10,000 rows, the export fails with a timeout error. This is blocking our quarterly review process and needs urgent attention.",
-          "priority": "high",
-          "status": "resolved",
-          "category": "bug",
-          "created_at": "2025-01-10T14:30:00Z",
-          "updated_at": "2025-01-12T09:15:00Z",
-          "resolved_at": "2025-01-12T09:15:00Z",
-          "first_response_minutes": 45,
-          "resolution_minutes": 2565,
-          "satisfaction_score": 5,
-          "agent_id": "agent_alice",
-          "tags": ["export", "performance", "p1"]
-        }
-      ],
-      "nps_responses": [
-        {
-          "response_id": "nps_001",
-          "score": 9,
-          "feedback": "Great product, would recommend to colleagues!",
-          "submitted_at": "2025-01-05T16:00:00Z",
-          "segment": "promoter"
-        }
-      ],
-      "csat_avg": 4.7,
-      "total_tickets": 3,
-      "open_tickets": 0
-    },
-    "audit_log": [
-      {
-        "log_id": "log_001",
-        "action": "settings.update",
-        "actor_id": "usr_9f8e7d6c",
-        "actor_type": "user",
-        "resource_type": "organization",
-        "resource_id": "tenant_8x7k2m",
-        "changes": {
-          "before": { "max_users": 250 },
-          "after": { "max_users": 500 }
-        },
-        "ip_address": "192.168.1.100",
-        "timestamp": "2025-01-14T11:30:00Z",
-        "success": true
       }
     ],
-    "computed": {
-      "customer_health": "healthy",
-      "lifecycle_stage": "growth",
-      "account_age_days": 579,
-      "days_since_last_activity": 0,
-      "feature_adoption_pct": 0.67,
-      "seats_used_pct": 0.45,
-      "api_quota_used_pct": 0.12
-    },
-    "_internal": {
-      "shard_id": 7,
-      "partition_key": "2025-01",
-      "etl_batch_id": "batch_20250115_143000",
-      "schema_version": 14,
-      "data_quality_flags": []
-    }
-  },
-  {
-    "meta": {
-      "request_id": "660e8400-e29b-41d4-a716-446655440001",
-      "correlation_id": "corr_def456",
-      "timestamp": "2025-01-15T14:35:00.000Z",
-      "processed_at": 1705329300,
-      "duration_ms": 892,
-      "version": "2.1.0",
-      "flags": {
-        "is_test": true,
-        "is_premium": false,
-        "retry_count": 2
-      }
-    },
-    "tenant": {
-      "tenant_id": "tenant_3y9z1n",
-      "org_name": "StartupCo",
-      "plan": "starter",
-      "contact_email": "hello@startupco.io",
-      "website": "https://startupco.io",
-      "settings": {
-        "timezone": "Europe/London",
-        "locale": "en-GB",
-        "features": ["analytics"],
-        "limits": {
-          "max_users": 10,
-          "max_storage_gb": 5,
-          "api_rate_limit": 1000
+    "inventory_transactions": [
+      {
+        "transaction_id": "INV-TXN-2024-001847",
+        "warehouse_id": "WH-CHI-01",
+        "type": "sale",
+        "subtype": "order_fulfillment",
+        "status": "completed",
+        "timestamp": "2024-11-15T10:45:00Z",
+        "reference": {
+          "type": "order",
+          "id": "ORD-2024-001847",
+          "line_id": "LN-001"
         },
-        "integrations": {
-          "slack": { "enabled": false, "webhook_url": null },
-          "salesforce": { "enabled": false, "webhook_url": null },
-          "hubspot": { "enabled": false, "webhook_url": null }
+        "product": {
+          "sku": "WDG-PRO-1000",
+          "name": "Professional Widget 1000",
+          "lot_number": "LOT-2024-Q3-001",
+          "serial_numbers": ["SN-2024-001", "SN-2024-002", "SN-2024-003"]
+        },
+        "quantity": {
+          "amount": -25,
+          "unit": "each",
+          "before": 572,
+          "after": 547
+        },
+        "location": {
+          "zone": "A",
+          "aisle": "12",
+          "rack": "3",
+          "bin": "A-12-3",
+          "from_bin": "A-12-3",
+          "to_bin": null
+        },
+        "cost": {
+          "unit_cost_usd": 142.50,
+          "total_cost_usd": 3562.50,
+          "cost_method": "weighted_average"
+        },
+        "actor": {
+          "type": "employee",
+          "id": "EMP-4521",
+          "name": "Mike Thompson"
+        },
+        "metadata": {
+          "pick_wave_id": "WAVE-2024-11-15-001",
+          "pick_cart_id": "CART-A-07",
+          "device_id": "SCANNER-A-015"
+        }
+      },
+      {
+        "transaction_id": "INV-TXN-2024-001848",
+        "warehouse_id": "WH-CHI-01",
+        "type": "receipt",
+        "subtype": "purchase_order",
+        "status": "completed",
+        "timestamp": "2024-11-15T08:30:00Z",
+        "reference": {
+          "type": "purchase_order",
+          "id": "PO-2024-000847",
+          "line_id": "POL-001"
+        },
+        "product": {
+          "sku": "GSK-STD-500",
+          "name": "Standard Gasket Set 500",
+          "lot_number": "LOT-2024-Q4-001",
+          "serial_numbers": null
+        },
+        "quantity": {
+          "amount": 500,
+          "unit": "each",
+          "before": 2500,
+          "after": 3000
+        },
+        "location": {
+          "zone": "D",
+          "aisle": "08",
+          "rack": "2",
+          "bin": "D-08-2",
+          "from_bin": null,
+          "to_bin": "D-08-2"
+        },
+        "cost": {
+          "unit_cost_usd": 18.25,
+          "total_cost_usd": 9125.00,
+          "cost_method": "fifo"
+        },
+        "quality": {
+          "inspection_required": true,
+          "inspection_status": "passed",
+          "inspected_at": "2024-11-15T08:45:00Z",
+          "inspected_by": "QC-001",
+          "defects_found": 0,
+          "defect_rate": 0
+        },
+        "actor": {
+          "type": "employee",
+          "id": "EMP-2847",
+          "name": "Lisa Chen"
+        },
+        "supplier": {
+          "supplier_id": "SUP-SM-001",
+          "name": "SealMaster Corp",
+          "asn_number": "ASN-2024-SM-4521"
+        },
+        "metadata": {
+          "dock_door": "DOCK-03",
+          "trailer_number": "TRL-847521",
+          "seal_number": "SEAL-4521847",
+          "pallet_count": 5,
+          "receiving_batch": "RCV-2024-11-15-003"
+        }
+      },
+      {
+        "transaction_id": "INV-TXN-2024-001849",
+        "warehouse_id": "WH-CHI-01",
+        "type": "adjustment",
+        "subtype": "cycle_count",
+        "status": "completed",
+        "timestamp": "2024-11-15T06:00:00Z",
+        "reference": {
+          "type": "cycle_count",
+          "id": "CC-2024-11-15-A12",
+          "line_id": null
+        },
+        "product": {
+          "sku": "WDG-PRO-1000",
+          "name": "Professional Widget 1000",
+          "lot_number": null,
+          "serial_numbers": null
+        },
+        "quantity": {
+          "amount": -3,
+          "unit": "each",
+          "before": 575,
+          "after": 572,
+          "expected": 575,
+          "counted": 572,
+          "variance": -3,
+          "variance_pct": -0.0052
+        },
+        "location": {
+          "zone": "A",
+          "aisle": "12",
+          "rack": "3",
+          "bin": "A-12-3",
+          "from_bin": null,
+          "to_bin": null
+        },
+        "cost": {
+          "unit_cost_usd": 142.50,
+          "total_cost_usd": 427.50,
+          "cost_method": "weighted_average",
+          "variance_cost_usd": -427.50
+        },
+        "reason": {
+          "code": "SHRINKAGE",
+          "description": "Inventory shrinkage",
+          "category": "loss"
+        },
+        "actor": {
+          "type": "employee",
+          "id": "EMP-1247",
+          "name": "David Park"
+        },
+        "approval": {
+          "required": true,
+          "approved_by": "MGR-001",
+          "approved_at": "2024-11-15T06:30:00Z"
+        },
+        "metadata": {
+          "count_method": "blind",
+          "counter_1": "EMP-1247",
+          "counter_2": "EMP-1892",
+          "recount_performed": true,
+          "final_count_matches": true
         }
       }
-    },
-    "user": {
-      "user_id": "usr_1a2b3c4d",
-      "external_id": null,
-      "email": "founder@startupco.io",
-      "full_name": "Jane Smith",
-      "avatar_url": null,
-      "role": "owner",
-      "created_at": "2025-01-10T08:00:00Z",
-      "last_login_at": "2025-01-15T14:30:00Z",
-      "login_count": 12,
-      "is_active": 1,
-      "is_verified": false,
-      "preferences": {
-        "theme": "light",
-        "notifications": { "email": true, "push": true, "sms": false },
-        "dashboard_layout": "list"
-      },
-      "tags": []
-    },
-    "session": {
-      "session_id": "sess_def456abc",
-      "started_at": "2025-01-15T14:30:00Z",
-      "ended_at": "2025-01-15T14:35:00Z",
-      "duration_seconds": 300,
-      "device": {
-        "type": "mobile",
-        "os": "iOS",
-        "os_version": "17.2",
-        "browser": "Safari",
-        "browser_version": "17.0",
-        "screen_width": 390,
-        "screen_height": 844,
-        "device_pixel_ratio": 3.0,
-        "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X)..."
-      },
-      "location": {
-        "ip": "86.12.45.201",
-        "country_code": "GB",
-        "country": "United Kingdom",
-        "region": "England",
-        "city": "London",
-        "latitude": 51.5074,
-        "longitude": -0.1278,
-        "timezone": "Europe/London"
+    ],
+    "warehouses": [
+      {
+        "warehouse_id": "WH-CHI-01",
+        "code": "CHI01",
+        "name": "Chicago Distribution Center",
+        "type": "distribution_center",
+        "status": "active",
+        "location": {
+          "address": {
+            "line1": "1000 Warehouse Way",
+            "city": "Chicago",
+            "state": "IL",
+            "postal_code": "60609",
+            "country_code": "US",
+            "country": "United States"
+          },
+          "coordinates": {
+            "latitude": 41.8119,
+            "longitude": -87.6574
+          },
+          "timezone": "America/Chicago"
+        },
+        "capacity": {
+          "total_sqft": 250000,
+          "used_sqft": 187500,
+          "utilization_pct": 0.75,
+          "total_positions": 15000,
+          "used_positions": 11250,
+          "pallet_positions": 5000,
+          "shelf_positions": 10000,
+          "floor_positions": 500
+        },
+        "zones": {
+          "A": { "name": "High Velocity", "type": "pick", "temp_controlled": false, "positions": 3000, "utilization_pct": 0.85 },
+          "B": { "name": "Medium Velocity", "type": "pick", "temp_controlled": false, "positions": 4000, "utilization_pct": 0.72 },
+          "C": { "name": "Low Velocity", "type": "bulk", "temp_controlled": false, "positions": 3000, "utilization_pct": 0.68 },
+          "D": { "name": "Receiving", "type": "staging", "temp_controlled": false, "positions": 2500, "utilization_pct": 0.45 },
+          "E": { "name": "Shipping", "type": "staging", "temp_controlled": false, "positions": 2000, "utilization_pct": 0.52 },
+          "F": { "name": "Cold Storage", "type": "cold", "temp_controlled": true, "positions": 500, "utilization_pct": 0.90 }
+        },
+        "operations": {
+          "operating_hours": {
+            "monday": { "open": "06:00", "close": "22:00" },
+            "tuesday": { "open": "06:00", "close": "22:00" },
+            "wednesday": { "open": "06:00", "close": "22:00" },
+            "thursday": { "open": "06:00", "close": "22:00" },
+            "friday": { "open": "06:00", "close": "22:00" },
+            "saturday": { "open": "08:00", "close": "16:00" },
+            "sunday": { "open": null, "close": null }
+          },
+          "dock_doors": {
+            "receiving": 8,
+            "shipping": 12,
+            "total": 20
+          },
+          "equipment": {
+            "forklifts": 25,
+            "pallet_jacks": 50,
+            "reach_trucks": 15,
+            "order_pickers": 20
+          }
+        },
+        "staffing": {
+          "total_employees": 125,
+          "shifts": {
+            "first": { "start": "06:00", "end": "14:00", "employees": 50 },
+            "second": { "start": "14:00", "end": "22:00", "employees": 50 },
+            "third": { "start": "22:00", "end": "06:00", "employees": 25 }
+          }
+        },
+        "performance": {
+          "daily_capacity_orders": 2500,
+          "daily_capacity_units": 25000,
+          "current_day_orders": 1847,
+          "current_day_units": 18470,
+          "avg_orders_per_day_30d": 2100,
+          "avg_units_per_day_30d": 21000,
+          "pick_accuracy_pct": 0.9987,
+          "ship_accuracy_pct": 0.9995,
+          "on_time_shipping_pct": 0.982,
+          "avg_order_cycle_time_minutes": 45,
+          "avg_pick_time_seconds": 28,
+          "avg_pack_time_seconds": 95
+        },
+        "inventory_summary": {
+          "total_skus": 4521,
+          "total_units": 847521,
+          "total_value_usd": 12847521.50,
+          "inventory_turns_annual": 8.5,
+          "dead_stock_units": 1247,
+          "dead_stock_value_usd": 24847.25,
+          "overstock_units": 8471,
+          "low_stock_skus": 127
+        },
+        "integrations": {
+          "wms": { "system": "Manhattan SCALE", "version": "2024.1", "status": "connected" },
+          "erp": { "system": "SAP", "version": "S/4HANA", "status": "connected" },
+          "tms": { "system": "Oracle TMS", "version": "23.1", "status": "connected" }
+        }
       }
-    },
-    "events": [],
-    "metrics": {
-      "engagement": {
-        "page_views": 3,
-        "unique_pages": 2,
-        "clicks": 5,
-        "scroll_depth_avg": 0.45,
-        "time_on_site_seconds": 300,
-        "bounce": true
-      },
-      "performance": {
-        "lcp_ms": 2800,
-        "fid_ms": 120,
-        "cls_score": 0.15,
-        "ttfb_ms": 450,
-        "fcp_ms": 1500
-      },
-      "conversion": {
-        "goals_completed": [],
-        "goals_failed": ["signup_complete"],
-        "funnel_stage": "trial",
-        "conversion_value_usd": 0.00,
-        "ltv_estimate_usd": 150.00
-      },
-      "custom_scores": {
-        "health_score": { "value": 45, "percentile": 32, "trend": "down" },
-        "engagement_score": { "value": 28, "percentile": 15, "trend": "down" },
-        "churn_risk": { "value": 72, "percentile": 85, "trend": "up" }
-      }
-    },
-    "billing": {
-      "subscription_id": null,
-      "plan_id": "plan_free_trial",
-      "status": "trialing",
-      "mrr_usd": 0.00,
-      "arr_usd": 0.00,
-      "currency": "GBP",
-      "billing_cycle": null,
-      "current_period_start": "2025-01-10",
-      "current_period_end": "2025-01-24",
-      "payment_method": null,
-      "invoices": [],
-      "discounts": []
-    },
-    "ml_predictions": {
-      "churn_model_v3": {
-        "model_id": "churn_v3_20250101",
-        "prediction": "high_risk",
-        "probability": 0.72,
-        "confidence_interval": [0.65, 0.79],
-        "features_used": 47,
-        "top_factors": [
-          { "feature": "login_frequency", "importance": 0.28, "direction": "negative" },
-          { "feature": "feature_adoption", "importance": 0.24, "direction": "negative" },
-          { "feature": "trial_day", "importance": 0.18, "direction": "negative" }
+    ],
+    "pricing_rules": [
+      {
+        "rule_id": "RULE-BULK-10PCT",
+        "code": "BULK_10PCT",
+        "name": "Bulk Order 10% Discount",
+        "description": "10% discount for orders of 10+ units of same SKU",
+        "type": "discount",
+        "subtype": "quantity_break",
+        "status": "active",
+        "priority": 100,
+        "stackable": true,
+        "conditions": {
+          "all": [
+            { "field": "line_item.quantity", "operator": ">=", "value": 10 }
+          ],
+          "any": []
+        },
+        "actions": [
+          {
+            "type": "percentage_discount",
+            "value": 10,
+            "apply_to": "line_item",
+            "max_discount_usd": null
+          }
         ],
-        "computed_at": "2025-01-15T06:00:00Z"
-      },
-      "upsell_model_v2": {
-        "model_id": "upsell_v2_20250101",
-        "prediction": "low_potential",
-        "probability": 0.15,
-        "confidence_interval": [0.10, 0.22],
-        "features_used": 32,
-        "top_factors": [
-          { "feature": "user_growth_rate", "importance": 0.25, "direction": "negative" },
-          { "feature": "engagement_score", "importance": 0.21, "direction": "negative" },
-          { "feature": "company_size", "importance": 0.17, "direction": "negative" }
-        ],
-        "computed_at": "2025-01-15T06:00:00Z"
+        "limits": {
+          "max_uses_total": null,
+          "max_uses_per_customer": null,
+          "max_discount_per_order_usd": 10000,
+          "min_order_value_usd": null
+        },
+        "eligibility": {
+          "customer_tiers": ["all"],
+          "customer_segments": ["all"],
+          "customer_ids": [],
+          "exclude_customer_ids": [],
+          "product_categories": ["all"],
+          "product_skus": [],
+          "exclude_skus": ["CLEARANCE-*"],
+          "channels": ["all"],
+          "regions": ["all"]
+        },
+        "schedule": {
+          "start_date": "2024-01-01T00:00:00Z",
+          "end_date": null,
+          "active_days": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+          "active_hours": null,
+          "timezone": "UTC"
+        },
+        "usage": {
+          "total_uses": 84721,
+          "total_discount_usd": 1247521.50,
+          "uses_today": 127,
+          "uses_this_week": 847,
+          "uses_this_month": 3521
+        },
+        "metadata": {
+          "created_at": "2024-01-01T00:00:00Z",
+          "created_by": "admin@example.com",
+          "updated_at": "2024-11-01T00:00:00Z",
+          "updated_by": "pricing_team@example.com",
+          "version": 3,
+          "approval_status": "approved",
+          "approved_by": "manager@example.com",
+          "approved_at": "2024-01-01T00:00:00Z"
+        }
       }
-    },
-    "experiments": {},
-    "support": {
-      "tickets": [],
-      "nps_responses": [],
-      "csat_avg": null,
-      "total_tickets": 0,
-      "open_tickets": 0
-    },
-    "audit_log": [],
-    "computed": {
-      "customer_health": "at_risk",
-      "lifecycle_stage": "trial",
-      "account_age_days": 5,
-      "days_since_last_activity": 0,
-      "feature_adoption_pct": 0.12,
-      "seats_used_pct": 0.10,
-      "api_quota_used_pct": 0.00
-    },
-    "_internal": {
-      "shard_id": 3,
-      "partition_key": "2025-01",
-      "etl_batch_id": "batch_20250115_143500",
-      "schema_version": 14,
-      "data_quality_flags": ["incomplete_profile", "no_payment_method"]
+    ],
+    "shipments": [
+      {
+        "shipment_id": "SHIP-2024-001847",
+        "order_id": "ORD-2024-001847",
+        "status": "in_transit",
+        "type": "outbound",
+        "carrier": {
+          "id": "CARRIER-FEDEX",
+          "name": "FedEx Freight",
+          "code": "FEDEX_FREIGHT",
+          "service": "standard",
+          "service_code": "FEDEX_FREIGHT_ECONOMY",
+          "account_number": "ACC-FEDEX-12847"
+        },
+        "tracking": {
+          "tracking_number": "7489274892748927",
+          "tracking_url": "https://fedex.com/track?id=7489274892748927",
+          "carrier_status": "in_transit",
+          "carrier_status_code": "IT",
+          "estimated_delivery": "2024-11-18T17:00:00Z",
+          "actual_delivery": null,
+          "signature_name": null,
+          "events": [
+            {
+              "timestamp": "2024-11-15T13:00:00Z",
+              "status": "picked_up",
+              "location": "Chicago, IL",
+              "description": "Package picked up"
+            },
+            {
+              "timestamp": "2024-11-15T18:30:00Z",
+              "status": "in_transit",
+              "location": "Chicago, IL",
+              "description": "Departed FedEx location"
+            },
+            {
+              "timestamp": "2024-11-16T02:15:00Z",
+              "status": "in_transit",
+              "location": "Indianapolis, IN",
+              "description": "Arrived at FedEx location"
+            }
+          ]
+        },
+        "packages": [
+          {
+            "package_id": "PKG-001",
+            "tracking_number": "7489274892748927",
+            "package_type": "pallet",
+            "dimensions": {
+              "length_cm": 60,
+              "width_cm": 40,
+              "height_cm": 30,
+              "weight_kg": 13.25,
+              "dimensional_weight_kg": 14.4
+            },
+            "contents": [
+              { "line_id": "LN-001", "sku": "WDG-PRO-1000", "quantity": 25 },
+              { "line_id": "LN-002", "sku": "GSK-STD-500", "quantity": 100 }
+            ],
+            "declared_value_usd": 6375.13,
+            "insured_value_usd": 6375.13
+          }
+        ],
+        "origin": {
+          "warehouse_id": "WH-CHI-01",
+          "address": {
+            "line1": "1000 Warehouse Way",
+            "city": "Chicago",
+            "state": "IL",
+            "postal_code": "60609",
+            "country_code": "US"
+          },
+          "contact": {
+            "name": "Chicago DC Shipping",
+            "phone": "+1-555-100-0001"
+          }
+        },
+        "destination": {
+          "address": {
+            "line1": "100 Industrial Parkway",
+            "line2": "Dock 7",
+            "city": "Chicago",
+            "state": "IL",
+            "postal_code": "60601",
+            "country_code": "US"
+          },
+          "contact": {
+            "name": "Robert Johnson",
+            "phone": "+1-555-123-4567",
+            "email": "rjohnson@acme-industries.com"
+          },
+          "special_instructions": "Call before delivery. Dock hours 7AM-4PM."
+        },
+        "costs": {
+          "shipping_cost_usd": 125.00,
+          "handling_cost_usd": 25.00,
+          "insurance_cost_usd": 78.49,
+          "fuel_surcharge_usd": 12.50,
+          "residential_surcharge_usd": 0,
+          "total_cost_usd": 240.99,
+          "billed_weight_kg": 14.4,
+          "billing_zone": 2,
+          "rate_type": "contract"
+        },
+        "dates": {
+          "created_at": "2024-11-15T11:45:00Z",
+          "label_created_at": "2024-11-15T12:00:00Z",
+          "shipped_at": "2024-11-15T13:00:00Z",
+          "estimated_delivery_at": "2024-11-18T17:00:00Z",
+          "delivered_at": null,
+          "ship_by_date": "2024-11-15T18:00:00Z"
+        },
+        "options": {
+          "signature_required": true,
+          "adult_signature_required": false,
+          "saturday_delivery": false,
+          "hold_at_location": false,
+          "return_label_included": false
+        },
+        "documents": {
+          "shipping_label_url": "https://cdn.example.com/labels/SHIP-2024-001847.pdf",
+          "packing_slip_url": "https://cdn.example.com/packing/SHIP-2024-001847.pdf",
+          "commercial_invoice_url": null,
+          "customs_forms_url": null
+        }
+      }
+    ],
+    "analytics_events": [
+      {
+        "event_id": "EVT-2024-11-15-001847521",
+        "event_type": "order.placed",
+        "timestamp": "2024-11-15T09:23:41Z",
+        "session_id": null,
+        "user_id": null,
+        "customer_id": "CUST-88271",
+        "anonymous_id": null,
+        "context": {
+          "source": "api",
+          "channel": "erp_integration",
+          "client_id": "erp-sap-integration",
+          "ip_address": "10.0.1.50",
+          "user_agent": "SAP-Integration/2.1.0",
+          "locale": "en-US",
+          "timezone": "America/Chicago",
+          "page_url": null,
+          "referrer_url": null
+        },
+        "properties": {
+          "order_id": "ORD-2024-001847",
+          "order_number": 1847,
+          "currency": "USD",
+          "subtotal_usd": 7798.75,
+          "discount_usd": 1950.00,
+          "shipping_usd": 125.00,
+          "tax_usd": 526.38,
+          "total_usd": 6603.62,
+          "items_count": 2,
+          "units_count": 125,
+          "unique_products": 2,
+          "categories": ["Widgets", "Gaskets"],
+          "brands": ["WidgetCorp", "SealMaster"],
+          "coupon_codes": ["BULK25", "LOYAL2024"],
+          "payment_method": "net_terms",
+          "shipping_method": "ground_freight",
+          "is_first_order": false,
+          "customer_lifetime_orders": 847,
+          "customer_lifetime_value_usd": 284750.00
+        },
+        "attribution": {
+          "first_touch": { "channel": "trade_show", "campaign": "industryexpo_2019" },
+          "last_touch": { "channel": "direct", "campaign": null }
+        },
+        "experiments": {},
+        "processed_at": "2024-11-15T09:23:42Z",
+        "received_at": "2024-11-15T09:23:41Z"
+      },
+      {
+        "event_id": "EVT-2024-11-15-001847522",
+        "event_type": "page.viewed",
+        "timestamp": "2024-11-15T10:15:23Z",
+        "session_id": "SES-2024-11-15-847521",
+        "user_id": "USR-12847",
+        "customer_id": "CUST-99482",
+        "anonymous_id": null,
+        "context": {
+          "source": "web",
+          "channel": "website",
+          "client_id": "web-storefront",
+          "ip_address": "192.168.1.100",
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "locale": "en-US",
+          "timezone": "America/New_York",
+          "page_url": "https://store.example.com/products/wdg-pro-1000",
+          "referrer_url": "https://www.google.com/search?q=industrial+widgets"
+        },
+        "device": {
+          "type": "desktop",
+          "os": "Windows",
+          "os_version": "10",
+          "browser": "Chrome",
+          "browser_version": "119.0.0",
+          "screen_width": 1920,
+          "screen_height": 1080,
+          "viewport_width": 1904,
+          "viewport_height": 969,
+          "device_pixel_ratio": 1,
+          "is_mobile": false,
+          "is_tablet": false
+        },
+        "properties": {
+          "page_type": "product",
+          "page_name": "Product Detail - Professional Widget 1000",
+          "page_path": "/products/wdg-pro-1000",
+          "page_title": "Professional Widget 1000 | WidgetCorp",
+          "product_sku": "WDG-PRO-1000",
+          "product_name": "Professional Widget 1000",
+          "product_category": "Widgets",
+          "product_price_usd": 249.99,
+          "product_in_stock": true,
+          "search_query": "industrial widgets",
+          "search_engine": "google",
+          "time_on_page_seconds": null,
+          "scroll_depth_pct": null
+        },
+        "performance": {
+          "page_load_time_ms": 1247,
+          "dom_content_loaded_ms": 847,
+          "first_contentful_paint_ms": 521,
+          "largest_contentful_paint_ms": 1102,
+          "time_to_interactive_ms": 1521,
+          "cumulative_layout_shift": 0.05,
+          "first_input_delay_ms": 12
+        },
+        "attribution": {
+          "utm_source": "google",
+          "utm_medium": "organic",
+          "utm_campaign": null,
+          "utm_content": null,
+          "utm_term": "industrial widgets"
+        },
+        "experiments": {
+          "exp_new_pdp_layout": { "variant": "B", "enrolled_at": "2024-11-15T10:15:23Z" }
+        },
+        "processed_at": "2024-11-15T10:15:24Z",
+        "received_at": "2024-11-15T10:15:23Z"
+      }
+    ]
+  },
+  "_meta": {
+    "schema_version": "2.0.0",
+    "generated_at": "2024-11-15T14:30:00Z",
+    "sample_type": "comprehensive_test",
+    "record_counts": {
+      "orders": 1,
+      "products": 1,
+      "customers": 1,
+      "inventory_transactions": 3,
+      "warehouses": 1,
+      "pricing_rules": 1,
+      "shipments": 1,
+      "analytics_events": 2
     }
   }
-]
+}

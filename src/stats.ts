@@ -127,14 +127,15 @@ function inferRole(
 ): FieldRole {
     const leaf = path.split('.').pop() ?? path;
 
-    // 0. Value pattern detection takes precedence for specific patterns
-    if (valuePatternRole) {
-        return valuePatternRole;
+    // 0. Boolean flag detection by name (BEFORE value pattern check)
+    // This catches is_active, has_permission, etc. even with limited samples
+    if (type === 'int' && /^(is|has|can|should|allow|enable|disable)[_a-z]*$/i.test(leaf)) {
+        return 'dimension';
     }
 
-    // 1. Identifiers (name-based)
-    if (matchesAnyPattern(leaf, IDENTIFIER_PATTERNS)) {
-        return 'identifier';
+    // 1. Value pattern detection takes precedence for specific patterns
+    if (valuePatternRole) {
+        return valuePatternRole;
     }
 
     // 2. Time fields (name-based)
@@ -215,18 +216,38 @@ function inferRole(
     return 'metadata';
 }
 
+// ============================================================================
+// Fix inferAggregation() to check parent context (around line 200)
+// ============================================================================
+
 function inferAggregation(role: FieldRole, path: string): AggregationType {
     if (role !== 'measure') return 'none';
 
     const leaf = path.split('.').pop() ?? path;
+    const fullPathLower = path.toLowerCase();
 
-    // Check for 'none' aggregation first (limits, configs)
+    // Check for 'none' aggregation first (limits, configs, coordinates)
     if (matchesAnyPattern(leaf, NONE_AGGREGATION_PATTERNS)) {
         return 'none';
     }
 
+    // Context-aware: 'value' inside a scoring structure should avg
+    if (leaf === 'value' && /score/.test(fullPathLower)) {
+        return 'avg';
+    }
+
+    // Context-aware: 'percentile' fields should avg
+    if (leaf === 'percentile' || fullPathLower.includes('percentile')) {
+        return 'avg';
+    }
+
     // Check for 'avg' aggregation
     if (matchesAnyPattern(leaf, AVG_AGGREGATION_PATTERNS)) {
+        return 'avg';
+    }
+
+    // Check full path for avg patterns (catches nested scores)
+    if (matchesAnyPattern(fullPathLower, AVG_AGGREGATION_PATTERNS)) {
         return 'avg';
     }
 
@@ -236,10 +257,11 @@ function inferAggregation(role: FieldRole, path: string): AggregationType {
 
 function inferUnit(path: string): string | undefined {
     const leaf = path.split('.').pop() ?? path;
-    const fullPath = path.toLowerCase();
+    const fullPathLower = path.toLowerCase();  // Add this
 
     for (const { pattern, unit } of UNIT_PATTERNS) {
-        if (pattern.test(leaf) || pattern.test(fullPath)) {
+        // Check both leaf AND full path for context-aware matching
+        if (pattern.test(leaf) || pattern.test(fullPathLower)) {
             return unit;
         }
     }
@@ -431,7 +453,7 @@ function schemaToField(
                 const itemSamples = allSamples.get(itemPath) ?? [];
                 const isRequired = schema.items.required?.includes(key) ?? false;
                 field.itemFields.push(
-                    schemaToField(propSchema, key, itemSamples, !isRequired, allSamples)
+                    schemaToField(propSchema, itemPath, itemSamples, !isRequired, allSamples)
                 );
             }
         }

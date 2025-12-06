@@ -599,6 +599,10 @@ export function detectMaps(
  * Detect maps by analyzing sample data directly.
  * This is more accurate than key pattern matching alone.
  */
+/**
+ * Detect maps by analyzing sample data directly.
+ * This is more accurate than key pattern matching alone.
+ */
 export function detectMapsFromSamples(
     node: NodeDef,
     sampleData: unknown,
@@ -613,41 +617,49 @@ export function detectMapsFromSamples(
         const objNode = node as ObjectNode;
         const nodeName = path.split('.').pop() ?? '';
         const dataKeys = Object.keys(sampleData as object);
+        const schemaKeys = Object.keys(objNode.fields);
 
-        // Skip if this is a known object type
+        // Skip if this is a known object type (settings, config, etc.)
         if (!isKnownObjectType(nodeName)) {
-            // Check if we have more keys in data than in schema (dynamic)
-            const schemaKeys = Object.keys(objNode.fields);
 
-            if (dataKeys.length > schemaKeys.length * MAP_KEY_RATIO_THRESHOLD ||
-                (dataKeys.length >= MAP_DETECTION_THRESHOLD && looksLikeMapKeys(dataKeys))) {
+            // Check if all values have consistent structure
+            // This catches maps even when keys don't match typical patterns
+            const valueStructures = new Set<string>();
+            let hasObjectValues = false;
 
-                // Get value structures
-                const valueTypes = new Set<string>();
-                for (const key of dataKeys) {
-                    const value = (sampleData as Record<string, unknown>)[key];
-                    if (value === null || value === undefined) continue;
+            for (const key of dataKeys) {
+                const value = (sampleData as Record<string, unknown>)[key];
+                if (value === null || value === undefined) continue;
 
-                    if (typeof value === 'object' && !Array.isArray(value)) {
-                        const objKeys = Object.keys(value).sort().join(',');
-                        valueTypes.add(`object:${objKeys}`);
-                    } else {
-                        valueTypes.add(typeof value);
-                    }
+                if (typeof value === 'object' && !Array.isArray(value)) {
+                    hasObjectValues = true;
+                    const objKeys = Object.keys(value).sort().join(',');
+                    valueStructures.add(`object:${objKeys}`);
+                } else {
+                    valueStructures.add(typeof value);
                 }
+            }
 
-                // If consistent value types, it's a map
-                if (valueTypes.size === 1) {
-                    // Find a representative child from schema or create one
-                    const firstSchemaChild = Object.values(objNode.fields)[0];
-                    if (firstSchemaChild) {
-                        const mapNode: MapNode = {
-                            type: 'map',
-                            keys: { type: 'string' } as FieldNode,
-                            values: firstSchemaChild,
-                        };
-                        return mapNode;
-                    }
+            // Determine if this should be a map:
+            // 1. Has enough keys (>= threshold)
+            // 2. All values have same structure
+            // 3. Either: keys look like map keys OR we have more data keys than schema keys OR all values are objects with same shape
+            const hasEnoughKeys = dataKeys.length >= MAP_DETECTION_THRESHOLD;
+            const hasConsistentValues = valueStructures.size === 1;
+            const keysLookDynamic = looksLikeMapKeys(dataKeys);
+            const hasMoreDataKeys = dataKeys.length > schemaKeys.length * MAP_KEY_RATIO_THRESHOLD;
+            const allSameObjectStructure = hasObjectValues && hasConsistentValues && dataKeys.length >= MAP_DETECTION_THRESHOLD;
+
+            if (hasConsistentValues && (keysLookDynamic || hasMoreDataKeys || allSameObjectStructure)) {
+                // Find a representative child from schema
+                const firstSchemaChild = Object.values(objNode.fields)[0];
+                if (firstSchemaChild) {
+                    const mapNode: MapNode = {
+                        type: 'map',
+                        keys: dataKeys,  // Store actual keys for reference
+                        values: firstSchemaChild,
+                    };
+                    return mapNode;
                 }
             }
         }

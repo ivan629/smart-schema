@@ -347,15 +347,34 @@ export function matchesAny(
 /**
  * Check if a value matches any pattern exactly or as a suffix
  */
+/**
+ * Check if a value matches any pattern with flexible matching
+ */
 export function matchesExact(
     value: string,
     patterns: string[]
 ): boolean {
     const lower = value.toLowerCase();
-    return patterns.some(p =>
-        lower === p.toLowerCase() ||
-        lower.endsWith('_' + p.toLowerCase())
-    );
+
+    return patterns.some(p => {
+        const pattern = p.toLowerCase();
+
+        // Prefix patterns like "is_", "has_", "can_"
+        if (pattern.endsWith('_')) {
+            return lower.startsWith(pattern);
+        }
+
+        // Exact match
+        if (lower === pattern) return true;
+
+        // Suffix match: order_status matches "status"
+        if (lower.endsWith('_' + pattern)) return true;
+
+        // Prefix match: status_code matches "status"
+        if (lower.startsWith(pattern + '_')) return true;
+
+        return false;
+    });
 }
 
 /**

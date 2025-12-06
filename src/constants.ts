@@ -74,6 +74,10 @@ export const TIME_PATTERNS: RegExp[] = [
     /_datetime$/i,
     /_ts$/i,            // created_ts
     /_timestamp$/i,
+    /_period_start$/i,  // billing period boundaries
+    /_period_end$/i,
+    /period_start$/i,   // current_period_start (no leading underscore)
+    /period_end$/i,     // current_period_end
     /At$/,              // createdAt
     /On$/,              // createdOn
     /Date$/,
@@ -190,6 +194,8 @@ export const TIME_PATTERNS: RegExp[] = [
 ];
 
 export const MEASURE_PATTERNS: RegExp[] = [
+    /time_on_site/i,
+    /days_since/i,
     // Suffix patterns (most reliable)
     /_count$/i,
     /_total$/i,
@@ -698,6 +704,12 @@ export const AVG_AGGREGATION_PATTERNS: RegExp[] = [
     /\bpercentile\b/i,
     /\bquartile\b/i,
     /\bmedian\b/i,
+
+    // Context-aware patterns for nested score values
+    /scores?\..*\.value$/i,      // custom_scores.health_score.value
+    /score\.value$/i,            // health_score.value
+    /metrics\..*\.value$/i,      // metrics.custom_scores.*.value
+    /_score\.percentile$/i,      // health_score.percentile
 ];
 
 export const NONE_AGGREGATION_PATTERNS: RegExp[] = [
@@ -773,6 +785,13 @@ export const NONE_AGGREGATION_PATTERNS: RegExp[] = [
     /\bhour\b/i,
     /\bweek\b/i,
     /\bquarter\b/i,
+
+    // Conversion values (binary 0/1, don't sum)
+    /\bconversion_value\b/i,
+
+    // Account age (don't sum)
+    /\baccount_age/i,
+    /\bdays_since/i,
 ];
 
 // ============================================================================
@@ -823,6 +842,8 @@ export const UNIT_PATTERNS: UnitPattern[] = [
     { pattern: /\bhours?\b/i, unit: 'hours' },
     { pattern: /_days$/i, unit: 'days' },
     { pattern: /\bdays?\b/i, unit: 'days' },
+    { pattern: /account_age_days/i, unit: 'days' },
+    { pattern: /days_since/i, unit: 'days' },
     { pattern: /_weeks$/i, unit: 'weeks' },
     { pattern: /_months$/i, unit: 'months' },
     { pattern: /_years$/i, unit: 'years' },
@@ -845,25 +866,37 @@ export const UNIT_PATTERNS: UnitPattern[] = [
     { pattern: /(characters?|char_count)/i, unit: 'characters' },
 
     // =========================================================================
-    // Percentages and scales
+    // Percentages and scales (ORDER MATTERS - most specific first!)
     // =========================================================================
     { pattern: /_pct$/i, unit: 'percent' },
     { pattern: /_percent$/i, unit: 'percent' },
     { pattern: /\bpercentile\b/i, unit: 'percent' },
     { pattern: /(^percent$|^pct$)/i, unit: 'percent' },
-    // Scale 0-1
+    { pattern: /(feature_adoption_pct|seats_used_pct|api_quota_used_pct)/i, unit: 'percent' },
+
+    // Scale 0-1 (probabilities, ratios)
     { pattern: /(probability|scroll_depth|cls_score|adoption_pct|used_pct|quota_used|ratio|fraction)/i, unit: 'scale_0_1' },
-    // Scale 1-5
+    { pattern: /scroll_depth_avg/i, unit: 'scale_0_1' },
+
+    // Scale 1-5 (satisfaction, CSAT)
     { pattern: /(satisfaction_score|csat)/i, unit: 'scale_1_5' },
-    // Scale 0-10
+
+    // Scale 0-10 (NPS) - BEFORE generic score patterns!
+    { pattern: /nps.*score/i, unit: 'scale_0_10' },
+    { pattern: /nps_response/i, unit: 'scale_0_10' },
     { pattern: /\bnps\b/i, unit: 'scale_0_10' },
-    // Scale 0-100
-    { pattern: /^(score|value)$/i, unit: 'scale_0_100' },
+
+    // Scale 0-100 (general scores, health scores)
     { pattern: /(health_score|engagement_score|churn_risk|quality_score)/i, unit: 'scale_0_100' },
+    { pattern: /^(score|value)$/i, unit: 'scale_0_100' },
+
+    // Scale 1-10 (importance, strength ratings)
+    { pattern: /\bimportance\b/i, unit: 'scale_0_1' },
 
     // =========================================================================
     // Counts
     // =========================================================================
+    { pattern: /(features_used|features_enabled|features_available)/i, unit: 'count' },
     { pattern: /(count|quantity|qty|instances?|page_views|clicks|unique_pages|login_count|total_tickets|open_tickets|exposure_count|retry_count|session_count|visit_count|error_count|failure_count|success_count)/i, unit: 'count' },
 
     // =========================================================================
@@ -983,7 +1016,7 @@ export const VALUE_PATTERNS: ValuePattern[] = [
         name: 'timestamp_unix',
         test: (samples) => {
             const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
+            if (nums.length < 2) return false;  // Lowered from 3
             return nums.every(n => Number.isInteger(n) && n > 1_000_000_000 && n < 2_000_000_000);
         },
         type: 'date',
@@ -994,7 +1027,7 @@ export const VALUE_PATTERNS: ValuePattern[] = [
         name: 'timestamp_ms',
         test: (samples) => {
             const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
+            if (nums.length < 2) return false;  // Lowered from 3
             return nums.every(n => Number.isInteger(n) && n > 1_000_000_000_000 && n < 2_000_000_000_000);
         },
         type: 'date',
@@ -1005,7 +1038,7 @@ export const VALUE_PATTERNS: ValuePattern[] = [
         name: 'boolean_int',
         test: (samples) => {
             const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
+            if (nums.length < 2) return false;  // Lowered from 3 to work with 2 samples
             const unique = new Set(nums);
             return unique.size <= 2 && nums.every(n => n === 0 || n === 1);
         },
@@ -1016,7 +1049,7 @@ export const VALUE_PATTERNS: ValuePattern[] = [
         name: 'boolean_string',
         test: (samples) => {
             const strs = samples.filter((s): s is string => typeof s === 'string');
-            if (strs.length < 3) return false;
+            if (strs.length < 2) return false;  // Lowered from 3
             const boolValues = new Set(['true', 'false', 'yes', 'no', 'y', 'n', '1', '0', 'on', 'off']);
             return strs.every(s => boolValues.has(s.toLowerCase()));
         },
@@ -1027,7 +1060,7 @@ export const VALUE_PATTERNS: ValuePattern[] = [
         name: 'http_status',
         test: (samples) => {
             const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
+            if (nums.length < 2) return false;  // Lowered from 3
             return nums.every(n => Number.isInteger(n) && n >= 100 && n < 600);
         },
         role: 'dimension',
@@ -1037,7 +1070,7 @@ export const VALUE_PATTERNS: ValuePattern[] = [
         name: 'year',
         test: (samples) => {
             const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
+            if (nums.length < 2) return false;  // Lowered from 3
             return nums.every(n => Number.isInteger(n) && n >= 1900 && n <= 2100);
         },
         role: 'time',
@@ -1047,7 +1080,7 @@ export const VALUE_PATTERNS: ValuePattern[] = [
         name: 'port',
         test: (samples) => {
             const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
+            if (nums.length < 2) return false;  // Lowered from 3
             return nums.every(n => Number.isInteger(n) && n >= 1 && n <= 65535);
         },
         role: 'dimension',
@@ -1057,7 +1090,7 @@ export const VALUE_PATTERNS: ValuePattern[] = [
         name: 'percentage_0_100',
         test: (samples) => {
             const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
+            if (nums.length < 2) return false;  // Lowered from 3
             return nums.every(n => n >= 0 && n <= 100);
         },
         role: 'measure',
@@ -1067,7 +1100,7 @@ export const VALUE_PATTERNS: ValuePattern[] = [
         name: 'probability_0_1',
         test: (samples) => {
             const nums = samples.filter((s): s is number => typeof s === 'number');
-            if (nums.length < 3) return false;
+            if (nums.length < 2) return false;  // Lowered from 3
             // Must have decimals to distinguish from boolean
             const hasDecimals = nums.some(n => !Number.isInteger(n));
             return hasDecimals && nums.every(n => n >= 0 && n <= 1);
@@ -1081,6 +1114,18 @@ export const VALUE_PATTERNS: ValuePattern[] = [
 // ============================================================================
 
 export const DIMENSION_PATTERNS: RegExp[] = [
+    // Boolean flag patterns (FIRST - highest priority)
+    /^is_[a-z_]+$/i,       // is_active, is_verified, is_deleted
+    /^has_[a-z_]+$/i,      // has_permission, has_access
+    /^can_[a-z_]+$/i,      // can_edit, can_delete
+    /^should_[a-z_]+$/i,   // should_notify, should_sync
+    /^allow_[a-z_]+$/i,    // allow_marketing, allow_notifications
+    /^enabled?_/i,         // enabled, enable_feature
+    /^disabled?_/i,        // disabled, disable_feature
+    /^show_/i,             // show_toolbar
+    /^hide_/i,             // hide_sidebar
+
+    // Status & state
     /\bstatus\b/i,
     /\bstate\b/i,
     /\btype\b/i,
@@ -1166,7 +1211,7 @@ export const EXTRA_FIELD_PENALTY = 0.5;
 export const MAP_KEY_MATCH_RATIO = 0.8;
 
 /** Minimum keys required for length variance check */
-export const MIN_KEYS_FOR_VARIANCE_CHECK = 5;
+export const MIN_KEYS_FOR_VARIANCE_CHECK = 3;  // Changed from 5 to 3
 
 /** Maximum key length variance for map detection */
 export const MAX_KEY_LENGTH_VARIANCE = 4;
@@ -1490,6 +1535,18 @@ export const SEMANTIC_DEF_PATTERNS: SemanticDefPattern[] = [
         requiredFields: ['label', 'confidence'],
         optionalFields: ['probability', 'scores', 'alternatives'],
     },
+    {
+        name: 'trending_metric',
+        description: 'Metric with trend indicator',
+        requiredFields: ['value', 'trend'],
+        optionalFields: ['percentile', 'change', 'previous'],
+    },
+    {
+        name: 'percentile_metric',
+        description: 'Value with percentile ranking',
+        requiredFields: ['value', 'percentile'],
+        optionalFields: ['trend', 'rank', 'total'],
+    },
 
     // =========================================================================
     // Identity & References
@@ -1778,6 +1835,16 @@ export const SEMANTIC_DEF_PATTERNS: SemanticDefPattern[] = [
         requiredFields: ['language'],
         optionalFields: ['country', 'region', 'timezone', 'currency', 'date_format'],
     },
+
+    // =========================================================================
+    // Integration & Webhook Config
+    // =========================================================================
+    {
+        name: 'integration_config',
+        description: 'Third-party integration configuration',
+        requiredFields: ['enabled'],
+        optionalFields: ['webhook_url', 'api_key', 'token', 'settings', 'connected_at'],
+    },
 ];
 
 /**
@@ -1981,6 +2048,9 @@ export const HEURISTIC_AVG_PATTERNS: string[] = [
 
     // ML predictions
     'prediction', 'forecast', 'estimate', 'projection',
+
+    // Score-nested values (context-aware)
+    'value',  // When inside a score context, should avg
 ];
 
 /**
@@ -2028,6 +2098,13 @@ export const HEURISTIC_NONE_PATTERNS: string[] = [
 
     // Reference values
     'baseline', 'benchmark', 'target', 'goal',
+
+    // Conversion values (binary 0/1, don't sum)
+    'conversion_value',
+
+    // Account metrics (don't sum)
+    'account_age',
+    'days_since',
 ];
 
 /**
@@ -2098,6 +2175,7 @@ export const HEURISTIC_TEXT_PATTERNS: string[] = [
 export const HEURISTIC_TIME_PATTERNS: string[] = [
     // Suffix patterns
     '_at', '_on', '_date', '_time', '_datetime', '_ts', '_timestamp',
+    'period_start', 'period_end',  // Added for current_period_start/end
 
     // Core time words
     'timestamp', 'datetime', 'datestamp',
@@ -2161,6 +2239,10 @@ export const HEURISTIC_TIME_PATTERNS: string[] = [
  * Patterns indicating a string field should be DIMENSION (categorical).
  */
 export const HEURISTIC_DIMENSION_PATTERNS: string[] = [
+    // Boolean flags (highest priority)
+    'is_', 'has_', 'can_', 'should_', 'allow_',
+    'enabled', 'disabled', 'active', 'inactive',
+
     // Status & state
     'status', 'state', 'phase', 'stage', 'step',
     'condition', 'health', 'lifecycle',
@@ -2239,14 +2321,20 @@ export const HEURISTIC_DIMENSION_PATTERNS: string[] = [
  * Order matters - more specific patterns first.
  */
 export const HEURISTIC_UNIT_MAP: Array<{ patterns: string[]; unit: string }> = [
+    { patterns: ['ltv_estimate_usd', 'ltv_usd'], unit: 'usd' },
+    { patterns: ['time_on_site_seconds'], unit: 'seconds' },
+    { patterns: ['days_since'], unit: 'days' },
+    // Feature counts (FIRST - very specific)
+    { patterns: ['features_used', 'features_enabled', 'features_available'], unit: 'count' },
+
     // Time - most specific first
     { patterns: ['_ns', 'nanosecond'], unit: 'nanoseconds' },
     { patterns: ['_us', '_μs', 'microsecond'], unit: 'microseconds' },
     { patterns: ['_ms', 'millisecond', 'latency', 'lcp', 'fid', 'ttfb', 'fcp', 'inp', 'response_time', 'load_time'], unit: 'milliseconds' },
-    { patterns: ['_seconds', 'duration_seconds', 'elapsed_seconds', 'time_seconds'], unit: 'seconds' },
-    { patterns: ['_minutes', 'duration_minutes', 'response_minutes', 'resolution_minutes'], unit: 'minutes' },
+    { patterns: ['_seconds', 'duration_seconds', 'elapsed_seconds', 'time_seconds', 'time_on_site_seconds'], unit: 'seconds' },
+    { patterns: ['_minutes', 'duration_minutes', 'response_minutes', 'resolution_minutes', 'first_response_minutes'], unit: 'minutes' },
     { patterns: ['_hours', 'duration_hours'], unit: 'hours' },
-    { patterns: ['_days', 'age_days', 'days_since'], unit: 'days' },
+    { patterns: ['_days', 'age_days', 'days_since', 'account_age_days'], unit: 'days' },
 
     // Currency
     { patterns: ['_usd', 'price', 'cost', 'revenue', 'profit', 'amount', 'fee', 'tax', 'mrr', 'arr', 'ltv', 'cac', 'aov', 'gmv', 'salary', 'wage', 'budget', 'spend', 'balance', 'earnings'], unit: 'usd' },
@@ -2266,18 +2354,18 @@ export const HEURISTIC_UNIT_MAP: Array<{ patterns: string[]; unit: string }> = [
     { patterns: ['words', 'word_count'], unit: 'words' },
     { patterns: ['characters', 'char_count'], unit: 'characters' },
 
-    // Scales - specific first
+    // Scales - most specific first!
     { patterns: ['satisfaction_score', 'csat', 'rating_1_5'], unit: 'scale_1_5' },
-    { patterns: ['nps', 'rating_0_10', 'scale_0_10'], unit: 'scale_0_10' },
-    { patterns: ['probability', 'ratio', 'fraction', 'scroll_depth', 'cls_score', 'adoption_pct', 'used_pct', 'quota_used', '_0_1'], unit: 'scale_0_1' },
-    { patterns: ['score', 'percentile', 'health_score', 'engagement_score', 'quality_score', 'churn_risk', '_0_100'], unit: 'scale_0_100' },
-    { patterns: ['strength', 'intensity', 'rating', 'importance', '_1_10'], unit: 'scale_1_10' },
+    { patterns: ['nps', 'nps_score', 'nps_rating', 'rating_0_10', 'scale_0_10'], unit: 'scale_0_10' },
+    { patterns: ['probability', 'scroll_depth', 'cls_score', 'adoption_pct', 'used_pct', 'quota_used', '_0_1'], unit: 'scale_0_1' },
+    { patterns: ['health_score', 'engagement_score', 'quality_score', 'churn_risk', '_0_100'], unit: 'scale_0_100' },
+    { patterns: ['importance', '_1_10'], unit: 'scale_0_1' },
 
     // Percentages
-    { patterns: ['_pct', '_percent', 'percent', 'percentage'], unit: 'percent' },
+    { patterns: ['_pct', '_percent', 'percent', 'percentage', 'feature_adoption_pct', 'seats_used_pct', 'api_quota_used_pct'], unit: 'percent' },
 
     // Counts
-    { patterns: ['count', 'quantity', 'qty', 'total_', 'num_', '_count', 'views', 'clicks', 'impressions', 'visits', 'sessions', 'instances', 'occurrences'], unit: 'count' },
+    { patterns: ['count', 'quantity', 'qty', 'total_', 'num_', '_count', 'views', 'clicks', 'impressions', 'visits', 'sessions', 'instances', 'occurrences', 'page_views', 'unique_pages', 'login_count', 'total_tickets', 'open_tickets', 'exposure_count', 'retry_count'], unit: 'count' },
 
     // Geographic
     { patterns: ['latitude', 'lat'], unit: 'degrees_latitude' },

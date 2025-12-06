@@ -51,7 +51,7 @@ export interface ArrayNode {
 export interface MapNode {
     readonly type: 'map';
     readonly description?: string;
-    readonly keys: string[];
+    readonly keys: string[] | FieldNode;  // Should support both
     readonly values: NodeDef;
 }
 

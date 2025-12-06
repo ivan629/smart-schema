@@ -38,7 +38,7 @@ import {
     ROLE_PRIORITY_ORDER,
     PATTERN_COLLAPSE_THRESHOLD,
 } from './constants.js';
-import { getStructureFingerprint } from './utils.js';
+import { getStructureFingerprint, matchesExact } from './utils.js';
 
 // ============================================================================
 // Types
@@ -705,7 +705,6 @@ function applyFieldCorrections(
             const pattern = pathToPattern.get(path);
 
             if (typeof child === 'object') {
-                // Apply pattern-based corrections
                 if (pattern) {
                     const desc = corrections.descriptions.get(pattern);
                     if (desc) (child as any).description = desc;
@@ -720,8 +719,6 @@ function applyFieldCorrections(
                     if (agg) (child as any).aggregation = agg;
                 }
 
-                // Apply heuristic role corrections for common field names
-                // This catches $def fields that don't have pattern matches
                 applyHeuristicCorrections(key, child as any);
             }
 
@@ -732,6 +729,15 @@ function applyFieldCorrections(
     if ('items' in node && node.items) {
         applyFieldCorrections(node.items, pathToPattern, corrections, `${prefix}[]`);
     }
+
+    // ✅ ADD THIS: Handle map values
+    if ('values' in node && (node as any).values) {
+        const mapNode = node as any;
+        // If values is an object with fields, recurse into it
+        if (typeof mapNode.values === 'object') {
+            applyFieldCorrections(mapNode.values, pathToPattern, corrections, `${prefix}.*`);
+        }
+    }
 }
 
 /**
@@ -741,14 +747,34 @@ function applyFieldCorrections(
  */
 function applyHeuristicCorrections(key: string, field: Record<string, any>): void {
     const keyLower = key.toLowerCase();
+    const pathLower = (field._path || key).toLowerCase();
 
-    // Helper to check if key contains any of the patterns
     const matchesAny = (patterns: string[]): boolean =>
         patterns.some(p => keyLower.includes(p));
 
-    // Helper to check if key matches exactly or ends with pattern
-    const matchesExact = (patterns: string[]): boolean =>
-        patterns.some(p => keyLower === p || keyLower.endsWith('_' + p));
+    // =========================================================================
+    // BOOLEAN FLAG CORRECTIONS - integers that are really dimensions (FIRST)
+    // =========================================================================
+    if (field.type === 'int') {
+        if (/^(is|has|can|should|allow|enable|disable)[_a-z]*$/i.test(key)) {
+            field.role = 'dimension';
+            field.aggregation = 'count';
+            return;
+        }
+    }
+
+    // =========================================================================
+    // SCORE VALUE/PERCENTILE CORRECTIONS - map value fields in scoring context
+    // =========================================================================
+    if ((key === 'value' || key === 'percentile') &&
+        (field.type === 'int' || field.type === 'number') &&
+        field.role === 'dimension') {  // ✅ Only fix wrongly classified
+        field.role = 'measure';
+        field.aggregation = 'avg';
+        if (key === 'value' && !field.unit) field.unit = 'scale_0_100';
+        if (key === 'percentile' && !field.unit) field.unit = 'percent';
+        return;  // ✅ Prevent later code from overwriting
+    }
 
     // =========================================================================
     // MEASURE CORRECTIONS - numeric fields that should be measures
@@ -758,19 +784,22 @@ function applyHeuristicCorrections(key: string, field: Record<string, any>): voi
             field.role = 'measure';
         }
 
-        // Set appropriate aggregation for measures
         if (field.role === 'measure') {
             if (matchesAny(HEURISTIC_NONE_PATTERNS)) {
                 field.aggregation = 'none';
-            } else if (matchesAny(HEURISTIC_AVG_PATTERNS)) {
+            }
+            else if (matchesAny(HEURISTIC_AVG_PATTERNS)) {
                 field.aggregation = 'avg';
-            } else if (!field.aggregation || field.aggregation === 'none') {
-                // Default to sum for counts, totals, amounts
+            }
+            else if ((key === 'value' || key === 'percentile') &&
+                (pathLower?.includes('score') || keyLower.includes('score'))) {
+                field.aggregation = 'avg';
+            }
+            else if (!field.aggregation) {
                 field.aggregation = 'sum';
             }
         }
 
-        // Detect units from field names
         if (field.role === 'measure' && !field.unit) {
             for (const { patterns, unit } of HEURISTIC_UNIT_MAP) {
                 if (matchesAny(patterns)) {
@@ -803,7 +832,7 @@ function applyHeuristicCorrections(key: string, field: Record<string, any>): voi
     // DIMENSION CORRECTIONS - fields that should be dimensions
     // =========================================================================
     if (field.type === 'string' && field.role !== 'time' && field.role !== 'text') {
-        if (matchesExact(HEURISTIC_DIMENSION_PATTERNS)) {
+        if (matchesExact(key, HEURISTIC_DIMENSION_PATTERNS)) {
             field.role = 'dimension';
         }
     }
