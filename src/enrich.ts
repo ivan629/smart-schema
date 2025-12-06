@@ -52,11 +52,17 @@ interface EntityContext {
     nameField?: string;
 }
 
+interface DefContext {
+    name: string;
+    sampleFields: string[];  // First few field names in the def
+}
+
 interface EnrichmentInput {
     domain: string;
     patterns: PatternContext[];
     entities: EntityContext[];
     relationships: string[];
+    defNames?: DefContext[];
     totalFields: number;
 }
 
@@ -66,6 +72,11 @@ interface EnrichmentOutput {
     grain: string;
     patterns: Record<string, string>;  // pattern → description
     entities: Record<string, string>;
+    // New semantic corrections
+    role_corrections?: Record<string, string>;  // pattern → corrected role
+    units?: Record<string, string>;             // pattern → detected unit
+    aggregations?: Record<string, string>;      // pattern → aggregation method
+    def_names?: Record<string, string>;         // current $def name → better name
 }
 
 interface EnrichOptions {
@@ -80,7 +91,7 @@ interface EnrichOptions {
 
 const ENRICHMENT_TOOL: Anthropic.Tool = {
     name: 'submit_schema_enrichment',
-    description: 'Submit the enriched schema with descriptions for each pattern',
+    description: 'Submit the enriched schema with descriptions and semantic corrections for each pattern',
     input_schema: {
         type: 'object' as const,
         properties: {
@@ -104,6 +115,32 @@ const ENRICHMENT_TOOL: Anthropic.Tool = {
             entities: {
                 type: 'object',
                 description: 'Map of entity names to their descriptions',
+                additionalProperties: { type: 'string' },
+            },
+            role_corrections: {
+                type: 'object',
+                description: 'Map of pattern paths to corrected roles. Only include if the inferred role is WRONG. Valid roles: identifier, measure, dimension, time, text, metadata',
+                additionalProperties: {
+                    type: 'string',
+                    enum: ['identifier', 'measure', 'dimension', 'time', 'text', 'metadata']
+                },
+            },
+            units: {
+                type: 'object',
+                description: 'Map of pattern paths to detected units (e.g., "usd", "percent", "scale_0_1", "scale_1_10", "seconds", "bytes"). Only for numeric measures.',
+                additionalProperties: { type: 'string' },
+            },
+            aggregations: {
+                type: 'object',
+                description: 'Map of pattern paths to aggregation methods. Only for measures. Valid: sum, avg, count, min, max, none',
+                additionalProperties: {
+                    type: 'string',
+                    enum: ['sum', 'avg', 'count', 'min', 'max', 'none']
+                },
+            },
+            def_names: {
+                type: 'object',
+                description: 'Map of current $def names to better semantic names (e.g., "def_1" → "evidence_excerpt", "def_2" → "mechanism_analysis"). Only include if name can be improved.',
                 additionalProperties: { type: 'string' },
             },
         },
@@ -319,7 +356,7 @@ function formatEntityContext(entity: EntityContext): string {
 
 function buildPrompt(input: EnrichmentInput): string {
     const sections: string[] = [
-        `You are analyzing a data schema to add semantic descriptions.`,
+        `You are analyzing a data schema to add semantic descriptions and corrections.`,
         ``,
         `DOMAIN HINT: ${input.domain || 'unknown'}`,
         `TOTAL FIELDS: ${input.totalFields} (collapsed to ${input.patterns.length} unique patterns)`,
@@ -346,6 +383,15 @@ function buildPrompt(input: EnrichmentInput): string {
         );
     }
 
+    if (input.defNames && input.defNames.length > 0) {
+        sections.push(
+            ``,
+            `$DEF NAMES TO REVIEW:`,
+            `(Suggest better semantic names if current names are generic like "def_1")`,
+            ...input.defNames.map(d => `- ${d.name}: ${d.sampleFields.slice(0, 3).join(', ')}`)
+        );
+    }
+
     sections.push(
         ``,
         `INSTRUCTIONS:`,
@@ -358,6 +404,28 @@ function buildPrompt(input: EnrichmentInput): string {
         `   - Applies to ALL fields matching that pattern`,
         `   - Uses domain-appropriate terminology`,
         `5. For each entity, describe what it represents`,
+        ``,
+        `SEMANTIC CORRECTIONS (include only where needed):`,
+        `6. role_corrections: Fix misclassified roles. Common issues:`,
+        `   - "strength" fields are measures, not dimensions`,
+        `   - "score" fields are measures`,
+        `   - "category" fields are dimensions, not text`,
+        `   - Boolean flags are dimensions`,
+        `7. units: Detect units for numeric measures:`,
+        `   - Percentages: "percent"`,
+        `   - 0-1 scales: "scale_0_1"`,
+        `   - 1-10 scales: "scale_1_10"`,
+        `   - Currency: "usd", "eur"`,
+        `   - Time: "seconds", "milliseconds"`,
+        `   - Counts: "count"`,
+        `8. aggregations: How should measures be combined?`,
+        `   - Scores/ratings → "avg"`,
+        `   - Counts/totals → "sum"`,
+        `   - Flags → "count" (to count true values)`,
+        `   - Unique values → "none" (don't aggregate)`,
+        `9. def_names: Suggest semantic names for generic $defs`,
+        `   - "def_1" → "evidence_excerpt" (if contains quote, context, strength)`,
+        `   - "def_2" → "mechanism_analysis" (if contains score, confidence)`,
         ``,
         `IMPORTANT: Provide a description for EVERY pattern listed above.`,
         `Use the submit_schema_enrichment tool with your analysis.`
@@ -413,6 +481,15 @@ function buildRelationships(entities: Entity[]): string[] {
     return relationships;
 }
 
+function buildDefContexts(defs: Record<string, { fields: Record<string, unknown> }> | undefined): DefContext[] {
+    if (!defs) return [];
+
+    return Object.entries(defs).map(([name, def]) => ({
+        name,
+        sampleFields: Object.keys(def.fields).slice(0, 5),
+    }));
+}
+
 // ============================================================================
 // Main Export
 // ============================================================================
@@ -446,15 +523,17 @@ export async function enrichSchema(
     // 3. Build context
     const entities = buildEntityContexts(schema.entities ?? []);
     const relationships = buildRelationships(schema.entities ?? []);
+    const defNames = buildDefContexts(schema.$defs as Record<string, { fields: Record<string, unknown> }> | undefined);
 
-    // 4. Scale tokens with pattern count
-    const maxTokens = Math.min(8192, 512 + patterns.length * 30);
+    // 4. Scale tokens with pattern count (increased for corrections)
+    const maxTokens = Math.min(8192, 768 + patterns.length * 40);
 
     const input: EnrichmentInput = {
         domain: schema.domain,
         patterns,
         entities,
         relationships,
+        defNames,
         totalFields: allFields.length,
     };
 
@@ -528,6 +607,13 @@ export async function enrichSchema(
 // Apply Enrichments
 // ============================================================================
 
+interface PatternCorrections {
+    descriptions: Map<string, string>;
+    roles: Map<string, string>;
+    units: Map<string, string>;
+    aggregations: Map<string, string>;
+}
+
 function applyPatternEnrichments(
     schema: SmartSchema,
     patterns: PatternContext[],
@@ -540,10 +626,25 @@ function applyPatternEnrichments(
     (enriched as any).description = enrichment.description || schema.description;
     (enriched as any).grain = enrichment.grain || schema.grain;
 
-    // Build pattern → description map
-    const patternDescriptions = new Map<string, string>();
+    // Build pattern → corrections maps
+    const corrections: PatternCorrections = {
+        descriptions: new Map(),
+        roles: new Map(),
+        units: new Map(),
+        aggregations: new Map(),
+    };
+
     for (const [pattern, desc] of Object.entries(enrichment.patterns)) {
-        patternDescriptions.set(pattern, desc);
+        corrections.descriptions.set(pattern, desc);
+    }
+    for (const [pattern, role] of Object.entries(enrichment.role_corrections ?? {})) {
+        corrections.roles.set(pattern, role);
+    }
+    for (const [pattern, unit] of Object.entries(enrichment.units ?? {})) {
+        corrections.units.set(pattern, unit);
+    }
+    for (const [pattern, agg] of Object.entries(enrichment.aggregations ?? {})) {
+        corrections.aggregations.set(pattern, agg);
     }
 
     // Build path → pattern lookup
@@ -555,22 +656,24 @@ function applyPatternEnrichments(
     }
 
     // Apply to fields
-    applyFieldDescriptionsFromPatterns(
-        enriched.root,
-        pathToPattern,
-        patternDescriptions,
-        ''
-    );
+    applyFieldCorrections(enriched.root, pathToPattern, corrections, '');
 
-    // Apply to $defs
-    if (enriched.$defs) {
+    // Handle $def renaming
+    if (enriched.$defs && enrichment.def_names && Object.keys(enrichment.def_names).length > 0) {
+        const renamedDefs: Record<string, any> = {};
+
+        for (const [oldName, def] of Object.entries(enriched.$defs)) {
+            const newName = enrichment.def_names[oldName] || oldName;
+            applyFieldCorrections({ type: 'object', fields: def.fields }, pathToPattern, corrections, '');
+            renamedDefs[newName] = def;
+        }
+
+        // Update $refs in the schema to use new names
+        updateRefs(enriched.root, enrichment.def_names);
+        (enriched as any).$defs = renamedDefs;
+    } else if (enriched.$defs) {
         for (const def of Object.values(enriched.$defs)) {
-            applyFieldDescriptionsFromPatterns(
-                { type: 'object', fields: def.fields },
-                pathToPattern,
-                patternDescriptions,
-                ''
-            );
+            applyFieldCorrections({ type: 'object', fields: def.fields }, pathToPattern, corrections, '');
         }
     }
 
@@ -587,40 +690,95 @@ function applyPatternEnrichments(
     return enriched;
 }
 
-function applyFieldDescriptionsFromPatterns(
+function applyFieldCorrections(
     node: NodeDef,
     pathToPattern: Map<string, string>,
-    patternDescriptions: Map<string, string>,
+    corrections: PatternCorrections,
     prefix: string
 ): void {
     if ('fields' in node && node.fields) {
         for (const [key, child] of Object.entries(node.fields)) {
             const path = prefix ? `${prefix}.${key}` : key;
-
-            // Find pattern for this path
             const pattern = pathToPattern.get(path);
-            const desc = pattern ? patternDescriptions.get(pattern) : undefined;
 
-            if (desc && typeof child === 'object') {
-                (child as any).description = desc;
+            if (typeof child === 'object') {
+                // Apply pattern-based corrections
+                if (pattern) {
+                    const desc = corrections.descriptions.get(pattern);
+                    if (desc) (child as any).description = desc;
+
+                    const role = corrections.roles.get(pattern);
+                    if (role) (child as any).role = role;
+
+                    const unit = corrections.units.get(pattern);
+                    if (unit) (child as any).unit = unit;
+
+                    const agg = corrections.aggregations.get(pattern);
+                    if (agg) (child as any).aggregation = agg;
+                }
+
+                // Apply heuristic role corrections for common field names
+                // This catches $def fields that don't have pattern matches
+                applyHeuristicCorrections(key, child as any);
             }
 
-            applyFieldDescriptionsFromPatterns(
-                child,
-                pathToPattern,
-                patternDescriptions,
-                path
-            );
+            applyFieldCorrections(child, pathToPattern, corrections, path);
         }
     }
 
     if ('items' in node && node.items) {
-        applyFieldDescriptionsFromPatterns(
-            node.items,
-            pathToPattern,
-            patternDescriptions,
-            `${prefix}[]`
-        );
+        applyFieldCorrections(node.items, pathToPattern, corrections, `${prefix}[]`);
+    }
+}
+
+/**
+ * Apply heuristic corrections based on field name patterns.
+ * This catches common misclassifications that the AI might miss.
+ */
+function applyHeuristicCorrections(key: string, field: Record<string, any>): void {
+    const keyLower = key.toLowerCase();
+
+    // Skip if not a numeric type
+    if (field.type !== 'int' && field.type !== 'number') return;
+
+    // Fields named "strength", "score", "rating", "level" should be measures
+    const measureNames = ['strength', 'score', 'rating', 'level', 'intensity', 'severity'];
+    if (measureNames.some(n => keyLower.includes(n)) && field.role !== 'measure') {
+        field.role = 'measure';
+        // Also set appropriate aggregation if not set
+        if (!field.aggregation || field.aggregation === 'sum') {
+            field.aggregation = 'avg';
+        }
+    }
+
+    // Detect scale units from value patterns or field names
+    if (field.role === 'measure' && !field.unit) {
+        if (keyLower.includes('score') || keyLower.includes('rating')) {
+            // Scores are typically 0-100 or 1-10
+            field.unit = 'scale_1_100';
+        } else if (keyLower.includes('strength') || keyLower.includes('intensity')) {
+            // Strength/intensity often 1-10
+            field.unit = 'scale_1_10';
+        }
+    }
+}
+
+function updateRefs(node: NodeDef, nameMap: Record<string, string>): void {
+    if ('$ref' in node) {
+        const newName = nameMap[node.$ref];
+        if (newName) {
+            (node as any).$ref = newName;
+        }
+    }
+
+    if ('fields' in node && node.fields) {
+        for (const child of Object.values(node.fields)) {
+            updateRefs(child, nameMap);
+        }
+    }
+
+    if ('items' in node && node.items) {
+        updateRefs(node.items, nameMap);
     }
 }
 
