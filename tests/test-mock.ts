@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyze } from '../src/index.js';
+import { generate } from '../src/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -16,7 +16,7 @@ async function test(): Promise<void> {
     const data: unknown = JSON.parse(readFileSync(mockPath, 'utf-8'));
 
     try {
-        const schema = await analyze(data, {
+        const schema = await generate(data, {
             apiKey: process.env.ANTHROPIC_API_KEY,
             verbose: true
         });

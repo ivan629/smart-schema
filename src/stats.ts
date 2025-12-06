@@ -2,6 +2,11 @@
  * SmartSchema v2 - Statistics
  *
  * Analyzes data structure and infers semantic roles.
+ *
+ * IMPROVEMENTS:
+ * - Cardinality tracking for better role inference
+ * - Value pattern detection (Unix timestamps, boolean strings, etc.)
+ * - Smarter role scoring based on data characteristics
  */
 
 import { createCompoundSchema } from 'genson-js';
@@ -29,7 +34,128 @@ interface GensonSchema {
 }
 
 // ============================================================================
-// Patterns
+// Value Patterns (NEW)
+// ============================================================================
+
+interface ValuePattern {
+    name: string;
+    test: (samples: unknown[]) => boolean;
+    type?: FieldType;
+    format?: FieldFormat;
+    role?: FieldRole;
+}
+
+const VALUE_PATTERNS: ValuePattern[] = [
+    // Unix timestamp (seconds since 1970) - years ~2001 to ~2033
+    {
+        name: 'timestamp_unix',
+        test: (samples) => {
+            const nums = samples.filter((s): s is number => typeof s === 'number');
+            if (nums.length < 3) return false;
+            return nums.every(n => Number.isInteger(n) && n > 1_000_000_000 && n < 2_000_000_000);
+        },
+        type: 'date',
+        role: 'time',
+    },
+    // Unix timestamp (milliseconds)
+    {
+        name: 'timestamp_ms',
+        test: (samples) => {
+            const nums = samples.filter((s): s is number => typeof s === 'number');
+            if (nums.length < 3) return false;
+            return nums.every(n => Number.isInteger(n) && n > 1_000_000_000_000 && n < 2_000_000_000_000);
+        },
+        type: 'date',
+        role: 'time',
+    },
+    // Boolean integers (0/1 only)
+    {
+        name: 'boolean_int',
+        test: (samples) => {
+            const nums = samples.filter((s): s is number => typeof s === 'number');
+            if (nums.length < 3) return false;
+            const unique = new Set(nums);
+            return unique.size <= 2 && nums.every(n => n === 0 || n === 1);
+        },
+        role: 'dimension',
+    },
+    // Boolean strings
+    {
+        name: 'boolean_string',
+        test: (samples) => {
+            const strs = samples.filter((s): s is string => typeof s === 'string');
+            if (strs.length < 3) return false;
+            const boolValues = new Set(['true', 'false', 'yes', 'no', 'y', 'n', '1', '0', 'on', 'off']);
+            return strs.every(s => boolValues.has(s.toLowerCase()));
+        },
+        role: 'dimension',
+    },
+    // HTTP status codes (100-599)
+    {
+        name: 'http_status',
+        test: (samples) => {
+            const nums = samples.filter((s): s is number => typeof s === 'number');
+            if (nums.length < 3) return false;
+            return nums.every(n => Number.isInteger(n) && n >= 100 && n < 600);
+        },
+        role: 'dimension',
+    },
+    // Year values (1900-2100)
+    {
+        name: 'year',
+        test: (samples) => {
+            const nums = samples.filter((s): s is number => typeof s === 'number');
+            if (nums.length < 3) return false;
+            return nums.every(n => Number.isInteger(n) && n >= 1900 && n <= 2100);
+        },
+        role: 'time',
+    },
+];
+
+function detectValuePattern(samples: unknown[]): ValuePattern | undefined {
+    for (const pattern of VALUE_PATTERNS) {
+        if (pattern.test(samples)) {
+            return pattern;
+        }
+    }
+    return undefined;
+}
+
+/**
+ * Select diverse, representative sample values for AI context
+ * - Unique values only
+ * - Prioritizes variety over first-seen
+ * - Truncates long strings
+ * - Max count limited
+ */
+function selectDiverseSamples(samples: unknown[], maxCount: number): unknown[] {
+    const seen = new Set<string>();
+    const result: unknown[] = [];
+
+    for (const sample of samples) {
+        if (result.length >= maxCount) break;
+
+        // Create a key for deduplication
+        const key = typeof sample === 'object'
+            ? JSON.stringify(sample)
+            : String(sample);
+
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        // Truncate long strings for prompt efficiency
+        if (typeof sample === 'string' && sample.length > 50) {
+            result.push(sample.slice(0, 47) + '...');
+        } else {
+            result.push(sample);
+        }
+    }
+
+    return result;
+}
+
+// ============================================================================
+// Patterns (Name-based)
 // ============================================================================
 
 const PATTERNS = {
@@ -75,18 +201,30 @@ const UNIT_PATTERNS: Array<{ pattern: RegExp; unit: string }> = [
 ];
 
 // ============================================================================
-// Role Inference (FIXED: type-safe)
+// Role Inference (IMPROVED with cardinality)
 // ============================================================================
 
-function inferRole(path: string, type: FieldType, format?: FieldFormat): FieldRole {
+function inferRole(
+    path: string,
+    type: FieldType,
+    format: FieldFormat | undefined,
+    cardinality: number | undefined,
+    sampleSize: number | undefined,
+    valuePatternRole: FieldRole | undefined
+): FieldRole {
     const leaf = path.split('.').pop() ?? path;
 
-    // 1. Identifiers (any type)
+    // 0. Value pattern detection takes precedence for specific patterns
+    if (valuePatternRole) {
+        return valuePatternRole;
+    }
+
+    // 1. Identifiers (name-based)
     for (const p of PATTERNS.identifier) {
         if (p.test(leaf)) return 'identifier';
     }
 
-    // 2. Time fields
+    // 2. Time fields (name-based)
     for (const p of PATTERNS.time) {
         if (p.test(leaf)) return 'time';
     }
@@ -97,15 +235,43 @@ function inferRole(path: string, type: FieldType, format?: FieldFormat): FieldRo
     if (format === 'url' || format === 'email') return 'dimension';
     if (format === 'uuid') return 'identifier';
 
-    // 4. NUMERIC ONLY → measure (this is the fix)
+    // 4. NUMERIC: Check name patterns FIRST, then use cardinality as tiebreaker
     if (type === 'int' || type === 'number') {
+        // Check if name suggests it's a measure (takes precedence)
+        for (const p of PATTERNS.measure) {
+            if (p.test(leaf)) return 'measure';
+        }
+
+        // Use cardinality to distinguish dimension vs identifier for unnamed numerics
+        if (cardinality !== undefined && sampleSize !== undefined && sampleSize >= 5) {
+            // All unique values = likely identifier
+            if (cardinality === sampleSize && sampleSize > 3) {
+                return 'identifier';
+            }
+            // Very low cardinality (≤10 unique values) = likely dimension (enum-like)
+            if (cardinality <= 10) {
+                return 'dimension';
+            }
+            // Low cardinality relative to sample size = likely dimension
+            if (cardinality <= 20 && sampleSize >= 50) {
+                return 'dimension';
+            }
+        }
+        // Default for numeric: measure
         return 'measure';
     }
 
-    // 5. String → text or dimension
+    // 5. String → text or dimension (with cardinality check)
     if (type === 'string') {
+        // Check for text patterns first
         for (const p of PATTERNS.text) {
             if (p.test(leaf)) return 'text';
+        }
+        // High cardinality + all unique = likely identifier
+        if (cardinality !== undefined && sampleSize !== undefined && sampleSize >= 5) {
+            if (cardinality === sampleSize) {
+                return 'identifier';
+            }
         }
         return 'dimension';
     }
@@ -236,9 +402,26 @@ function schemaToField(
         type = 'date';
     }
 
-    const role = inferRole(path, type, format);
+    // NEW: Calculate cardinality
+    const nonNullSamples = samples.filter(s => s != null);
+    const cardinality = new Set(nonNullSamples.map(s =>
+        typeof s === 'object' ? JSON.stringify(s) : String(s)
+    )).size;
+    const sampleSize = nonNullSamples.length;
+
+    // NEW: Detect value patterns (timestamps, boolean ints, etc.)
+    const valuePattern = detectValuePattern(nonNullSamples);
+    if (valuePattern?.type) {
+        type = valuePattern.type;
+    }
+
+    // IMPROVED: Pass cardinality and value pattern to role inference
+    const role = inferRole(path, type, format, cardinality, sampleSize, valuePattern?.role);
     const aggregation = inferAggregation(role, path);
     const unit = role === 'measure' ? inferUnit(path) : undefined;
+
+    // Collect diverse sample values for AI enrichment (max 5, unique, non-null)
+    const diverseSamples = selectDiverseSamples(nonNullSamples, 5);
 
     const field: StatsField = {
         path,
@@ -246,6 +429,9 @@ function schemaToField(
         nullable,
         role,
         aggregation,
+        cardinality,
+        sampleSize,
+        samples: diverseSamples,
         ...(format && { format }),
         ...(unit && { unit }),
     };
@@ -289,8 +475,17 @@ function gensonToFields(
 
             fields.push(schemaToField(propSchema, fieldPath, fieldSamples, nullable, samples));
 
+            // Recurse into nested objects
             if (propSchema.type === 'object' && propSchema.properties) {
                 fields.push(...gensonToFields(propSchema, samples, fieldPath));
+            }
+
+            // Recurse into array items (THIS WAS MISSING!)
+            if (propSchema.type === 'array' && propSchema.items) {
+                const itemSchema = propSchema.items;
+                if (itemSchema.type === 'object' && itemSchema.properties) {
+                    fields.push(...gensonToFields(itemSchema, samples, `${fieldPath}.[]`));
+                }
             }
         }
     }

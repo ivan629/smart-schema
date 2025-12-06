@@ -37,6 +37,7 @@ export interface FieldNode {
 
 export interface ObjectNode {
     readonly type: 'object';
+    readonly role?: FieldRole;
     readonly description?: string;
     readonly fields: Record<string, NodeDef>;
 }
@@ -79,6 +80,8 @@ export interface Capabilities {
     readonly identifiers: string[];
     readonly timeFields: string[];
     readonly searchable?: string[];
+    /** Documents what each wildcard (*) in patterns represents */
+    readonly wildcards?: Record<string, string[]>;
 }
 
 // ============================================================================
@@ -139,6 +142,11 @@ export interface StatsField {
     unit?: string;
     itemType?: FieldType;
     itemFields?: StatsField[];
+    // Cardinality tracking for better role inference
+    cardinality?: number;
+    sampleSize?: number;
+    // Sample values for AI enrichment context
+    samples?: unknown[];
 }
 
 export interface StatsTableSchema {

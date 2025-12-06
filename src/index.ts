@@ -1,124 +1,123 @@
 /**
- * SmartSchema
+ * SmartSchema v2
  *
- * Semantic schema generation for LLM understanding.
+ * Infer semantic JSON schemas for LLM understanding.
+ * Structure + Meaning + Roles + Relationships.
  *
- * Usage:
- *   const schema = await analyze(data, { apiKey: process.env.ANTHROPIC_API_KEY });
+ * @example
+ * ```typescript
+ * import { generate } from 'smart-schema';
+ *
+ * // With AI enrichment
+ * const schema = await generate(data, { apiKey: '...' });
+ *
+ * // Without AI (sync)
+ * const schema = await generate(data);
+ * ```
  */
 
-import { LIMITS } from './constants.js';
 import { computeStats } from './stats.js';
-import { detectStructure } from './structure.js';
-import { extractCapabilities, detectEntities } from './capabilities.js';
-import { enrichWithAI, applyDefaults } from './enrich.js';
+import { buildStructure } from './structure.js';
+import { extractCapabilities, detectEntities, inferGrain } from './capabilities.js';
+import { enrichSchema, enrichSchemaSync } from './enrich.js';
 import type { SmartSchema } from './types.js';
 
 // ============================================================================
-// Options
+// Types
 // ============================================================================
 
-export interface AnalyzeOptions {
-    /** Anthropic API key. Required unless skipAI is true. */
-    apiKey: string;
-    /** Skip AI enrichment, use defaults. Default: false */
-    skipAI?: boolean;
-    /** Log progress to console. Default: false */
+export interface GenerateOptions {
+    /** Anthropic API key for AI enrichment */
+    apiKey?: string;
+    /** Enable AI enrichment (default: true if apiKey provided) */
+    enrich?: boolean;
+    /** Log progress to console */
     verbose?: boolean;
 }
 
 // ============================================================================
-// Main
+// Main Export
 // ============================================================================
 
-export async function analyze(data: unknown, options: AnalyzeOptions): Promise<SmartSchema> {
-    const { apiKey, skipAI = false, verbose = false } = options;
-    const log = (msg: string) => verbose && console.log(`[smart-schema] ${msg}`);
+/**
+ * Generate a semantic schema from JSON data.
+ *
+ * @param data - Array of objects or single object
+ * @param options - Configuration options
+ * @returns Semantic schema with roles, capabilities, and entities
+ */
+export async function generate(
+    data: unknown,
+    options: GenerateOptions = {}
+): Promise<SmartSchema> {
+    const verbose = options.verbose ?? false;
 
-    // Validate input
-    if (data === null || data === undefined) {
-        throw new Error('Input cannot be null or undefined');
-    }
-    if (typeof data !== 'object') {
-        throw new Error('Input must be an object or array');
-    }
-    if (Array.isArray(data) && data.length === 0) {
-        throw new Error('Input array cannot be empty');
-    }
-    if (!Array.isArray(data) && Object.keys(data).length === 0) {
-        throw new Error('Input object cannot be empty');
-    }
-    if (!skipAI && !apiKey) {
-        throw new Error('apiKey is required when skipAI is false');
-    }
-
-    log('Analyzing data...');
-
-    // Step 1: Compute field statistics
+    // 1. Compute statistics and infer types/roles
     const stats = computeStats(data);
-    const tableName = Object.keys(stats.tables)[0] ?? 'root';
-    const fields = stats.tables[tableName]?.fields ?? [];
+    const fields = stats.tables.root?.fields ?? [];
+    if (verbose) console.log(`smart-schema: ${fields.length} fields detected`);
 
-    log(`Found ${fields.length} fields`);
+    // 2. Build structure with $defs
+    const { root, $defs } = buildStructure(stats.tables.root ?? { fields: [] });
 
-    // Step 2: Detect structure (maps, $defs)
-    const structures = detectStructure(stats);
-    const structure = structures.get(tableName);
+    // 3. Extract capabilities
+    const capabilities = extractCapabilities(fields);
 
-    if (!structure) {
-        throw new Error('Failed to detect structure');
-    }
+    // 4. Detect entities
+    const entities = detectEntities(fields);
 
-    log(`Structure: ${structure.stats.defCount} $defs, ${structure.stats.mapCount} maps`);
+    // 5. Infer grain
+    const grain = inferGrain(fields, entities);
 
-    // Step 3: Extract capabilities
-    const capabilities = extractCapabilities(fields, structure.maps);
-    const entities = detectEntities(fields, structure.maps);
+    // 6. Assemble base schema
+    let schema: SmartSchema = {
+        domain: 'general',
+        description: 'Data schema',
+        grain,
+        ...(Object.keys($defs).length > 0 && { $defs }),
+        root,
+        capabilities,
+        ...(entities.length > 0 && { entities }),
+    };
 
-    log(`Capabilities: ${capabilities.measures.length} measures, ${capabilities.dimensions.length} dimensions`);
-
-    // Step 4: Check limits (warn only)
-    const tableCount = Object.keys(stats.tables).length;
-    if (verbose) {
-        if (tableCount > LIMITS.maxTables) {
-            console.warn(`[smart-schema] Large dataset: ${tableCount} tables`);
-        }
-        if (fields.length > LIMITS.maxFields) {
-            console.warn(`[smart-schema] Large schema: ${fields.length} fields`);
-        }
-    }
-
-    // Step 5: Enrich
-    if (skipAI) {
-        log('Skipping AI, using defaults');
-        return applyDefaults(structure.defs, structure.root, capabilities, entities);
-    }
-
-    log('Enriching with AI...');
-
-    try {
-        const schema = await enrichWithAI(
-            structure.defs,
-            structure.root,
-            capabilities,
-            entities,
+    // 7. Enrich with AI if apiKey provided
+    const apiKey = options.apiKey ?? process.env.ANTHROPIC_API_KEY;
+    if (options.enrich !== false && apiKey) {
+        schema = await enrichSchema(schema, {
             apiKey,
-            verbose
-        );
-        log('Done');
-        return schema;
-    } catch (error) {
-        // AI failed, return schema with defaults
-        if (verbose) {
-            const message = error instanceof Error ? error.message : 'AI enrichment failed';
-            console.warn(`[smart-schema] ${message}, using defaults`);
-        }
-        return applyDefaults(structure.defs, structure.root, capabilities, entities);
+            verbose,
+            statsFields: fields,
+        });
+    } else {
+        schema = enrichSchemaSync(schema);
     }
+
+    return schema;
 }
 
 // ============================================================================
-// Exports
+// Re-exports
 // ============================================================================
 
-export type { SmartSchema, Capabilities, Entity } from './types.js';
+export type {
+    SmartSchema,
+    NodeDef,
+    FieldNode,
+    ObjectNode,
+    ArrayNode,
+    MapNode,
+    RefNode,
+    TypeDef,
+    Capabilities,
+    Entity,
+    FieldType,
+    FieldRole,
+    FieldFormat,
+    AggregationType,
+    StatsField,
+} from './types.js';
+
+export { computeStats } from './stats.js';
+export { buildStructure } from './structure.js';
+export { extractCapabilities, detectEntities, inferGrain } from './capabilities.js';
+export { enrichSchema, enrichSchemaSync } from './enrich.js';

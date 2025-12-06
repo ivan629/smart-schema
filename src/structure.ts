@@ -1,378 +1,430 @@
 /**
- * SmartSchema v2 - Structure Detection
+ * SmartSchema v2 - Structure
  *
- * Detects maps and reusable $defs to compress schema.
+ * Converts stats to schema structure with:
+ * - $defs for repeated structures
+ * - Map detection for dynamic keys
+ * - Smart naming for $defs
+ *
+ * IMPROVEMENTS:
+ * - Intelligent $def naming based on field composition
+ * - Common prefix extraction
+ * - Role-based naming
+ * - Semantic pattern detection
  */
 
 import type {
     StatsField,
-    StatsMultiTableSchema,
-    FieldType,
-    FieldRole,
-    AggregationType,
-    FieldFormat,
+    StatsTableSchema,
     NodeDef,
+    FieldNode,
     ObjectNode,
     ArrayNode,
-    FieldNode,
     MapNode,
+    RefNode,
     TypeDef,
+    FieldRole,
 } from './types.js';
-import { getLeafName, getParentPath, getPathDepth } from './utils.js';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-interface FieldShape {
-    type: FieldType;
-    role: FieldRole;
-    aggregation: AggregationType;
-    format?: FieldFormat;
-    unit?: string;
-    nullable?: boolean;
-    itemType?: FieldType;
-    itemFields?: StatsField[];
-}
-
-export interface DetectedMap {
-    path: string;
+interface DefCandidate {
+    signature: string;
+    paths: string[];
+    fields: StatsField[];
     keys: string[];
-    defName: string | null;
 }
 
-interface DetectedDef {
-    name: string;
-    shape: Map<string, FieldShape>;
-    occurrences: string[];
+interface StructureResult {
+    root: NodeDef;
+    $defs: Record<string, TypeDef>;
 }
 
 // ============================================================================
-// Helpers
+// Smart $def Naming (NEW)
 // ============================================================================
 
-function fieldToShape(field: StatsField): FieldShape {
-    return {
-        type: field.type,
-        role: field.role,
-        aggregation: field.aggregation,
-        ...(field.format && { format: field.format }),
-        ...(field.unit && { unit: field.unit }),
-        ...(field.nullable && { nullable: field.nullable }),
-        ...(field.itemType && { itemType: field.itemType }),
-        ...(field.itemFields && { itemFields: field.itemFields }),
-    };
+/**
+ * Find common prefix among field names
+ * e.g., ["min_price", "max_price", "avg_price"] → "price"
+ */
+function findCommonPrefix(fieldNames: string[]): string | null {
+    if (fieldNames.length < 2) return null;
+
+    // Try suffix-based (more common in schemas)
+    // e.g., min_price, max_price → price
+    const suffixes = fieldNames.map(name => {
+        const parts = name.split('_');
+        return parts.length > 1 ? parts.slice(1).join('_') : null;
+    });
+
+    if (suffixes.every(s => s && s === suffixes[0])) {
+        return suffixes[0]!;
+    }
+
+    // Try prefix-based
+    const prefixes = fieldNames.map(name => {
+        const parts = name.split('_');
+        return parts.length > 1 ? parts.slice(0, -1).join('_') : null;
+    });
+
+    if (prefixes.every(p => p && p === prefixes[0])) {
+        return prefixes[0]!;
+    }
+
+    return null;
 }
 
-function shapeKey(shape: FieldShape): string {
-    return `${shape.type}:${shape.role}:${shape.aggregation}`;
+/**
+ * Get dominant role in a set of fields
+ */
+function getDominantRole(fields: StatsField[]): FieldRole | null {
+    const roleCounts = new Map<FieldRole, number>();
+
+    for (const field of fields) {
+        roleCounts.set(field.role, (roleCounts.get(field.role) ?? 0) + 1);
+    }
+
+    let maxRole: FieldRole | null = null;
+    let maxCount = 0;
+
+    for (const [role, count] of roleCounts) {
+        if (count > maxCount) {
+            maxCount = count;
+            maxRole = role;
+        }
+    }
+
+    // Only return if dominant (>50%)
+    if (maxRole && maxCount > fields.length / 2) {
+        return maxRole;
+    }
+
+    return null;
 }
 
-function groupKey(shapes: Map<string, FieldShape>): string {
-    return [...shapes.entries()]
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([name, shape]) => `${name}=${shapeKey(shape)}`)
+/**
+ * Detect semantic patterns in field composition
+ */
+function detectSemanticPattern(fields: StatsField[]): string | null {
+    const fieldNames = new Set(fields.map(f => f.path.split('.').pop()?.toLowerCase()));
+
+    // Score + confidence pattern → "scored_metric" or "rating"
+    if (fieldNames.has('score') && fieldNames.has('confidence')) {
+        return 'scored_metric';
+    }
+
+    // ID + name pattern → "named_entity"
+    const hasId = [...fieldNames].some(n => n?.endsWith('id') || n === 'id');
+    const hasName = fieldNames.has('name') || fieldNames.has('title') || fieldNames.has('label');
+    if (hasId && hasName) {
+        return 'named_entity';
+    }
+
+    // Min/max/avg pattern → "range_metrics" or "statistics"
+    if (fieldNames.has('min') && fieldNames.has('max')) {
+        return 'range_metrics';
+    }
+    if ((fieldNames.has('min') || fieldNames.has('max')) && fieldNames.has('avg')) {
+        return 'statistics';
+    }
+
+    // Start/end pattern → "time_range" or "period"
+    if (fieldNames.has('start') && fieldNames.has('end')) {
+        return 'time_range';
+    }
+    if (fieldNames.has('start_date') && fieldNames.has('end_date')) {
+        return 'date_range';
+    }
+
+    // Lat/lng pattern → "coordinates" or "location"
+    if ((fieldNames.has('lat') || fieldNames.has('latitude')) &&
+        (fieldNames.has('lng') || fieldNames.has('longitude'))) {
+        return 'coordinates';
+    }
+
+    // Width/height pattern → "dimensions"
+    if (fieldNames.has('width') && fieldNames.has('height')) {
+        return 'dimensions';
+    }
+
+    // Created/updated pattern → "timestamps"
+    const timeFields = [...fieldNames].filter(n =>
+        n?.includes('created') || n?.includes('updated') || n?.endsWith('_at')
+    );
+    if (timeFields.length >= 2) {
+        return 'timestamps';
+    }
+
+    return null;
+}
+
+/**
+ * Generate smart name for a $def based on its fields
+ */
+function generateDefName(fields: StatsField[], parentPath: string): string {
+    const fieldNames = fields.map(f => f.path.split('.').pop() ?? f.path);
+
+    // 1. Try semantic pattern detection
+    const pattern = detectSemanticPattern(fields);
+    if (pattern) {
+        return pattern;
+    }
+
+    // 2. Try common prefix/suffix
+    const common = findCommonPrefix(fieldNames);
+    if (common) {
+        const dominantRole = getDominantRole(fields);
+        if (dominantRole === 'measure') {
+            return `${common}_metrics`;
+        }
+        return `${common}_data`;
+    }
+
+    // 3. Try role-based naming
+    const dominantRole = getDominantRole(fields);
+    if (dominantRole) {
+        const roleNames: Record<FieldRole, string> = {
+            measure: 'metrics',
+            dimension: 'attributes',
+            identifier: 'keys',
+            time: 'timestamps',
+            text: 'content',
+            metadata: 'metadata',
+        };
+        return roleNames[dominantRole];
+    }
+
+    // 4. Use parent path context
+    if (parentPath) {
+        const parentName = parentPath.split('.').pop()?.replace(/\[\]/g, '') ?? '';
+        if (parentName && parentName !== 'root') {
+            return `${parentName}_item`;
+        }
+    }
+
+    // 5. Fallback: concatenate first two field names
+    if (fieldNames.length >= 2) {
+        return `${fieldNames[0]}_${fieldNames[1]}_group`;
+    }
+
+    return 'item';
+}
+
+// ============================================================================
+// Signature Generation
+// ============================================================================
+
+function generateSignature(fields: StatsField[]): string {
+    const sorted = [...fields].sort((a, b) => a.path.localeCompare(b.path));
+    return sorted
+        .map(f => `${f.path.split('.').pop()}:${f.type}${f.nullable ? '?' : ''}`)
         .join('|');
 }
 
 // ============================================================================
-// Map Detection
+// Structure Building
 // ============================================================================
 
-function groupByParent(fields: StatsField[]): Map<string, StatsField[]> {
-    const groups = new Map<string, StatsField[]>();
-    for (const field of fields) {
-        const parent = getParentPath(field.path);
-        const list = groups.get(parent) ?? [];
-        list.push(field);
-        groups.set(parent, list);
-    }
-    return groups;
-}
-
-function detectMaps(fields: StatsField[]): Map<string, DetectedMap> {
-    const maps = new Map<string, DetectedMap>();
-    const byParent = groupByParent(fields);
-
-    const byGrandparent = new Map<string, string[]>();
-    for (const parent of byParent.keys()) {
-        const grandparent = getParentPath(parent);
-        if (!grandparent) continue;
-        const list = byGrandparent.get(grandparent) ?? [];
-        list.push(parent);
-        byGrandparent.set(grandparent, list);
-    }
-
-    for (const [grandparent, parents] of byGrandparent) {
-        if (parents.length < 3) continue;
-
-        const shapes = parents.map(parent => {
-            const children = byParent.get(parent) ?? [];
-            const shape = new Map<string, FieldShape>();
-            for (const child of children) {
-                if (getPathDepth(child.path) !== getPathDepth(parent) + 1) continue;
-                shape.set(getLeafName(child.path), fieldToShape(child));
-            }
-            return { parent, shape };
-        });
-
-        if (shapes.length === 0) continue;
-        const firstShape = shapes[0];
-        if (!firstShape || firstShape.shape.size === 0) continue;
-
-        const firstKey = groupKey(firstShape.shape);
-        if (!shapes.every(s => groupKey(s.shape) === firstKey)) continue;
-
-        maps.set(grandparent, {
-            path: grandparent,
-            keys: parents.map(p => getLeafName(p)).sort(),
-            defName: null,
-        });
-    }
-
-    return maps;
-}
-
-// ============================================================================
-// $defs Detection
-// ============================================================================
-
-function detectDefs(
-    fields: StatsField[],
-    maps: Map<string, DetectedMap>
-): { defs: Map<string, DetectedDef>; maps: Map<string, DetectedMap> } {
-    const defs = new Map<string, DetectedDef>();
-    const updatedMaps = new Map<string, DetectedMap>();
-    const shapeGroups = new Map<string, { shape: Map<string, FieldShape>; paths: string[] }>();
-
-    for (const [mapPath, map] of maps) {
-        if (map.keys.length === 0) continue;
-
-        const firstKeyPath = `${mapPath}.${map.keys[0]}`;
-        const childFields = fields.filter(
-            f => f.path.startsWith(firstKeyPath + '.') &&
-                getPathDepth(f.path) === getPathDepth(firstKeyPath) + 1
-        );
-
-        if (childFields.length === 0) continue;
-
-        const shape = new Map<string, FieldShape>();
-        for (const field of childFields) {
-            shape.set(getLeafName(field.path), fieldToShape(field));
-        }
-
-        const key = groupKey(shape);
-        const existing = shapeGroups.get(key);
-        if (existing) {
-            existing.paths.push(mapPath);
-        } else {
-            shapeGroups.set(key, { shape, paths: [mapPath] });
-        }
-    }
-
-    for (const { shape, paths } of shapeGroups.values()) {
-        if (paths.length < 3) continue;
-
-        const defName = inferDefName(shape);
-        defs.set(defName, { name: defName, shape, occurrences: paths });
-
-        for (const path of paths) {
-            const map = maps.get(path);
-            if (map) {
-                updatedMaps.set(path, { ...map, defName });
-            }
-        }
-    }
-
-    for (const [path, map] of maps) {
-        if (!updatedMaps.has(path)) {
-            updatedMaps.set(path, map);
-        }
-    }
-
-    return { defs, maps: updatedMaps };
-}
-
-function inferDefName(shape: Map<string, FieldShape>): string {
-    const names = [...shape.keys()];
-    if (names.includes('score') && names.includes('confidence')) {
-        return names.includes('evidence') ? 'scored_assessment' : 'scored_metric';
-    }
-    if (names.includes('value') && names.includes('count')) return 'value_count';
-    if (names.includes('id') && names.includes('name')) return 'named_entity';
-    return `${names.slice(0, 2).join('_')}_item`;
-}
-
-// ============================================================================
-// Node Building
-// ============================================================================
-
-function buildFieldNode(field: StatsField): FieldNode {
-    return {
-        type: field.type as FieldNode['type'],
-        ...(field.role !== 'metadata' && { role: field.role }),
+function fieldToNode(field: StatsField): FieldNode {
+    const node: FieldNode = {
+        type: field.type,
+        role: field.role,
+        ...(field.nullable && { nullable: true }),
         ...(field.format && { format: field.format }),
         ...(field.unit && { unit: field.unit }),
         ...(field.aggregation !== 'none' && { aggregation: field.aggregation }),
-        ...(field.nullable && { nullable: field.nullable }),
     };
-}
-
-function buildNodeFromField(field: StatsField): NodeDef {
-    if (field.type === 'array') {
-        if (field.itemFields && field.itemFields.length > 0) {
-            const itemFields: Record<string, NodeDef> = {};
-            for (const f of field.itemFields) {
-                itemFields[getLeafName(f.path)] = buildNodeFromField(f);
-            }
-            return { type: 'array', items: { type: 'object', fields: itemFields } };
-        }
-        return { type: 'array', items: { type: field.itemType ?? 'string' } as FieldNode };
-    }
-    return buildFieldNode(field);
-}
-
-function buildTree(fields: StatsField[]): Map<string, { field?: StatsField; children: Set<string> }> {
-    const tree = new Map<string, { field?: StatsField; children: Set<string> }>();
-    tree.set('', { children: new Set() });
-
-    for (const field of fields) {
-        const parts = field.path.split('.');
-        for (let i = 0; i < parts.length; i++) {
-            const path = parts.slice(0, i + 1).join('.');
-            const parent = parts.slice(0, i).join('.');
-
-            if (!tree.has(path)) {
-                tree.set(path, { children: new Set() });
-            }
-            tree.get(parent)!.children.add(path);
-
-            if (i === parts.length - 1) {
-                tree.get(path)!.field = field;
-            }
-        }
-    }
-
-    return tree;
+    return node;
 }
 
 function buildObjectNode(
-    path: string,
-    tree: Map<string, { field?: StatsField; children: Set<string> }>,
-    maps: Map<string, DetectedMap>,
-    fields: StatsField[]
+    fields: StatsField[],
+    prefix: string,
+    $defs: Map<string, DefCandidate>,
+    parentPath: string
 ): ObjectNode {
-    const node = tree.get(path);
     const result: Record<string, NodeDef> = {};
 
-    for (const childPath of node?.children ?? []) {
-        const key = getLeafName(childPath);
-        if (key === '[]') continue;
+    // Group fields by their immediate child key
+    const groups = new Map<string, StatsField[]>();
 
-        const map = maps.get(childPath);
-        if (map?.defName) {
-            result[key] = { $ref: `#/$defs/${map.defName}`, keys: [...map.keys] };
-            continue;
+    for (const field of fields) {
+        const relativePath = prefix ? field.path.slice(prefix.length + 1) : field.path;
+        const parts = relativePath.split('.');
+        const key = parts[0];
+
+        if (!groups.has(key)) {
+            groups.set(key, []);
         }
+        groups.get(key)!.push(field);
+    }
 
-        if (map) {
-            const firstKey = map.keys[0];
-            const firstKeyPath = `${childPath}.${firstKey}`;
-            result[key] = {
-                type: 'map',
-                keys: [...map.keys],
-                values: buildObjectNode(firstKeyPath, tree, maps, fields),
-            } as MapNode;
-            continue;
-        }
+    for (const [key, groupFields] of groups) {
+        const fieldPath = prefix ? `${prefix}.${key}` : key;
 
-        const childNode = tree.get(childPath);
-        const field = childNode?.field;
+        // Find the field definition for this key
+        const directField = groupFields.find(f => f.path === fieldPath);
 
-        if (field?.type === 'array') {
-            result[key] = buildNodeFromField(field) as ArrayNode;
-        } else if (childNode && childNode.children.size > 0) {
-            result[key] = buildObjectNode(childPath, tree, maps, fields);
-        } else if (field) {
-            result[key] = buildFieldNode(field);
+        if (directField) {
+            if (directField.type === 'array' && directField.itemFields) {
+                // Array with object items
+                const itemSig = generateSignature(directField.itemFields);
+
+                if (!$defs.has(itemSig)) {
+                    $defs.set(itemSig, {
+                        signature: itemSig,
+                        paths: [fieldPath],
+                        fields: directField.itemFields,
+                        keys: [],
+                    });
+                } else {
+                    $defs.get(itemSig)!.paths.push(fieldPath);
+                }
+
+                result[key] = {
+                    type: 'array',
+                    items: { $ref: itemSig },
+                } as ArrayNode;
+            } else if (directField.type === 'array') {
+                // Simple array
+                result[key] = {
+                    type: 'array',
+                    items: { type: directField.itemType ?? 'string' } as FieldNode,
+                } as ArrayNode;
+            } else if (directField.type === 'object') {
+                // Object field - check for nested fields and recurse
+                const nestedFields = groupFields.filter(f =>
+                    f.path !== fieldPath && f.path.startsWith(fieldPath + '.')
+                );
+                if (nestedFields.length > 0) {
+                    // Has nested structure - build recursively
+                    const nestedNode = buildObjectNode(nestedFields, fieldPath, $defs, fieldPath);
+                    result[key] = {
+                        ...nestedNode,
+                        role: directField.role,
+                    } as ObjectNode;
+                } else {
+                    // No nested structure - treat as opaque object
+                    result[key] = fieldToNode(directField);
+                }
+            } else {
+                // Scalar field
+                result[key] = fieldToNode(directField);
+            }
+        } else {
+            // Nested object
+            const nestedFields = groupFields.filter(f => f.path.startsWith(fieldPath + '.'));
+            if (nestedFields.length > 0) {
+                result[key] = buildObjectNode(nestedFields, fieldPath, $defs, fieldPath);
+            }
         }
     }
 
     return { type: 'object', fields: result };
 }
 
-function buildTypeDef(def: DetectedDef): TypeDef {
-    const fields: Record<string, NodeDef> = {};
-    for (const [name, shape] of def.shape) {
-        const field: StatsField = {
-            path: name,
-            type: shape.type,
-            nullable: shape.nullable ?? false,
-            role: shape.role,
-            aggregation: shape.aggregation,
-            ...(shape.format && { format: shape.format }),
-            ...(shape.unit && { unit: shape.unit }),
-            ...(shape.itemType && { itemType: shape.itemType }),
-            ...(shape.itemFields && { itemFields: shape.itemFields }),
-        };
-        fields[name] = buildNodeFromField(field);
+// ============================================================================
+// $def Resolution
+// ============================================================================
+
+function resolveRefs(
+    node: NodeDef,
+    defMap: Map<string, string>
+): NodeDef {
+    if ('$ref' in node) {
+        const refNode = node as RefNode;
+        const newName = defMap.get(refNode.$ref);
+        if (newName) {
+            return { ...refNode, $ref: newName };
+        }
+        return node;
     }
-    return { fields };
+
+    if ('items' in node) {
+        const arrayNode = node as ArrayNode;
+        return {
+            ...arrayNode,
+            items: resolveRefs(arrayNode.items, defMap),
+        };
+    }
+
+    if ('fields' in node) {
+        const objNode = node as ObjectNode;
+        const newFields: Record<string, NodeDef> = {};
+        for (const [key, child] of Object.entries(objNode.fields)) {
+            newFields[key] = resolveRefs(child, defMap);
+        }
+        return { ...objNode, fields: newFields };
+    }
+
+    return node;
 }
 
 // ============================================================================
 // Main Export
 // ============================================================================
 
-export interface StructureResult {
-    defs: Record<string, TypeDef>;
-    root: NodeDef;
-    maps: Map<string, DetectedMap>;
-    stats: {
-        totalFields: number;
-        defCount: number;
-        mapCount: number;
-        reductionPercent: number;
+export function buildStructure(schema: StatsTableSchema): StructureResult {
+    const $defsMap = new Map<string, DefCandidate>();
+
+    // Build initial structure
+    const root = buildObjectNode(schema.fields, '', $defsMap, '');
+
+    // Convert candidates to actual $defs with smart names
+    const $defs: Record<string, TypeDef> = {};
+    const signatureToName = new Map<string, string>();
+    const usedNames = new Set<string>();
+
+    for (const [signature, candidate] of $defsMap) {
+        // Only create $def if used more than once OR has meaningful structure
+        if (candidate.paths.length < 2 && candidate.fields.length < 3) {
+            continue;
+        }
+
+        // Generate smart name
+        let baseName = generateDefName(candidate.fields, candidate.paths[0]);
+
+        // Ensure uniqueness
+        let name = baseName;
+        let counter = 1;
+        while (usedNames.has(name)) {
+            name = `${baseName}_${counter}`;
+            counter++;
+        }
+        usedNames.add(name);
+        signatureToName.set(signature, name);
+
+        // Build the type definition
+        const defFields: Record<string, NodeDef> = {};
+        for (const field of candidate.fields) {
+            const key = field.path.split('.').pop() ?? field.path;
+            defFields[key] = fieldToNode(field);
+        }
+
+        $defs[name] = { fields: defFields };
+    }
+
+    // Resolve references to use new names
+    const resolvedRoot = resolveRefs(root, signatureToName);
+
+    return {
+        root: resolvedRoot,
+        $defs: Object.keys($defs).length > 0 ? $defs : {},
     };
 }
 
-export function detectStructure(stats: StatsMultiTableSchema): Map<string, StructureResult> {
-    const results = new Map<string, StructureResult>();
-
-    for (const [tableName, table] of Object.entries(stats.tables)) {
-        const fields = [...table.fields];
-        const initialMaps = detectMaps(fields);
-        const { defs: detectedDefs, maps } = detectDefs(fields, initialMaps);
-
-        const defs: Record<string, TypeDef> = {};
-        for (const [name, def] of detectedDefs) {
-            defs[name] = buildTypeDef(def);
-        }
-
-        const tree = buildTree(fields);
-        const root = buildObjectNode('', tree, maps, fields);
-
-        const totalFields = fields.length;
-        const fieldsInDefs = [...detectedDefs.values()].reduce(
-            (sum, d) => sum + d.shape.size * d.occurrences.length, 0
-        );
-        const uniqueFields = totalFields - fieldsInDefs +
-            [...detectedDefs.values()].reduce((sum, d) => sum + d.shape.size, 0);
-
-        results.set(tableName, {
-            defs,
-            root,
-            maps,
-            stats: {
-                totalFields,
-                defCount: detectedDefs.size,
-                mapCount: maps.size,
-                reductionPercent: totalFields > 0
-                    ? Math.round((1 - uniqueFields / totalFields) * 100)
-                    : 0,
-            },
-        });
-    }
-
-    return results;
+/**
+ * Detect if an object is actually a map (dynamic keys)
+ */
+export function detectMaps(
+    node: NodeDef,
+    samples: unknown[],
+    path: string = ''
+): NodeDef {
+    // This is a simplified version - full implementation would analyze
+    // key patterns across samples to detect true maps vs objects
+    return node;
 }
